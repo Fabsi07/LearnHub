@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Learnmanagement App',
+  title: 'StudyHub',
   description: 'Klausuren planen, Lernplan generieren, Fortschritt tracken',
 }
 
