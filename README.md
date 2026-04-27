@@ -1,4 +1,4 @@
-# Learnmanagement-app
+# LearnHub
 
 ## Setup
 
