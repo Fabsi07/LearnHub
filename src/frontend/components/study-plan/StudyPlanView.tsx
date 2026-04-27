@@ -1,4 +1,4 @@
-import { StudyPlan } from '@/frontend/types/studyPlan'
+import { StudyPlan } from '@/types/studyPlan'
 
 // TODO: Zeigt den generierten Lernplan mit Tages-Aufwand
 export default function StudyPlanView() {
