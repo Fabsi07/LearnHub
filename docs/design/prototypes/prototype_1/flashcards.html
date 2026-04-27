@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Karteikarten · LearnHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎴</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script><script>tailwind.config={darkMode:'class'};</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+<div id="app">
+  <div id="deck-view">
+    <div class="flex items-center justify-between mb-6 fade-up">
+      <div>
+        <h2 class="text-2xl font-bold">Karteikarten</h2>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Spaced Repetition · Lerne effizienter</p>
+      </div>
+      <button class="btn-primary"><i data-lucide="plus" class="w-4 h-4"></i> Neues Deck</button>
+    </div>
+
+    <div id="decks" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+  </div>
+
+  <!-- Review view -->
+  <div id="review-view" class="hidden">
+    <button onclick="backToDecks()" class="btn-ghost mb-4 !px-3"><i data-lucide="arrow-left" class="w-4 h-4"></i> Zurück</button>
+
+    <div class="max-w-2xl mx-auto">
+      <div class="flex items-center justify-between mb-4 text-sm text-slate-500 dark:text-slate-400">
+        <span id="rv-deckname"></span>
+        <span class="font-mono-num"><span id="rv-current">1</span> / <span id="rv-total">0</span></span>
+      </div>
+      <div class="progress mb-6"><div class="progress-fill" id="rv-progress" style="width:0%"></div></div>
+
+      <div class="flip-card relative w-full" style="height:340px" id="flip">
+        <div class="flip-inner">
+          <div class="flip-face card cursor-pointer" onclick="flipCard()">
+            <div>
+              <p class="text-xs uppercase tracking-wider text-slate-400 mb-3">Frage</p>
+              <p class="text-2xl md:text-3xl font-semibold" id="card-front"></p>
+              <p class="text-xs text-slate-400 mt-6">Klicken zum Umdrehen</p>
+            </div>
+          </div>
+          <div class="flip-face flip-back card bg-gradient-primary text-white cursor-pointer" onclick="flipCard()">
+            <div>
+              <p class="text-xs uppercase tracking-wider text-white/70 mb-3">Antwort</p>
+              <p class="text-2xl md:text-3xl font-semibold" id="card-back"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-4 gap-3 mt-6" id="rate-buttons">
+        <button onclick="rate('again')" class="card card-hover p-4 text-center hover:!border-red-500">
+          <p class="font-semibold text-red-500">Nochmal</p><p class="text-xs text-slate-400 mt-1">&lt;1 min</p>
+        </button>
+        <button onclick="rate('hard')" class="card card-hover p-4 text-center hover:!border-amber-500">
+          <p class="font-semibold text-amber-500">Schwer</p><p class="text-xs text-slate-400 mt-1">6 min</p>
+        </button>
+        <button onclick="rate('good')" class="card card-hover p-4 text-center hover:!border-emerald-500">
+          <p class="font-semibold text-emerald-500">Gut</p><p class="text-xs text-slate-400 mt-1">1 Tag</p>
+        </button>
+        <button onclick="rate('easy')" class="card card-hover p-4 text-center hover:!border-indigo-500">
+          <p class="font-semibold text-indigo-500">Leicht</p><p class="text-xs text-slate-400 mt-1">4 Tage</p>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+LH_renderLayout({ title: 'Karteikarten', subtitle: 'Spaced Repetition Lernsystem' });
+
+function renderDecks(){
+  document.getElementById('decks').innerHTML = LH_DATA.decks.map((d,i) => {
+    const s = LH_DATA.subjectById(d.subject);
+    return `
+      <div class="card card-hover p-6 fade-up cursor-pointer" style="animation-delay:${i*50}ms" onclick="startReview('${d.id}')">
+        <div class="flex items-start justify-between mb-4">
+          <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:${s.color}22;color:${s.color}">
+            <i data-lucide="layers" class="w-6 h-6"></i>
+          </div>
+          ${d.due > 0 ? `<span class="badge bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-300">${d.due} fällig</span>` : '<span class="badge bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-300">erledigt</span>'}
+        </div>
+        <h3 class="font-bold text-lg mb-1">${d.name}</h3>
+        <p class="text-xs text-slate-500 mb-4">${s.name} · ${d.total} Karten</p>
+        <div class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
+          <span class="text-xs text-slate-500 flex items-center gap-1.5"><i data-lucide="brain" class="w-3.5 h-3.5"></i> ${Math.round((d.total-d.due)/d.total*100)}% beherrscht</span>
+          <button class="text-xs text-indigo-500 font-semibold">Üben →</button>
+        </div>
+      </div>`;
+  }).join('');
+  if (window.lucide) lucide.createIcons();
+}
+renderDecks();
+
+let reviewQueue = [], idx = 0;
+window.startReview = function(deckId){
+  reviewQueue = LH_DATA.flashcards.filter(f => f.deck === deckId);
+  if (!reviewQueue.length){ LH_toast('Keine Karten in diesem Deck', 'warning'); return; }
+  idx = 0;
+  document.getElementById('rv-deckname').textContent = LH_DATA.decks.find(d=>d.id===deckId).name;
+  document.getElementById('rv-total').textContent = reviewQueue.length;
+  document.getElementById('deck-view').classList.add('hidden');
+  document.getElementById('review-view').classList.remove('hidden');
+  showCard();
+};
+window.backToDecks = function(){
+  document.getElementById('deck-view').classList.remove('hidden');
+  document.getElementById('review-view').classList.add('hidden');
+};
+function showCard(){
+  const c = reviewQueue[idx];
+  document.getElementById('card-front').textContent = c.front;
+  document.getElementById('card-back').textContent  = c.back;
+  document.getElementById('rv-current').textContent = idx+1;
+  document.getElementById('rv-progress').style.width = ((idx)/reviewQueue.length*100) + '%';
+  document.getElementById('flip').classList.remove('flipped');
+}
+window.flipCard = function(){ document.getElementById('flip').classList.toggle('flipped'); };
+window.rate = function(r){
+  const labels = { again:'Nochmal', hard:'Schwer', good:'Gut', easy:'Leicht' };
+  LH_toast(`Bewertet: ${labels[r]}`, r==='again'?'danger':r==='hard'?'warning':'success');
+  idx++;
+  if (idx >= reviewQueue.length){
+    LH_toast('Deck abgeschlossen 🎉', 'success');
+    backToDecks();
+    return;
+  }
+  showCard();
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fächer · LearnHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+<div id="app">
+
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 fade-up">
+    <div>
+      <h2 class="text-2xl font-bold">Deine Fächer</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Verwalte Kurse, Themen und deinen Fortschritt</p>
+    </div>
+    <div class="flex gap-2">
+      <button class="btn-secondary"><i data-lucide="filter" class="w-4 h-4"></i> Filter</button>
+      <button class="btn-primary" onclick="LH_openModal('subject-modal')">
+        <i data-lucide="plus" class="w-4 h-4"></i> Neues Fach
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats strip -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+    <div class="card p-4 fade-up fade-up-1">
+      <p class="text-xs text-slate-500 dark:text-slate-400">Fächer gesamt</p>
+      <p class="text-2xl font-bold mt-1 font-mono-num" id="st-total">0</p>
+    </div>
+    <div class="card p-4 fade-up fade-up-2">
+      <p class="text-xs text-slate-500 dark:text-slate-400">Themen gesamt</p>
+      <p class="text-2xl font-bold mt-1 font-mono-num" id="st-topics">0</p>
+    </div>
+    <div class="card p-4 fade-up fade-up-3">
+      <p class="text-xs text-slate-500 dark:text-slate-400">Ø Fortschritt</p>
+      <p class="text-2xl font-bold mt-1 font-mono-num" id="st-progress">0%</p>
+    </div>
+    <div class="card p-4 fade-up fade-up-4">
+      <p class="text-xs text-slate-500 dark:text-slate-400">Aktives Fach</p>
+      <p class="text-2xl font-bold mt-1">Informatik</p>
+    </div>
+  </div>
+
+  <div id="subject-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+</div>
+
+<!-- Modal -->
+<div id="subject-modal" class="modal-backdrop">
+  <div class="modal">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-xl font-bold">Neues Fach hinzufügen</h3>
+      <button class="btn-ghost" onclick="LH_closeModal('subject-modal')"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <form id="subject-form" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Name</label>
+        <input class="input" id="sb-name" placeholder="z. B. Physik" required>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Lehrer/in</label>
+        <input class="input" id="sb-teacher" placeholder="optional">
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Farbe</label>
+        <div class="flex gap-2 flex-wrap" id="color-picker"></div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Icon</label>
+        <div class="flex gap-2 flex-wrap" id="icon-picker"></div>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="btn-secondary" onclick="LH_closeModal('subject-modal')">Abbrechen</button>
+        <button type="submit" class="btn-primary"><i data-lucide="check" class="w-4 h-4"></i> Hinzufügen</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+LH_renderLayout({ title: 'Fächer', subtitle: 'Verwalte deine Kurse' });
+
+document.getElementById('st-total').textContent  = LH_DATA.subjects.length;
+document.getElementById('st-topics').textContent = LH_DATA.subjects.reduce((a,s)=>a+s.topics,0);
+document.getElementById('st-progress').textContent = Math.round(LH_DATA.subjects.reduce((a,s)=>a+s.progress,0)/LH_DATA.subjects.length) + '%';
+
+function renderSubjects(){
+  document.getElementById('subject-grid').innerHTML = LH_DATA.subjects.map((s,i) => `
+    <div class="card card-hover p-6 fade-up" style="animation-delay:${i*60}ms">
+      <div class="flex items-start justify-between mb-4">
+        <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background:${s.color}22;color:${s.color}">
+          <i data-lucide="${s.icon}" class="w-6 h-6"></i>
+        </div>
+        <button class="btn-ghost"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+      </div>
+      <h3 class="font-bold text-lg">${s.name}</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-4">${s.teacher} · ${s.topics} Themen</p>
+
+      <div class="flex items-center justify-between text-xs mb-2">
+        <span class="text-slate-500 dark:text-slate-400">Fortschritt</span>
+        <span class="font-semibold font-mono-num">${s.progress}%</span>
+      </div>
+      <div class="progress mb-4"><div class="progress-fill" style="width:${s.progress}%; background:linear-gradient(90deg, ${s.color}, ${s.color}cc)"></div></div>
+
+      <div class="flex items-center justify-between pt-4 border-t border-slate-200 dark:border-slate-700">
+        <div class="flex -space-x-2">
+          ${[1,2,3].map(n => `<div class="w-7 h-7 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center text-[10px] font-semibold" style="background:${s.color}33;color:${s.color}">T${n}</div>`).join('')}
+        </div>
+        <button class="text-xs text-indigo-500 font-semibold hover:underline">Themen anzeigen →</button>
+      </div>
+    </div>`).join('');
+  if (window.lucide) lucide.createIcons();
+}
+renderSubjects();
+
+// Color picker
+const colors = ['#6366F1','#8B5CF6','#EC4899','#EF4444','#F59E0B','#10B981','#06B6D4','#22C55E'];
+let pickedColor = colors[0];
+document.getElementById('color-picker').innerHTML = colors.map(c => `
+  <button type="button" data-c="${c}" class="color-opt w-9 h-9 rounded-lg border-2 transition" style="background:${c}; border-color: ${c===pickedColor?'#0F172A':'transparent'}"></button>`).join('');
+document.querySelectorAll('.color-opt').forEach(b => b.onclick = () => {
+  pickedColor = b.dataset.c;
+  document.querySelectorAll('.color-opt').forEach(x => x.style.borderColor = 'transparent');
+  b.style.borderColor = '#0F172A';
+});
+
+// Icon picker
+const icons = ['book-open','flask-conical','calculator','globe','code','music','palette','heart','dumbbell','atom'];
+let pickedIcon = icons[0];
+document.getElementById('icon-picker').innerHTML = icons.map(ic => `
+  <button type="button" data-i="${ic}" class="icon-opt w-10 h-10 rounded-lg border-2 border-transparent bg-slate-100 dark:bg-slate-800 hover:border-indigo-400 flex items-center justify-center transition">
+    <i data-lucide="${ic}" class="w-5 h-5"></i>
+  </button>`).join('');
+if (window.lucide) lucide.createIcons();
+document.querySelectorAll('.icon-opt').forEach(b => b.onclick = () => {
+  pickedIcon = b.dataset.i;
+  document.querySelectorAll('.icon-opt').forEach(x => x.classList.remove('border-indigo-500'));
+  b.classList.add('border-indigo-500');
+});
+
+document.getElementById('subject-form').addEventListener('submit', e => {
+  e.preventDefault();
+  LH_DATA.subjects.push({
+    id: 's' + (LH_DATA.subjects.length + 1),
+    name: document.getElementById('sb-name').value,
+    teacher: document.getElementById('sb-teacher').value || '—',
+    color: pickedColor, icon: pickedIcon,
+    topics: 0, progress: 0
+  });
+  LH_closeModal('subject-modal');
+  document.getElementById('subject-form').reset();
+  renderSubjects();
+  LH_toast('Fach hinzugefügt ✨', 'success');
+});
+</script>
+</body>
+</html>

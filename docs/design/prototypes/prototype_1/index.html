@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard · LearnHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter','system-ui'] } } } };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+<div id="app">
+
+  <!-- ===== Hero / Welcome ===== -->
+  <section class="mb-8 fade-up">
+    <div class="rounded-2xl bg-gradient-primary p-6 md:p-8 text-white relative overflow-hidden">
+      <div class="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-white/10 blur-3xl"></div>
+      <div class="absolute bottom-0 right-20 w-40 h-40 rounded-full bg-violet-300/20 blur-2xl"></div>
+      <div class="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <p class="text-white/80 text-sm" id="hero-date"></p>
+          <h2 class="text-2xl md:text-3xl font-bold mt-1">Willkommen zurück, <span id="hero-name"></span> 👋</h2>
+          <p class="text-white/80 mt-2 max-w-lg">Du hast heute <strong id="hero-tasks">0</strong> Lerneinheiten geplant. Auf geht's — bleib am Ball!</p>
+        </div>
+        <div class="flex gap-3">
+          <a href="sessions.html" class="px-5 py-3 rounded-xl bg-white text-indigo-600 font-semibold flex items-center gap-2 shadow-lg shadow-indigo-700/30 hover:bg-indigo-50 transition">
+            <i data-lucide="play" class="w-4 h-4"></i> Session starten
+          </a>
+          <a href="calendar.html" class="px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 backdrop-blur text-white font-semibold flex items-center gap-2 transition">
+            <i data-lucide="plus" class="w-4 h-4"></i> Event
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== KPI Cards ===== -->
+  <section class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="card card-hover p-5 fade-up fade-up-1">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+          <i data-lucide="clock" class="w-5 h-5"></i>
+        </div>
+        <span class="badge bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300">+12%</span>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Lernzeit heute</p>
+      <p class="text-2xl font-bold mt-1 font-mono-num">2h 35m</p>
+    </div>
+
+    <div class="card card-hover p-5 fade-up fade-up-2">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-500/15 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+          <i data-lucide="flame" class="w-5 h-5"></i>
+        </div>
+        <span class="badge bg-orange-100 text-orange-700 dark:bg-orange-500/20 dark:text-orange-300">aktiv</span>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Lernstreak</p>
+      <p class="text-2xl font-bold mt-1 font-mono-num"><span id="kpi-streak">0</span> Tage</p>
+    </div>
+
+    <div class="card card-hover p-5 fade-up fade-up-3">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+          <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+        </div>
+        <span class="badge bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300">bald</span>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Anstehende Klausuren</p>
+      <p class="text-2xl font-bold mt-1 font-mono-num" id="kpi-exams">0</p>
+    </div>
+
+    <div class="card card-hover p-5 fade-up fade-up-4">
+      <div class="flex items-center justify-between mb-3">
+        <div class="w-10 h-10 rounded-lg bg-violet-100 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 flex items-center justify-center">
+          <i data-lucide="target" class="w-5 h-5"></i>
+        </div>
+        <span class="badge bg-violet-100 text-violet-700 dark:bg-violet-500/20 dark:text-violet-300">offen</span>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Offene Lernziele</p>
+      <p class="text-2xl font-bold mt-1 font-mono-num" id="kpi-goals">0</p>
+    </div>
+  </section>
+
+  <!-- ===== Main Grid ===== -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <!-- Today's Tasks -->
+    <div class="card p-6 lg:col-span-2 fade-up">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-semibold text-lg">Heutige Aufgaben</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Plane deinen Tag effizient</p>
+        </div>
+        <button class="btn-ghost"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+      </div>
+      <ul id="today-tasks" class="space-y-2"></ul>
+    </div>
+
+    <!-- Upcoming Exams -->
+    <div class="card p-6 fade-up fade-up-1">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="font-semibold text-lg">Anstehende Klausuren</h3>
+        <a href="calendar.html" class="text-xs text-indigo-500 hover:underline">Alle</a>
+      </div>
+      <ul id="upcoming-exams" class="space-y-3"></ul>
+    </div>
+  </section>
+
+  <!-- ===== Charts row ===== -->
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+    <div class="card p-6 lg:col-span-2 fade-up">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <h3 class="font-semibold text-lg">Wochenübersicht</h3>
+          <p class="text-sm text-slate-500 dark:text-slate-400">Lernminuten pro Tag</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="btn-secondary text-xs !py-1.5 !px-3">Woche</button>
+          <button class="btn-ghost text-xs">Monat</button>
+        </div>
+      </div>
+      <div style="height:260px"><canvas id="weeklyChart"></canvas></div>
+    </div>
+
+    <div class="card p-6 fade-up fade-up-1">
+      <h3 class="font-semibold text-lg mb-5">Verteilung nach Fach</h3>
+      <div style="height:260px"><canvas id="subjectChart"></canvas></div>
+    </div>
+  </section>
+
+  <!-- ===== Quick subjects ===== -->
+  <section class="mb-8 fade-up">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="font-semibold text-lg">Deine Fächer</h3>
+      <a href="subjects.html" class="text-sm text-indigo-500 hover:underline flex items-center gap-1">Alle ansehen <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i></a>
+    </div>
+    <div id="subject-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"></div>
+  </section>
+
+</div>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+  LH_renderLayout({ title: 'Dashboard', subtitle: 'Übersicht über deinen Lerntag' });
+
+  // Hero
+  document.getElementById('hero-date').textContent = LH_fmtDateLong(new Date());
+  document.getElementById('hero-name').textContent = LH_DATA.user.name;
+  document.getElementById('hero-tasks').textContent = LH_DATA.todayTasks.filter(t => !t.done).length;
+
+  // KPIs
+  document.getElementById('kpi-streak').textContent = LH_DATA.user.streak;
+  document.getElementById('kpi-exams').textContent  = LH_DATA.upcomingExams.length;
+  document.getElementById('kpi-goals').textContent  = LH_DATA.goals.filter(g => g.status !== 'done').length;
+
+  // Today tasks
+  const tlist = document.getElementById('today-tasks');
+  tlist.innerHTML = LH_DATA.todayTasks.map(t => {
+    const s = LH_DATA.subjectById(t.subject);
+    return `
+      <li class="flex items-center gap-4 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition group cursor-pointer" data-id="${t.id}">
+        <span class="check ${t.done ? 'checked' : ''}" onclick="LH_toggleTask('${t.id}', this)">
+          <i data-lucide="check" class="w-3 h-3"></i>
+        </span>
+        <span class="w-1 h-8 rounded-full" style="background:${s.color}"></span>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-sm ${t.done ? 'line-through text-slate-400' : ''}">${t.title}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">${t.time}</p>
+        </div>
+        ${LH_subjectBadge(s)}
+        <button class="btn-ghost opacity-0 group-hover:opacity-100"><i data-lucide="more-vertical" class="w-4 h-4"></i></button>
+      </li>`;
+  }).join('');
+
+  window.LH_toggleTask = function(id, el){
+    el.classList.toggle('checked');
+    const li = el.closest('li');
+    const p = li.querySelector('p.font-medium');
+    p.classList.toggle('line-through');
+    p.classList.toggle('text-slate-400');
+    LH_toast('Aufgabe aktualisiert', 'success');
+  };
+
+  // Upcoming exams
+  document.getElementById('upcoming-exams').innerHTML = LH_DATA.upcomingExams.map(e => {
+    const s = LH_DATA.subjectById(e.subject);
+    const d = LH_relDate(e.date);
+    const days = Math.round((d - new Date()) / 86400000);
+    return `
+      <li class="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500 transition">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-lg flex items-center justify-center font-bold text-sm" style="background:${s.color}22;color:${s.color}">${days}</div>
+          <div class="flex-1 min-w-0">
+            <p class="font-medium text-sm truncate">${e.title}</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">in ${days} Tagen · ${e.type}</p>
+          </div>
+        </div>
+      </li>`;
+  }).join('');
+
+  // Subject grid
+  document.getElementById('subject-grid').innerHTML = LH_DATA.subjects.map(s => `
+    <a href="subjects.html" class="card card-hover p-4 block">
+      <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-3" style="background:${s.color}22;color:${s.color}">
+        <i data-lucide="${s.icon}" class="w-5 h-5"></i>
+      </div>
+      <p class="font-semibold text-sm">${s.name}</p>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-2">${s.topics} Themen</p>
+      <div class="progress"><div class="progress-fill" style="width:${s.progress}%"></div></div>
+    </a>`).join('');
+
+  if (window.lucide) lucide.createIcons();
+
+  // ====== Charts ======
+  const dark = document.documentElement.classList.contains('dark');
+  Chart.defaults.color = dark ? '#94A3B8' : '#64748B';
+  Chart.defaults.borderColor = dark ? '#1E293B' : '#E2E8F0';
+  Chart.defaults.font.family = 'Inter';
+
+  // Weekly bar
+  new Chart(document.getElementById('weeklyChart'), {
+    type: 'bar',
+    data: {
+      labels: ['Mo','Di','Mi','Do','Fr','Sa','So'],
+      datasets: [{
+        label: 'Minuten',
+        data: [120, 95, 180, 150, 210, 60, 45],
+        backgroundColor: ctx => {
+          const g = ctx.chart.ctx.createLinearGradient(0,0,0,260);
+          g.addColorStop(0, '#8B5CF6'); g.addColorStop(1, '#6366F1');
+          return g;
+        },
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        y: { grid: { color: dark ? '#1E293B' : '#F1F5F9' }, ticks: { font: { size: 11 } } },
+        x: { grid: { display: false }, ticks: { font: { size: 12, weight: '500' } } }
+      }
+    }
+  });
+
+  // Subject doughnut
+  new Chart(document.getElementById('subjectChart'), {
+    type: 'doughnut',
+    data: {
+      labels: LH_DATA.subjects.map(s => s.name),
+      datasets: [{
+        data: [220, 180, 90, 140, 260, 60],
+        backgroundColor: LH_DATA.subjects.map(s => s.color),
+        borderWidth: 0,
+        hoverOffset: 8
+      }]
+    },
+    options: {
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 12, font: { size: 11 } } } }
+    }
+  });
+</script>
+</body>
+</html>

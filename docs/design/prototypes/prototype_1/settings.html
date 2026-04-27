@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Einstellungen · LearnHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚙️</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script><script>tailwind.config={darkMode:'class'};</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+<div id="app">
+
+  <div class="max-w-4xl mx-auto">
+    <h2 class="text-2xl font-bold mb-1 fade-up">Einstellungen</h2>
+    <p class="text-sm text-slate-500 dark:text-slate-400 mb-8 fade-up">Personalisiere LearnHub nach deinen Bedürfnissen</p>
+
+    <!-- Profile -->
+    <div class="card p-6 mb-6 fade-up fade-up-1">
+      <h3 class="font-semibold mb-5 flex items-center gap-2"><i data-lucide="user" class="w-4 h-4"></i> Profil</h3>
+      <div class="flex items-center gap-5 mb-6">
+        <div class="w-20 h-20 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-bold shadow-lg">Y</div>
+        <div>
+          <button class="btn-secondary text-sm">Foto ändern</button>
+          <p class="text-xs text-slate-500 mt-2">JPG, PNG · max. 2MB</p>
+        </div>
+      </div>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Name</label>
+          <input class="input" value="Yannik Roeder">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">E-Mail</label>
+          <input class="input" value="yannik@learnhub.app">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Schule / Universität</label>
+          <input class="input" value="TU München">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Sprache</label>
+          <select class="input"><option>Deutsch</option><option>English</option></select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Appearance -->
+    <div class="card p-6 mb-6 fade-up fade-up-2">
+      <h3 class="font-semibold mb-5 flex items-center gap-2"><i data-lucide="palette" class="w-4 h-4"></i> Erscheinungsbild</h3>
+      <div class="grid md:grid-cols-3 gap-3">
+        <button onclick="setTheme('light')" class="theme-card card-hover p-4 border-2 border-transparent rounded-xl">
+          <div class="h-20 bg-slate-100 rounded-lg mb-3 flex items-center justify-center">
+            <div class="w-10 h-10 rounded-full bg-white border border-slate-200"></div>
+          </div>
+          <p class="font-semibold text-sm">Hell</p>
+        </button>
+        <button onclick="setTheme('dark')" class="theme-card card-hover p-4 border-2 border-indigo-500 rounded-xl">
+          <div class="h-20 bg-slate-900 rounded-lg mb-3 flex items-center justify-center">
+            <div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700"></div>
+          </div>
+          <p class="font-semibold text-sm">Dunkel</p>
+        </button>
+        <button class="theme-card card-hover p-4 border-2 border-transparent rounded-xl">
+          <div class="h-20 rounded-lg mb-3 flex items-center justify-center bg-gradient-to-r from-slate-100 to-slate-900">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-r from-white to-slate-800"></div>
+          </div>
+          <p class="font-semibold text-sm">System</p>
+        </button>
+      </div>
+      <div class="mt-5 pt-5 border-t border-slate-200 dark:border-slate-700 space-y-3">
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+          <div><p class="font-medium text-sm">Animationen</p><p class="text-xs text-slate-500">Sanfte Übergänge aktivieren</p></div>
+          <span class="toggle on"></span>
+        </label>
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+          <div><p class="font-medium text-sm">Kompakte Sidebar</p><p class="text-xs text-slate-500">Standardmäßig eingeklappt starten</p></div>
+          <span class="toggle"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Pomodoro Defaults -->
+    <div class="card p-6 mb-6 fade-up fade-up-3">
+      <h3 class="font-semibold mb-5 flex items-center gap-2"><i data-lucide="timer" class="w-4 h-4"></i> Pomodoro</h3>
+      <div class="grid md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Lernphase (Min)</label>
+          <input type="number" class="input" value="25">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Pause (Min)</label>
+          <input type="number" class="input" value="5">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Lange Pause (Min)</label>
+          <input type="number" class="input" value="20">
+        </div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="card p-6 mb-6 fade-up fade-up-4">
+      <h3 class="font-semibold mb-5 flex items-center gap-2"><i data-lucide="bell" class="w-4 h-4"></i> Benachrichtigungen</h3>
+      <div class="space-y-3">
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+          <div><p class="font-medium text-sm">Tägliche Erinnerungen</p><p class="text-xs text-slate-500">Erinnerung um 09:00 Uhr</p></div>
+          <span class="toggle on"></span>
+        </label>
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+          <div><p class="font-medium text-sm">Klausur-Warnung</p><p class="text-xs text-slate-500">7 Tage vor Klausuren</p></div>
+          <span class="toggle on"></span>
+        </label>
+        <label class="flex items-center justify-between p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer">
+          <div><p class="font-medium text-sm">Streak-Warnung</p><p class="text-xs text-slate-500">Bei Gefahr, den Streak zu verlieren</p></div>
+          <span class="toggle"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Danger zone -->
+    <div class="card p-6 border-red-200 dark:border-red-500/30 fade-up">
+      <h3 class="font-semibold mb-5 flex items-center gap-2 text-red-500"><i data-lucide="alert-triangle" class="w-4 h-4"></i> Gefahrenzone</h3>
+      <div class="flex flex-col md:flex-row gap-3">
+        <button class="btn-secondary"><i data-lucide="download" class="w-4 h-4"></i> Daten exportieren</button>
+        <button class="btn-secondary !text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i> Alle Daten löschen</button>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2 mt-6">
+      <button class="btn-secondary">Abbrechen</button>
+      <button class="btn-primary" onclick="LH_toast('Einstellungen gespeichert ✨','success')"><i data-lucide="check" class="w-4 h-4"></i> Speichern</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.toggle {
+  width: 42px; height: 24px;
+  background: rgb(203 213 225);
+  border-radius: 999px;
+  position: relative;
+  transition: background 200ms;
+  display: inline-block;
+}
+.dark .toggle { background: rgb(71 85 105); }
+.toggle::after {
+  content:''; position:absolute;
+  top:2px; left:2px;
+  width:20px; height:20px;
+  background: white;
+  border-radius:50%;
+  transition: transform 200ms;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.toggle.on { background: linear-gradient(135deg, #6366F1, #8B5CF6); }
+.toggle.on::after { transform: translateX(18px); }
+</style>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+LH_renderLayout({ title: 'Einstellungen', subtitle: 'Konto, Aussehen, Benachrichtigungen' });
+
+document.querySelectorAll('.toggle').forEach(t => t.addEventListener('click', () => t.classList.toggle('on')));
+
+window.setTheme = function(t){
+  if (t==='light' && document.documentElement.classList.contains('dark')) LH_toggleTheme();
+  else if (t==='dark' && !document.documentElement.classList.contains('dark')) LH_toggleTheme();
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('border-indigo-500'));
+  event.currentTarget.classList.add('border-indigo-500');
+  LH_toast('Theme geändert', 'success');
+};
+</script>
+</body>
+</html>

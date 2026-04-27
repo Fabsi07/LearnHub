@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Statistiken · LearnHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script><script>tailwind.config={darkMode:'class'};</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+<div id="app">
+
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 fade-up">
+    <div>
+      <h2 class="text-2xl font-bold">Statistiken</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400">Verfolge deine Lernfortschritte und Muster</p>
+    </div>
+    <div class="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+      <button class="px-4 py-2 text-sm font-medium rounded-lg bg-white dark:bg-slate-700 shadow">Woche</button>
+      <button class="px-4 py-2 text-sm font-medium rounded-lg">Monat</button>
+      <button class="px-4 py-2 text-sm font-medium rounded-lg">Jahr</button>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="card p-5 fade-up fade-up-1">
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Gesamt-Lernzeit</p>
+      <p class="text-3xl font-bold font-mono-num">42h</p>
+      <p class="text-xs text-emerald-500 mt-2 flex items-center gap-1"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +18% vs. Vorwoche</p>
+    </div>
+    <div class="card p-5 fade-up fade-up-2">
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Sessions</p>
+      <p class="text-3xl font-bold font-mono-num">28</p>
+      <p class="text-xs text-emerald-500 mt-2 flex items-center gap-1"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +5</p>
+    </div>
+    <div class="card p-5 fade-up fade-up-3">
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Ø Session-Dauer</p>
+      <p class="text-3xl font-bold font-mono-num">52m</p>
+      <p class="text-xs text-slate-500 mt-2">Pomodoro-Setting</p>
+    </div>
+    <div class="card p-5 fade-up fade-up-4">
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-1">Beste Tageszeit</p>
+      <p class="text-3xl font-bold">10–12h</p>
+      <p class="text-xs text-indigo-500 mt-2">Höchste Konzentration</p>
+    </div>
+  </div>
+
+  <!-- Charts grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="card p-6 lg:col-span-2 fade-up">
+      <h3 class="font-semibold mb-1">Lernzeit-Verlauf</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">Letzte 14 Tage</p>
+      <div style="height:280px"><canvas id="lineChart"></canvas></div>
+    </div>
+    <div class="card p-6 fade-up fade-up-1">
+      <h3 class="font-semibold mb-1">Verteilung nach Fach</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">Diese Woche</p>
+      <div style="height:280px"><canvas id="donutChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div class="card p-6 fade-up">
+      <h3 class="font-semibold mb-1">Tageszeit-Heatmap</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">Wann lernst du am meisten?</p>
+      <div style="height:260px"><canvas id="hourChart"></canvas></div>
+    </div>
+    <div class="card p-6 fade-up fade-up-1">
+      <h3 class="font-semibold mb-1">Wochentage</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mb-5">Produktivität pro Tag</p>
+      <div style="height:260px"><canvas id="radarChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Year heatmap -->
+  <div class="card p-6 fade-up">
+    <div class="flex items-center justify-between mb-5">
+      <div>
+        <h3 class="font-semibold">Jahres-Aktivität</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400">365 Tage Lernverlauf</p>
+      </div>
+      <span class="badge bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-300">🔥 12 Tage Streak</span>
+    </div>
+    <div id="year-heat" class="grid grid-flow-col gap-1 overflow-x-auto pb-2" style="grid-template-rows:repeat(7,1fr)"></div>
+  </div>
+</div>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+LH_renderLayout({ title: 'Statistiken', subtitle: 'Analysen und Insights' });
+
+const dark = document.documentElement.classList.contains('dark');
+Chart.defaults.color = dark ? '#94A3B8' : '#64748B';
+Chart.defaults.borderColor = dark ? '#1E293B' : '#E2E8F0';
+Chart.defaults.font.family = 'Inter';
+
+// Line
+new Chart(document.getElementById('lineChart'), {
+  type: 'line',
+  data: {
+    labels: Array.from({length:14}, (_,i) => { const d = new Date(); d.setDate(d.getDate()-13+i); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'short'}); }),
+    datasets: [{
+      label:'Minuten', data:[60,90,120,80,150,180,120,90,140,200,170,130,180,210],
+      borderColor:'#6366F1', backgroundColor:(ctx)=>{ const g=ctx.chart.ctx.createLinearGradient(0,0,0,280); g.addColorStop(0,'rgba(99,102,241,0.4)'); g.addColorStop(1,'rgba(99,102,241,0)'); return g; },
+      tension:0.4, fill:true, borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#6366F1'
+    }]
+  },
+  options: { maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ grid:{color: dark?'#1E293B':'#F1F5F9'}}, x:{grid:{display:false}}} }
+});
+
+// Donut
+new Chart(document.getElementById('donutChart'), {
+  type:'doughnut',
+  data:{ labels: LH_DATA.subjects.map(s=>s.name), datasets:[{ data:[180,120,90,140,210,60], backgroundColor: LH_DATA.subjects.map(s=>s.color), borderWidth:0, hoverOffset:8 }] },
+  options:{ maintainAspectRatio:false, cutout:'62%', plugins:{ legend:{position:'bottom', labels:{ boxWidth:10, padding:10, font:{size:11}}}}}
+});
+
+// Hour bar
+new Chart(document.getElementById('hourChart'), {
+  type:'bar',
+  data:{ labels:['6','8','10','12','14','16','18','20','22'], datasets:[{ label:'Minuten', data:[5,30,75,90,40,55,70,80,30], backgroundColor:'#8B5CF6', borderRadius:6 }]},
+  options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ y:{ grid:{color: dark?'#1E293B':'#F1F5F9'}}, x:{grid:{display:false}}} }
+});
+
+// Radar
+new Chart(document.getElementById('radarChart'), {
+  type:'radar',
+  data:{ labels:['Mo','Di','Mi','Do','Fr','Sa','So'], datasets:[{
+    data:[80,65,90,75,95,40,30], backgroundColor:'rgba(99,102,241,0.2)', borderColor:'#6366F1', borderWidth:2, pointBackgroundColor:'#6366F1'
+  }]},
+  options:{ maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ r:{ angleLines:{color: dark?'#334155':'#E2E8F0'}, grid:{color: dark?'#334155':'#E2E8F0'}, ticks:{display:false}, suggestedMax:100}} }
+});
+
+// Year heatmap
+const heatEl = document.getElementById('year-heat');
+let html = '';
+for (let i=0;i<53;i++){
+  for (let j=0;j<7;j++){
+    const v = Math.random();
+    const lvl = v<0.4?0:v<0.6?1:v<0.75?2:v<0.88?3:v<0.96?4:5;
+    html += `<span class="heatmap-cell ${lvl?'l'+lvl:''}"></span>`;
+  }
+}
+heatEl.innerHTML = html;
+</script>
+</body>
+</html>

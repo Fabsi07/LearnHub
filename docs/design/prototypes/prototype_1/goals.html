@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lernziele · LearnHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎯</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script><script>tailwind.config={darkMode:'class'};</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+<div id="app">
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 fade-up">
+    <div>
+      <h2 class="text-2xl font-bold">Lernziele</h2>
+      <p class="text-sm text-slate-500 dark:text-slate-400">SMART-Ziele setzen, Fortschritt verfolgen</p>
+    </div>
+    <button class="btn-primary" onclick="LH_openModal('goal-modal')">
+      <i data-lucide="plus" class="w-4 h-4"></i> Neues Ziel
+    </button>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+    <!-- Columns rendered by JS -->
+    <div class="kanban-col" data-status="planned">
+      <div class="flex items-center gap-2 mb-3 px-2">
+        <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+        <h3 class="font-semibold text-sm uppercase tracking-wide text-slate-500">Geplant</h3>
+        <span class="badge bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300" id="cnt-planned">0</span>
+      </div>
+      <div class="space-y-3" id="col-planned"></div>
+    </div>
+    <div class="kanban-col" data-status="in-progress">
+      <div class="flex items-center gap-2 mb-3 px-2">
+        <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+        <h3 class="font-semibold text-sm uppercase tracking-wide text-indigo-500">In Arbeit</h3>
+        <span class="badge bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-300" id="cnt-progress">0</span>
+      </div>
+      <div class="space-y-3" id="col-in-progress"></div>
+    </div>
+    <div class="kanban-col" data-status="done">
+      <div class="flex items-center gap-2 mb-3 px-2">
+        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <h3 class="font-semibold text-sm uppercase tracking-wide text-emerald-500">Erreicht</h3>
+        <span class="badge bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-300" id="cnt-done">0</span>
+      </div>
+      <div class="space-y-3" id="col-done"></div>
+    </div>
+  </div>
+</div>
+
+<div id="goal-modal" class="modal-backdrop">
+  <div class="modal">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-xl font-bold">Neues Lernziel</h3>
+      <button class="btn-ghost" onclick="LH_closeModal('goal-modal')"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <form id="goal-form" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Titel (SMART)</label>
+        <input class="input" id="g-title" placeholder="z. B. 200 Vokabeln in 4 Wochen lernen" required>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Fach</label>
+          <select class="input" id="g-subject"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Deadline</label>
+          <input class="input" type="date" id="g-deadline">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Status</label>
+        <select class="input" id="g-status">
+          <option value="planned">Geplant</option>
+          <option value="in-progress">In Arbeit</option>
+          <option value="done">Erreicht</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="btn-secondary" onclick="LH_closeModal('goal-modal')">Abbrechen</button>
+        <button type="submit" class="btn-primary"><i data-lucide="check" class="w-4 h-4"></i> Speichern</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+LH_renderLayout({ title: 'Lernziele', subtitle: 'Setze klare Ziele und verfolge deinen Fortschritt' });
+
+document.getElementById('g-subject').innerHTML = LH_DATA.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+function dueText(rel){
+  const d = LH_relDate(rel);
+  const days = Math.round((d - new Date()) / 86400000);
+  if (days < 0) return { text: `Vor ${Math.abs(days)} Tagen`, cls: 'text-emerald-500' };
+  if (days === 0) return { text: 'Heute', cls: 'text-amber-500' };
+  if (days <= 3) return { text: `In ${days} Tagen`, cls: 'text-amber-500' };
+  return { text: `In ${days} Tagen`, cls: 'text-slate-500 dark:text-slate-400' };
+}
+
+function render(){
+  ['planned','in-progress','done'].forEach(st => {
+    const items = LH_DATA.goals.filter(g => g.status === st);
+    document.getElementById('col-' + st).innerHTML = items.map((g,i) => {
+      const s = LH_DATA.subjectById(g.subject);
+      const due = dueText(g.deadline);
+      return `
+        <div class="card card-hover p-5 fade-up" style="animation-delay:${i*40}ms">
+          <div class="flex items-start justify-between mb-3">
+            ${LH_subjectBadge(s)}
+            <button class="btn-ghost !p-1"><i data-lucide="more-horizontal" class="w-4 h-4"></i></button>
+          </div>
+          <h4 class="font-semibold text-sm mb-3 leading-snug">${g.title}</h4>
+          ${g.status !== 'done' ? `
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="text-slate-500 dark:text-slate-400">Fortschritt</span>
+            <span class="font-semibold font-mono-num">${g.progress}%</span>
+          </div>
+          <div class="progress mb-4"><div class="progress-fill" style="width:${g.progress}%"></div></div>` : `
+          <div class="flex items-center gap-2 mb-4 text-emerald-500">
+            <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+            <span class="text-xs font-semibold">Abgeschlossen</span>
+          </div>`}
+          <div class="flex items-center justify-between text-xs">
+            <span class="${due.cls} flex items-center gap-1.5">
+              <i data-lucide="calendar" class="w-3.5 h-3.5"></i> ${due.text}
+            </span>
+            ${g.status === 'in-progress' ? `<button class="text-indigo-500 hover:underline font-semibold">+10%</button>` : ''}
+          </div>
+        </div>`;
+    }).join('') || `<div class="text-center text-slate-400 py-8 text-sm">Keine Ziele</div>`;
+  });
+  document.getElementById('cnt-planned').textContent  = LH_DATA.goals.filter(g => g.status==='planned').length;
+  document.getElementById('cnt-progress').textContent = LH_DATA.goals.filter(g => g.status==='in-progress').length;
+  document.getElementById('cnt-done').textContent     = LH_DATA.goals.filter(g => g.status==='done').length;
+  if (window.lucide) lucide.createIcons();
+}
+render();
+
+document.getElementById('goal-form').addEventListener('submit', e => {
+  e.preventDefault();
+  LH_DATA.goals.push({
+    id: 'g' + (LH_DATA.goals.length + 1),
+    title: document.getElementById('g-title').value,
+    subject: document.getElementById('g-subject').value,
+    deadline: '+14d',
+    progress: 0,
+    status: document.getElementById('g-status').value
+  });
+  LH_closeModal('goal-modal');
+  document.getElementById('goal-form').reset();
+  render();
+  LH_toast('Ziel hinzugefügt 🎯', 'success');
+});
+</script>
+</body>
+</html>

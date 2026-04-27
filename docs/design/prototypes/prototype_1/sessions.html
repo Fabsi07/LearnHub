@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lernsessions · LearnHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⏱️</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script><script>tailwind.config={darkMode:'class'};</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+<div id="app">
+
+  <div class="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6">
+    <!-- TIMER -->
+    <div class="card p-8 md:p-12 flex flex-col items-center fade-up">
+      <div class="flex gap-2 mb-8 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+        <button class="preset-btn px-4 py-2 rounded-lg text-sm font-medium" data-work="25" data-break="5">25 / 5</button>
+        <button class="preset-btn px-4 py-2 rounded-lg text-sm font-medium" data-work="50" data-break="10">50 / 10</button>
+        <button class="preset-btn px-4 py-2 rounded-lg text-sm font-medium" data-work="90" data-break="20">90 / 20</button>
+      </div>
+
+      <div class="relative w-72 h-72 md:w-80 md:h-80 mb-8">
+        <svg class="timer-ring w-full h-full" viewBox="0 0 200 200">
+          <defs>
+            <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#6366F1"/><stop offset="100%" stop-color="#8B5CF6"/>
+            </linearGradient>
+          </defs>
+          <circle class="track" cx="100" cy="100" r="92"></circle>
+          <circle id="ring" class="progress-stroke" cx="100" cy="100" r="92"
+                  stroke-dasharray="578" stroke-dashoffset="0"></circle>
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center">
+          <p class="text-sm text-slate-500 dark:text-slate-400 font-medium" id="phase-label">Lernphase</p>
+          <p class="text-6xl md:text-7xl font-bold font-mono-num mt-2" id="time-display">25:00</p>
+          <p class="text-sm text-slate-500 dark:text-slate-400 mt-2"><span id="cycle-count">Zyklus 1</span></p>
+        </div>
+      </div>
+
+      <div class="flex gap-3 mb-6">
+        <button id="start-btn" class="btn-primary !px-8 !py-4 !text-base">
+          <i data-lucide="play" class="w-5 h-5"></i> Start
+        </button>
+        <button id="reset-btn" class="btn-secondary !px-6 !py-4">
+          <i data-lucide="rotate-ccw" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="w-full max-w-sm">
+        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Aktuelles Fach</label>
+        <select id="active-subject" class="input"></select>
+      </div>
+    </div>
+
+    <!-- SIDEPANEL -->
+    <div class="space-y-6">
+      <div class="card p-5 fade-up fade-up-1">
+        <div class="grid grid-cols-3 gap-3 text-center">
+          <div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Heute</p>
+            <p class="text-xl font-bold font-mono-num text-indigo-500">2h 35m</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Sessions</p>
+            <p class="text-xl font-bold font-mono-num">7</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Streak</p>
+            <p class="text-xl font-bold font-mono-num text-orange-500">12🔥</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card p-5 fade-up fade-up-2">
+        <h3 class="font-semibold mb-4 flex items-center gap-2">
+          <i data-lucide="activity" class="w-4 h-4"></i> Heatmap (30 Tage)
+        </h3>
+        <div id="heatmap" class="grid grid-cols-10 gap-1.5"></div>
+        <div class="flex items-center justify-between mt-3 text-xs text-slate-500">
+          <span>Weniger</span>
+          <div class="flex gap-1">
+            <span class="heatmap-cell"></span>
+            <span class="heatmap-cell l1"></span>
+            <span class="heatmap-cell l2"></span>
+            <span class="heatmap-cell l3"></span>
+            <span class="heatmap-cell l4"></span>
+            <span class="heatmap-cell l5"></span>
+          </div>
+          <span>Mehr</span>
+        </div>
+      </div>
+
+      <div class="card p-5 fade-up fade-up-3">
+        <h3 class="font-semibold mb-4 flex items-center gap-2">
+          <i data-lucide="history" class="w-4 h-4"></i> Letzte Sessions
+        </h3>
+        <ul id="session-list" class="space-y-2"></ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+LH_renderLayout({ title: 'Lernsessions', subtitle: 'Pomodoro-Timer & Sessionverlauf' });
+
+document.getElementById('active-subject').innerHTML = LH_DATA.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+// Timer
+let WORK = 25, BREAK = 5;
+let phase = 'work', remaining = WORK*60, total = WORK*60, cycle = 1, running = false, interval = null;
+
+const display = document.getElementById('time-display');
+const phaseLabel = document.getElementById('phase-label');
+const ring = document.getElementById('ring');
+const cycleEl = document.getElementById('cycle-count');
+const startBtn = document.getElementById('start-btn');
+
+function fmt(s){ const m = Math.floor(s/60); const sec = s%60; return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`; }
+function update(){
+  display.textContent = fmt(remaining);
+  const pct = remaining/total;
+  ring.style.strokeDashoffset = (1-pct)*578;
+}
+function tick(){
+  if (!running) return;
+  remaining--;
+  update();
+  if (remaining <= 0){
+    running = false; clearInterval(interval);
+    if (phase === 'work'){
+      LH_toast(`Lernphase abgeschlossen — Pause ${BREAK} Min ☕`, 'success');
+      phase = 'break'; total = BREAK*60; remaining = total; phaseLabel.textContent = 'Pause';
+    } else {
+      LH_toast('Pause vorbei — bereit für Runde ' + (cycle+1) + '?', 'info');
+      cycle++; cycleEl.textContent = 'Zyklus ' + cycle;
+      phase = 'work'; total = WORK*60; remaining = total; phaseLabel.textContent = 'Lernphase';
+    }
+    update();
+    setStart();
+  }
+}
+function setStart(){ startBtn.innerHTML = '<i data-lucide="play" class="w-5 h-5"></i> Start'; if (window.lucide) lucide.createIcons(); }
+function setPause(){ startBtn.innerHTML = '<i data-lucide="pause" class="w-5 h-5"></i> Pause'; if (window.lucide) lucide.createIcons(); }
+
+startBtn.onclick = () => {
+  running = !running;
+  if (running){ interval = setInterval(tick, 1000); setPause(); }
+  else { clearInterval(interval); setStart(); }
+};
+document.getElementById('reset-btn').onclick = () => {
+  running = false; clearInterval(interval); phase='work'; total = WORK*60; remaining = total;
+  phaseLabel.textContent='Lernphase'; cycle=1; cycleEl.textContent='Zyklus 1';
+  update(); setStart();
+};
+document.querySelectorAll('.preset-btn').forEach((b,i) => {
+  if (i===0) b.classList.add('bg-white','dark:bg-slate-700','shadow');
+  b.onclick = () => {
+    document.querySelectorAll('.preset-btn').forEach(x => x.classList.remove('bg-white','dark:bg-slate-700','shadow'));
+    b.classList.add('bg-white','dark:bg-slate-700','shadow');
+    WORK = +b.dataset.work; BREAK = +b.dataset.break;
+    total = WORK*60; remaining = total; phase='work'; phaseLabel.textContent='Lernphase';
+    running = false; clearInterval(interval); setStart(); update();
+  };
+});
+update();
+
+// Heatmap (30 days, randomized seeded)
+const heat = [];
+for (let i=29;i>=0;i--){
+  const v = [0,0,1,1,2,2,3,4,5][Math.floor(Math.random()*9)];
+  heat.push(v);
+}
+document.getElementById('heatmap').innerHTML = heat.map(v => `<span class="heatmap-cell ${v?'l'+v:''}" title="${v*30} min"></span>`).join('');
+
+// session list
+document.getElementById('session-list').innerHTML = LH_DATA.recentSessions.map(ss => {
+  const s = LH_DATA.subjectById(ss.subject);
+  return `
+    <li class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition">
+      <span class="w-1.5 h-8 rounded-full" style="background:${s.color}"></span>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium truncate">${ss.note}</p>
+        <p class="text-xs text-slate-500">${s.name}</p>
+      </div>
+      <span class="badge bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-mono-num">${ss.duration}m</span>
+    </li>`;
+}).join('');
+if (window.lucide) lucide.createIcons();
+</script>
+</body>
+</html>

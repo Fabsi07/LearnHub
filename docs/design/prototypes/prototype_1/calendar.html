@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kalender · LearnHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config = { darkMode: 'class' };</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales/de.global.min.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+<div id="app">
+
+  <div class="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-6">
+    <!-- CALENDAR -->
+    <div class="card p-3 md:p-5 fade-up min-w-0">
+      <div id="calendar"></div>
+    </div>
+
+    <!-- SIDE PANEL -->
+    <aside class="space-y-6 fade-up fade-up-1">
+      <button class="btn-primary w-full justify-center" onclick="openEventModal()">
+        <i data-lucide="plus" class="w-4 h-4"></i> Neues Event
+      </button>
+
+      <div class="card p-5">
+        <h3 class="font-semibold mb-4 flex items-center gap-2">
+          <i data-lucide="filter" class="w-4 h-4"></i> Fächer-Filter
+        </h3>
+        <div id="filters" class="space-y-2"></div>
+      </div>
+
+      <div class="card p-5">
+        <h3 class="font-semibold mb-4 flex items-center gap-2">
+          <i data-lucide="palette" class="w-4 h-4"></i> Event-Typen
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-indigo-500"></span> Lernsession</div>
+          <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Klausur</div>
+          <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-red-500"></span> Deadline</div>
+          <div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Pause</div>
+        </div>
+      </div>
+
+      <div class="card p-5">
+        <h3 class="font-semibold mb-3 flex items-center gap-2">
+          <i data-lucide="lightbulb" class="w-4 h-4 text-amber-500"></i> Tipp
+        </h3>
+        <p class="text-sm text-slate-500 dark:text-slate-400">Klicke in einen leeren Slot, um schnell ein Event zu erstellen. Per Drag & Drop kannst du Events verschieben.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ===== Modal ===== -->
+<div id="event-modal" class="modal-backdrop">
+  <div class="modal">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-xl font-bold" id="modal-title">Neues Event</h3>
+      <button class="btn-ghost" onclick="LH_closeModal('event-modal')"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <form id="event-form" class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Titel</label>
+        <input class="input" id="ev-title" placeholder="z. B. Mathe Übung" required>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Typ</label>
+          <select class="input" id="ev-type">
+            <option value="session">Lernsession</option>
+            <option value="exam">Klausur</option>
+            <option value="deadline">Deadline</option>
+            <option value="break">Pause</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Fach</label>
+          <select class="input" id="ev-subject"></select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Start</label>
+          <input class="input" type="datetime-local" id="ev-start" required>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Ende</label>
+          <input class="input" type="datetime-local" id="ev-end" required>
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Wiederholung</label>
+        <select class="input" id="ev-recur">
+          <option value="none">Keine</option>
+          <option value="daily">Täglich</option>
+          <option value="weekly">Wöchentlich</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase mb-2">Notiz</label>
+        <textarea class="input" id="ev-note" rows="3" placeholder="Optional..."></textarea>
+      </div>
+      <div class="flex justify-end gap-2 pt-2">
+        <button type="button" class="btn-secondary" onclick="LH_closeModal('event-modal')">Abbrechen</button>
+        <button type="submit" class="btn-primary"><i data-lucide="check" class="w-4 h-4"></i> Speichern</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+LH_renderLayout({ title: 'Kalender', subtitle: 'Plane Lerneinheiten, Klausuren und Deadlines' });
+
+// Subject select
+const subjSelect = document.getElementById('ev-subject');
+subjSelect.innerHTML = LH_DATA.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+// Filter list
+document.getElementById('filters').innerHTML = LH_DATA.subjects.map(s => `
+  <label class="flex items-center gap-3 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer">
+    <input type="checkbox" checked data-subject="${s.id}" class="filter-cb accent-indigo-500 w-4 h-4">
+    <span class="w-3 h-3 rounded-full" style="background:${s.color}"></span>
+    <span class="text-sm flex-1">${s.name}</span>
+  </label>`).join('');
+
+// === Generate events relative to today ===
+const typeMeta = {
+  session:  { color: null,       icon: '📚', label: 'Session' },
+  exam:     { color: '#F59E0B',  icon: '📝', label: 'Klausur' },
+  deadline: { color: '#EF4444',  icon: '⏰', label: 'Deadline' },
+  break:    { color: '#10B981',  icon: '☕', label: 'Pause' }
+};
+
+function hexToRgba(hex, a) {
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16);
+  const g = parseInt(h.substring(2,4),16);
+  const b = parseInt(h.substring(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+function makeEv(offsetDays, hour, dur, title, subj, type) {
+  const d = new Date(); d.setDate(d.getDate()+offsetDays); d.setHours(hour, 0, 0, 0);
+  const e = new Date(d.getTime() + dur*60000);
+  const color = type === 'session' ? LH_DATA.subjectById(subj).color : typeMeta[type].color;
+  return {
+    title,
+    start: d.toISOString(),
+    end: e.toISOString(),
+    extendedProps: { subject: subj, type, color }
+  };
+}
+const events = [
+  makeEv(0,  9,  90, 'Analysis Übung',           's1', 'session'),
+  makeEv(0,  13, 90, 'Englisch Essay',            's2', 'session'),
+  makeEv(0,  16, 60, 'Bio Photosynthese',         's4', 'session'),
+  makeEv(0,  19, 60, 'Coding Challenge',          's5', 'session'),
+  makeEv(1,  10, 120,'Mathe Lerngruppe',          's1', 'session'),
+  makeEv(1,  14, 60, 'Spanisch Vokabeln',         's6', 'session'),
+  makeEv(2,  9,  90, 'Geschichte Lesen',          's3', 'session'),
+  makeEv(2,  15, 45, 'Karteikarten Review',       's2', 'session'),
+  makeEv(3,  11, 120,'Algorithmen Übung',         's5', 'session'),
+  makeEv(4,  10, 60, 'Bio Wiederholung',          's4', 'session'),
+  makeEv(5,  9,  180,'Mathe Klausur',             's1', 'exam'),
+  makeEv(7,  14, 90, 'Englisch Lesen',            's2', 'session'),
+  makeEv(9,  10, 30, 'Geschichte Referat Abgabe', 's3', 'deadline'),
+  makeEv(10, 11, 90, 'Spanisch Konversation',     's6', 'session'),
+  makeEv(-1, 9,  90, 'Mathe Übung',               's1', 'session'),
+  makeEv(-1, 13, 60, 'Spanisch Grammatik',        's6', 'session'),
+  makeEv(-2, 10, 120,'Englisch Lerngruppe',       's2', 'session'),
+  makeEv(-3, 14, 90, 'Bio Praktikum',             's4', 'session'),
+  makeEv(-5, 9,  150,'Geschichte Klausur',        's3', 'exam'),
+  makeEv(14, 9,  90, 'Englisch Listening Test',   's2', 'exam')
+];
+
+function fmtTime(d){
+  return d.toLocaleTimeString('de-DE', { hour:'2-digit', minute:'2-digit' });
+}
+
+function renderEvent(arg){
+  const color = arg.event.extendedProps.color || '#6366F1';
+  const type  = arg.event.extendedProps.type;
+  const meta  = typeMeta[type] || typeMeta.session;
+  const isMonth = arg.view.type === 'dayGridMonth';
+  const timeStr = arg.event.start ? fmtTime(arg.event.start) : '';
+
+  const wrap = document.createElement('div');
+  wrap.className = 'lh-event';
+  wrap.style.setProperty('--ev-color', color);
+  wrap.style.setProperty('--ev-bg', hexToRgba(color, 0.12));
+  wrap.style.setProperty('--ev-bg-hover', hexToRgba(color, 0.20));
+
+  if (isMonth) {
+    wrap.innerHTML = `
+      <span class="lh-event-icon">${meta.icon}</span>
+      <span class="lh-event-time">${timeStr}</span>
+      <span class="lh-event-title">${arg.event.title}</span>`;
+  } else {
+    const endStr = arg.event.end ? fmtTime(arg.event.end) : '';
+    wrap.innerHTML = `
+      <span class="lh-event-time">${timeStr}${endStr ? ' – ' + endStr : ''}</span>
+      <span class="lh-event-title">${meta.icon} ${arg.event.title}</span>`;
+  }
+  return { domNodes: [wrap] };
+}
+
+const calendarEl = document.getElementById('calendar');
+const calendar = new FullCalendar.Calendar(calendarEl, {
+  initialView: 'dayGridMonth',
+  locale: 'de',
+  height: 'auto',
+  contentHeight: 760,
+  expandRows: true,
+  firstDay: 1,
+  headerToolbar: {
+    left: 'prev,next today',
+    center: 'title',
+    right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+  },
+  buttonText: { today:'Heute', month:'Monat', week:'Woche', day:'Tag', list:'Liste' },
+  events: events,
+  editable: true,
+  selectable: true,
+  selectMirror: true,
+  nowIndicator: true,
+  dayMaxEvents: 3,
+  eventDisplay: 'block',
+  displayEventTime: false,
+  slotMinTime: '06:00:00',
+  slotMaxTime: '23:00:00',
+  slotDuration: '00:30:00',
+  slotLabelFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
+  allDaySlot: false,
+  eventContent: renderEvent,
+  select(info){
+    document.getElementById('ev-start').value = info.startStr.slice(0,16);
+    document.getElementById('ev-end').value   = info.endStr.slice(0,16);
+    document.getElementById('modal-title').textContent = 'Neues Event';
+    LH_openModal('event-modal');
+    calendar.unselect();
+  },
+  eventClick(info){
+    const t = info.event.extendedProps.type;
+    LH_toast(`${typeMeta[t].icon} ${info.event.title}`, 'info');
+  },
+  eventDrop(){ LH_toast('Event verschoben', 'success'); },
+  eventResize(){ LH_toast('Dauer angepasst', 'success'); }
+});
+calendar.render();
+// Re-layout after fonts/CSS settle
+requestAnimationFrame(() => calendar.updateSize());
+window.addEventListener('resize', () => calendar.updateSize());
+
+// Filters — proper rerender via filter function
+let activeSubjects = LH_DATA.subjects.map(s => s.id);
+function applyFilters() {
+  calendar.getEvents().forEach(ev => {
+    const ok = activeSubjects.includes(ev.extendedProps.subject);
+    ev.setProp('display', ok ? 'auto' : 'none');
+  });
+}
+document.querySelectorAll('.filter-cb').forEach(cb => {
+  cb.addEventListener('change', () => {
+    activeSubjects = Array.from(document.querySelectorAll('.filter-cb:checked')).map(c => c.dataset.subject);
+    applyFilters();
+  });
+});
+
+window.openEventModal = function(){
+  document.getElementById('event-form').reset();
+  LH_openModal('event-modal');
+};
+
+document.getElementById('event-form').addEventListener('submit', e => {
+  e.preventDefault();
+  const subj = document.getElementById('ev-subject').value;
+  const type = document.getElementById('ev-type').value;
+  const color = type === 'session' ? LH_DATA.subjectById(subj).color : typeMeta[type].color;
+  calendar.addEvent({
+    title: document.getElementById('ev-title').value,
+    start: document.getElementById('ev-start').value,
+    end:   document.getElementById('ev-end').value,
+    extendedProps: { subject: subj, type, color }
+  });
+  LH_closeModal('event-modal');
+  LH_toast('Event hinzugefügt 🎉', 'success');
+});
+</script>
+</body>
+</html>

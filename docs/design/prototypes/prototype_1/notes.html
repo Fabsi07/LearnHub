@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="de" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Notizen · LearnHub</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>" />
+  <script src="https://cdn.tailwindcss.com"></script><script>tailwind.config={darkMode:'class'};</script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950">
+<div id="app">
+  <div class="card overflow-hidden fade-up" style="height: calc(100vh - 9rem)">
+    <div class="grid grid-cols-1 md:grid-cols-[280px_1fr] h-full">
+      <!-- Note list -->
+      <aside class="border-r border-slate-200 dark:border-slate-700 flex flex-col">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-700">
+          <div class="relative">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            <input class="input !pl-9" placeholder="Notiz suchen..." id="search-notes">
+          </div>
+          <button class="btn-primary w-full justify-center mt-3" onclick="newNote()">
+            <i data-lucide="plus" class="w-4 h-4"></i> Neue Notiz
+          </button>
+        </div>
+        <ul id="note-list" class="flex-1 overflow-y-auto p-2"></ul>
+      </aside>
+
+      <!-- Editor -->
+      <section class="flex flex-col h-full overflow-hidden">
+        <div class="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center gap-3">
+          <input id="note-title" class="text-lg font-bold bg-transparent flex-1 outline-none" placeholder="Titel...">
+          <select id="note-subject" class="input !w-auto !py-1.5 !text-xs"></select>
+          <button class="btn-ghost"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 flex-1 overflow-hidden">
+          <textarea id="note-editor" class="p-5 resize-none outline-none bg-transparent border-r border-slate-200 dark:border-slate-700 font-mono text-sm leading-relaxed" placeholder="# Markdown unterstützt&#10;&#10;Schreibe hier deine Notizen..."></textarea>
+          <div id="note-preview" class="p-5 overflow-y-auto prose prose-sm dark:prose-invert max-w-none"></div>
+        </div>
+        <div class="px-4 py-2 border-t border-slate-200 dark:border-slate-700 text-xs text-slate-500 flex items-center justify-between">
+          <span id="word-count">0 Wörter</span>
+          <span class="flex items-center gap-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-500"></i> Automatisch gespeichert</span>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<style>
+.prose h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem; }
+.prose h2 { font-size: 1.2rem; font-weight: 600; margin-top: 1rem; margin-bottom: 0.5rem; }
+.prose h3 { font-size: 1.05rem; font-weight: 600; margin-top: 0.75rem; }
+.prose p  { margin-bottom: 0.75rem; line-height: 1.6; }
+.prose ul, .prose ol { margin-left: 1.25rem; margin-bottom: 0.75rem; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose code { background: rgba(99,102,241,0.12); padding: 1px 6px; border-radius: 4px; font-size: 0.85em; }
+.prose strong { color: inherit; font-weight: 600; }
+</style>
+
+<script src="assets/js/mock-data.js"></script>
+<script src="assets/js/app.js"></script>
+<script>
+LH_renderLayout({ title: 'Notizen', subtitle: 'Markdown-Editor mit Live-Preview' });
+
+document.getElementById('note-subject').innerHTML = LH_DATA.subjects.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+
+let active = LH_DATA.notes[0].id;
+
+function renderList(){
+  const term = document.getElementById('search-notes').value.toLowerCase();
+  const filtered = LH_DATA.notes.filter(n => !term || n.title.toLowerCase().includes(term) || n.content.toLowerCase().includes(term));
+  document.getElementById('note-list').innerHTML = filtered.map(n => {
+    const s = LH_DATA.subjectById(n.subject);
+    const d = LH_relDate(n.updated);
+    return `
+      <li class="p-3 rounded-lg cursor-pointer transition mb-1 ${n.id===active ? 'bg-indigo-50 dark:bg-indigo-500/15 border-l-2 border-indigo-500' : 'hover:bg-slate-50 dark:hover:bg-slate-800'}"
+          onclick="loadNote('${n.id}')">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="w-2 h-2 rounded-full" style="background:${s.color}"></span>
+          <p class="text-xs text-slate-500 truncate">${s.name}</p>
+        </div>
+        <p class="font-semibold text-sm truncate">${n.title}</p>
+        <p class="text-xs text-slate-400 mt-1">${d.toLocaleDateString('de-DE')}</p>
+      </li>`;
+  }).join('') || '<p class="text-center text-slate-400 text-sm py-6">Keine Treffer</p>';
+}
+
+function loadNote(id){
+  const n = LH_DATA.notes.find(x => x.id === id);
+  active = id;
+  document.getElementById('note-title').value = n.title;
+  document.getElementById('note-subject').value = n.subject;
+  document.getElementById('note-editor').value = n.content;
+  updatePreview();
+  renderList();
+}
+window.loadNote = loadNote;
+
+function updatePreview(){
+  const v = document.getElementById('note-editor').value;
+  document.getElementById('note-preview').innerHTML = marked.parse(v || '*Schreibe etwas...*');
+  document.getElementById('word-count').textContent = (v.trim().split(/\s+/).filter(Boolean).length) + ' Wörter';
+  // Sync to data
+  const n = LH_DATA.notes.find(x => x.id === active);
+  if (n){ n.content = v; n.title = document.getElementById('note-title').value; }
+}
+
+document.getElementById('note-editor').addEventListener('input', updatePreview);
+document.getElementById('note-title').addEventListener('input', () => {
+  const n = LH_DATA.notes.find(x => x.id === active);
+  if (n) n.title = document.getElementById('note-title').value;
+  renderList();
+});
+document.getElementById('search-notes').addEventListener('input', renderList);
+
+window.newNote = function(){
+  const id = 'n' + Date.now();
+  LH_DATA.notes.unshift({ id, title: 'Neue Notiz', subject: LH_DATA.subjects[0].id, updated:'-0d', content: '# Neue Notiz\n\nLos geht\'s...' });
+  active = id;
+  loadNote(id);
+  LH_toast('Notiz erstellt', 'success');
+};
+
+renderList();
+loadNote(active);
+</script>
+</body>
+</html>
