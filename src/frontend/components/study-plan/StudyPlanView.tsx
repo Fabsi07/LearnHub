@@ -4,7 +4,7 @@ import { StudyPlan } from '@/types/studyPlan'
 export default function StudyPlanView() {
   return (
     <div>
-      <p>Lernplan-Ansicht – coming soon</p>
+      <p>Lernplan-Ansicht – coming very soon</p>
     </div>
   )
 }
