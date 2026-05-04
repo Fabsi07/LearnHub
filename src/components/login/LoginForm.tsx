@@ -15,7 +15,7 @@ export function LoginForm() {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     // TODO: Login-Logik implementieren
-    console.log("Login:", { username, password, rememberMe });
+    //console.log("Login:", { username, password, rememberMe }); auskommentiert, damit im Frontend nicht die Passwörter geloggt werden
   }
 
   return (
