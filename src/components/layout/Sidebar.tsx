@@ -7,7 +7,7 @@ const navItems = [
     { label: "Kalender", href: "/dashboard/calendar", icon: Calendar },
   ]},
   { section: "Access", items: [
-    { label: "Nachrichten", href: "/dashboard/messages", icon: MessageSquare },
+    { label: "Benachrichtigungen", href: "/dashboard/notifications", icon: MessageSquare },
     { label: "Einstellungen", href: "/dashboard/settings", icon: Settings },
   ]},
 ];
