@@ -70,7 +70,10 @@ export function Sidebar({ darkMode }: SidebarProps) {
       <div className="my-4" style={{ borderTop: "1px solid #7a868c" }} />
 
       {/* User Card */}
-      <div className="flex items-center gap-3">
+      <Link
+        href="/dashboard/settings?tab=profile"
+        className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/10"
+      >
         <div
           className="flex items-center justify-center rounded-full text-white text-sm font-bold flex-shrink-0"
           style={{ backgroundColor: "#ef233c", width: 38, height: 38 }}
@@ -81,7 +84,7 @@ export function Sidebar({ darkMode }: SidebarProps) {
           <span className="text-sm font-semibold text-white">Finn Pfleghaar</span>
           <span className="text-xs" style={{ color: "#aeb4b8" }}>finn.pfleghaar@dhbw.de</span>
         </div>
-      </div>
+      </Link>
     </div>
   );
 }
