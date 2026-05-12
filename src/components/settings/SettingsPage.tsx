@@ -99,7 +99,7 @@ export function SettingsPage() {
   }
 
   function handleCategoryChange(categoryId: SettingsCategoryId) {
-    router.replace(`/dashboard/settings?tab=${categoryId}`, { scroll: false });
+    router.replace(`/settings?tab=${categoryId}`, { scroll: false });
   }
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,14 +9,20 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 
 export function LoginForm() {
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // TODO: Login-Logik implementieren
-    //console.log("Login:", { username, password, rememberMe }); auskommentiert, damit im Frontend nicht die Passwörter geloggt werden
+    // TODO: Echte Auth-Logik. Aktuell: Stub – einfach aufs Dashboard weiterleiten.
+    // Wenn middleware.ts AUTH_ENABLED = true gesetzt wird, hier noch ein
+    // Session-Cookie setzen (z.B. document.cookie = "lh_session=...; path=/").
+    void rememberMe;
+    void username;
+    void password;
+    router.push("/dashboard");
   }
 
   return (

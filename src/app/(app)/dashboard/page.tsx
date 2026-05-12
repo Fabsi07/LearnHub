@@ -1,9 +1,7 @@
-import { DashboardShell } from "@/components/layout/DashboardShell";
-
 export default function DashboardPage() {
   return (
-    <DashboardShell>
+    <div className="p-6">
       {/* Content-Bereich – leerer Wireframe-Platzhalter */}
-    </DashboardShell>
+    </div>
   );
 }

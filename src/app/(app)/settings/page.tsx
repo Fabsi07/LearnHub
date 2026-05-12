@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 
-import { DashboardShell } from "@/components/layout/DashboardShell";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 
 function SettingsSkeleton() {
@@ -20,10 +19,8 @@ function SettingsSkeleton() {
 
 export default function SettingsRoute() {
   return (
-    <DashboardShell>
-      <Suspense fallback={<SettingsSkeleton />}>
-        <SettingsPage />
-      </Suspense>
-    </DashboardShell>
+    <Suspense fallback={<SettingsSkeleton />}>
+      <SettingsPage />
+    </Suspense>
   );
 }
