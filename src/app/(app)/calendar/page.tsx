@@ -1,9 +1,5 @@
-import { Calendar } from "@/components/calendar/Calendar";
+import { CalendarPageContent } from "@/components/calendar/CalendarPageContent";
 
 export default function CalendarPage() {
-  return (
-    <div className="p-6 h-full">
-      <Calendar />
-    </div>
-  );
+  return <CalendarPageContent />;
 }
