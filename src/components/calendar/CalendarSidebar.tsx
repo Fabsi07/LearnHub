@@ -36,13 +36,13 @@ export function CalendarSidebar({ onNewEvent }: CalendarSidebarProps) {
 
   return (
     <aside
-      className="flex flex-col gap-6 h-full px-4 py-5 overflow-y-auto"
-      style={{ backgroundColor: "#5f6a70", minWidth: 220, width: 220 }}
+      className="flex flex-col gap-4 h-full py-6 pr-6 pl-2 overflow-y-auto"
+      style={{ minWidth: 260, width: 260 }}
     >
       {/* Neues Event Button */}
       <button
         onClick={onNewEvent}
-        className="flex items-center justify-center gap-2 w-full rounded-2xl px-4 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 active:scale-95"
+        className="flex items-center justify-center gap-2 w-full rounded-2xl px-4 py-3 text-sm font-bold text-white transition-opacity hover:opacity-90 active:scale-95 shadow-sm"
         style={{ backgroundColor: "#ef233c" }}
       >
         <Plus className="w-4 h-4" strokeWidth={2.5} />
@@ -50,7 +50,10 @@ export function CalendarSidebar({ onNewEvent }: CalendarSidebarProps) {
       </button>
 
       {/* Fächer-Filter */}
-      <section>
+      <section
+        className="rounded-2xl px-4 py-4 shadow-sm"
+        style={{ backgroundColor: "#5f6a70" }}
+      >
         <div className="flex items-center gap-1.5 mb-3">
           <Filter className="w-3.5 h-3.5" style={{ color: "#aeb4b8" }} />
           <span
@@ -108,11 +111,11 @@ export function CalendarSidebar({ onNewEvent }: CalendarSidebarProps) {
         </ul>
       </section>
 
-      {/* Trennlinie */}
-      <div style={{ borderTop: "1px solid #7a868c" }} />
-
       {/* Event-Typen Legende */}
-      <section>
+      <section
+        className="rounded-2xl px-4 py-4 shadow-sm"
+        style={{ backgroundColor: "#5f6a70" }}
+      >
         <span
           className="block text-xs font-semibold uppercase tracking-wider mb-3"
           style={{ color: "#aeb4b8" }}
@@ -123,19 +126,16 @@ export function CalendarSidebar({ onNewEvent }: CalendarSidebarProps) {
           {EVENT_TYPES.map((t) => (
             <li key={t.name} className="flex items-center gap-2.5">
               <span className={`flex-shrink-0 w-2.5 h-2.5 rounded-full ${t.color}`} />
-              <span className="text-sm text-white/80">{t.name}</span>
+              <span className="text-sm text-white/85">{t.name}</span>
             </li>
           ))}
         </ul>
       </section>
 
-      {/* Trennlinie */}
-      <div style={{ borderTop: "1px solid #7a868c" }} />
-
       {/* Tipp-Bereich */}
       <section
-        className="rounded-xl px-3 py-3"
-        style={{ backgroundColor: "rgba(255,255,255,0.07)" }}
+        className="rounded-2xl px-4 py-4 shadow-sm"
+        style={{ backgroundColor: "#5f6a70" }}
       >
         <div className="flex items-center gap-1.5 mb-2">
           <Lightbulb className="w-3.5 h-3.5 text-amber-300" />
@@ -147,7 +147,8 @@ export function CalendarSidebar({ onNewEvent }: CalendarSidebarProps) {
           Klicke auf einen freien Zeitslot, um schnell ein neues Event zu erstellen.
         </p>
         <p className="text-xs leading-relaxed mt-1.5" style={{ color: "#c8cfd3" }}>
-          Bestehende Termine lassen sich per <strong className="text-white/70">Drag &amp; Drop</strong> verschieben.
+          Bestehende Termine lassen sich per{" "}
+          <strong className="text-white/80">Drag &amp; Drop</strong> verschieben.
         </p>
       </section>
     </aside>
