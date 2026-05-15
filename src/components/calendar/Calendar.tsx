@@ -89,7 +89,7 @@ export function Calendar() {
         {/* View Toggle */}
         <div className="flex items-center gap-2">
           <button
-            onClick={refreshExternal}
+            onClick={() => refreshExternal(true)}
             disabled={externalLoading}
             title={externalError ? `Sync-Fehler: ${externalError}` : "DHBW-Kalender aktualisieren"}
             className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"

@@ -1,6 +1,6 @@
 import type { CalEvent } from "@/components/calendar/events";
 
-type IcsComponent = {
+export type IcsComponent = {
   type?: string;
   uid?: string;
   summary?: string;

@@ -13,11 +13,14 @@ export function useExternalEvents() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (force = false) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/calendar/external", { cache: "no-store" });
+      const url = force
+        ? "/api/calendar/external?force=1"
+        : "/api/calendar/external";
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as { events: ApiEvent[] };
       setEvents(
@@ -35,7 +38,8 @@ export function useExternalEvents() {
   }, []);
 
   useEffect(() => {
-    refresh();
+    // Initial-Load: darf gerne aus dem Cache kommen.
+    refresh(false);
   }, [refresh]);
 
   return { events, loading, error, refresh };
