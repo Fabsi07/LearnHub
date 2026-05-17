@@ -1,6 +1,6 @@
 # LearnHub Issue Backlog Draft
 
-Stand: 2026-05-14  
+Stand: 2026-05-17  
 Zweck: Arbeitsentwurf fuer den Projektplan in GitHub Projects bis 2026-05-19.
 
 Dieser Entwurf ist als Grundlage fuer die gemeinsame Schaetzung und Verteilung im Team gedacht. Die Tickets sind bewusst so formuliert, dass sie einzeln bearbeitbar, pruefbar und in GitHub Issues uebertragbar sind.
@@ -46,13 +46,21 @@ Vorschlag: ...
 
 ## Schaetzskala
 
-Vorschlag fuer Story Points:
+Vom Team abgestimmte Story-Point-Skala:
 
-- `1`: sehr klein, klar, kaum Risiko.
-- `2`: klein, klar, wenige Dateien.
-- `3`: normal gross, mehrere Schritte, aber gut ueberschaubar.
-- `5`: groesseres Ticket mit fachlicher oder technischer Unsicherheit.
-- `8`: zu gross fuer ein normales Ticket; nach Moeglichkeit splitten.
+- `1`: innerhalb einer kurzen Session bis maximal 2 Stunden machbar.
+- `2`: innerhalb einer langen Session bis maximal 4 Stunden machbar.
+- `3`: innerhalb von maximal 2 langen Sessions machbar.
+- `5`: mehr als 2 lange Sessions, aber in etwa 1 Woche mit mehreren Sessions machbar.
+- `8`: nicht mehr sinnvoll innerhalb einer Woche machbar; sollte aufgeteilt werden.
+
+Assignee-Mapping fuer GitHub:
+
+- Lucas -> `Brati10`
+- Yannik -> `Lostthetige`
+- Fabi -> `Fabsi07`
+- Lenni -> `Lennard79`
+- Finn -> `Finnbimb`
 
 ## Bestehende Issues
 
@@ -82,9 +90,9 @@ Empfehlung:
 
 Vorschlag fuer GitHub Milestones:
 
-- `Anwendungsprojekt M2 - Anforderungen & PRDs` bis 2026-05-21.
-- `Anwendungsprojekt M3 - Vorfuehrbarer Prototyp` Termin laut Kursvorgabe pflegen.
-- `Finale Abgabe & Praesentation` bis 2026-07-05 bzw. Praesentationsdatum.
+- `1. Projektidee und Planung` bis 2026-04-27. Status: abgeschlossen.
+- `2. Umfang und PRD` bis 2026-05-21. Status: aktueller fachlicher Fokus.
+- `3. Prototyp` Termin laut Kursvorgabe pflegen. Status: Umsetzung und Demo.
 
 Projektmanagement-Frist:
 
@@ -94,26 +102,26 @@ Projektmanagement-Frist:
 
 # Epic A: Anforderungen, Planung und Projektmanagement
 
-## A1 - PRD-Variante fuer algorithmische Lernplanung im Team abstimmen
+## A1 - PRD nach Teammeeting finalisieren
 
 ## User Story
 
-Als Projektteam moechten wir die algorithmische PRD-Variante abstimmen, damit der vereinbarte MVP-Umfang eindeutig ist.
+Als Projektteam moechten wir das PRD nach dem Teammeeting finalisieren, damit der vereinbarte MVP-Umfang eindeutig ist.
 
 ## Beschreibung
 
-Die Datei `docs/prd_algorithmus.md` wird im Team geprueft. Offene Fragen zur Rolle der KI, zum Algorithmus und zu Must-/Should-/Could-Haves werden entschieden oder als offene Punkte markiert.
+Die Datei `docs/prd.md` wird auf den abgestimmten Teamstand gebracht. Der Kern der Anwendung ist algorithmische Lernplanung. KI ist nur Could-Have, z. B. zur Bewertung bestehender Lernplaene oder zur Extraktion moeglicher Aufgaben aus hochgeladenen Lernmaterialien.
 
 ## Akzeptanzkriterien
 
-- [ ] Das Team hat entschieden, ob `docs/prd_algorithmus.md` die Arbeitsgrundlage fuer Meilenstein 2 wird.
-- [ ] Die Rolle der KI ist als Must-, Should- oder Could-Have festgelegt.
-- [ ] Offene fachliche Fragen sind als GitHub Issues dokumentiert.
+- [ ] `docs/prd.md` ist die zentrale PRD-Datei.
+- [ ] Die Rolle der KI ist eindeutig als Could-Have festgelegt.
+- [ ] Lernplaene sind fachlich als Veranstaltung/Fach plus Zieldatum beschrieben, nicht starr als Klausurplan.
 - [ ] Das PRD enthaelt keine widerspruechlichen Aussagen zur Planungslogik.
 
 ## Umsetzungshinweise
 
-Relevant: `docs/prd.md`, `docs/prd_algorithmus.md`, `docs/course/README.md`.
+Relevant: `docs/prd.md`, `docs/course/README.md`.
 
 ## Testing / Verifikation
 
@@ -122,13 +130,13 @@ Relevant: `docs/prd.md`, `docs/prd_algorithmus.md`, `docs/course/README.md`.
 
 ## Abhaengigkeiten
 
-- Blockiert durch: Teamentscheidung zur KI-Rolle.
 - Blockiert: finale Issue-Priorisierung fuer Planungslogik.
 
 ## Schaetzung
 
 Team-Schaetzung: 2
 Assignee: Lucas
+Status: erledigt / nicht neu als GitHub Issue anlegen
 
 ## A2 - Moodle-README fuer Projektplan-Abgabe erstellen
 
@@ -217,7 +225,7 @@ Das aktuell leere Prisma-Schema wird um die zentralen Modelle erweitert. Mindest
 ## Akzeptanzkriterien
 
 - [ ] `User` enthaelt mindestens E-Mail, Anzeigename, Passwort-Hash und Zeitstempel.
-- [ ] `StudyPlan` enthaelt Titel, Fach, Beschreibung, Klausurdatum, Owner-Bezug und Zeitstempel.
+- [ ] `StudyPlan` enthaelt Titel, Veranstaltung/Fach, Beschreibung, Zieltyp, Zieldatum, Owner-Bezug und Zeitstempel.
 - [ ] `Task` enthaelt Titel, Beschreibung optional, Aufwand, Schwierigkeit, Faelligkeit, Status und Bezug zum Lernplan.
 - [ ] `CalendarEvent` enthaelt Titel, Start/Ende, Typ, Owner-Bezug und optionalen Task-/StudyPlan-Bezug.
 - [ ] Beziehungen verhindern Cross-User-Datenzugriff auf Modellebene sinnvoll.
@@ -225,7 +233,7 @@ Das aktuell leere Prisma-Schema wird um die zentralen Modelle erweitert. Mindest
 
 ## Umsetzungshinweise
 
-Relevant: `prisma/schema.prisma`, `docs/prd_algorithmus.md`.
+Relevant: `prisma/schema.prisma`, `docs/prd.md`.
 
 ## Testing / Verifikation
 
@@ -332,7 +340,7 @@ Der aktuell vorhandene Login ist ein UI-/Routing-Stub. Dieses Ticket klaert und 
 
 ## Umsetzungshinweise
 
-Relevant: `src/components/login/LoginForm.tsx`, `src/middleware.ts`, `docs/prd_algorithmus.md`.
+Relevant: `src/components/login/LoginForm.tsx`, `src/middleware.ts`, `docs/prd.md`.
 
 ## Testing / Verifikation
 
@@ -427,17 +435,17 @@ Team-Schaetzung: offen
 
 ## User Story
 
-Als Studierender moechte ich alle meine Lernplaene in einer Uebersicht sehen, damit ich schnell zwischen Klausurvorbereitungen wechseln kann.
+Als Studierender moechte ich alle meine Lernplaene in einer Uebersicht sehen, damit ich schnell zwischen Veranstaltungen, Faechern und Lernzielen wechseln kann.
 
 ## Beschreibung
 
-Eine Lernplan-Seite zeigt alle aktiven Lernplaene des angemeldeten Nutzers mit Titel, Fach, Klausurdatum, Fortschritt und naechster Aufgabe.
+Eine Lernplan-Seite zeigt alle aktiven Lernplaene des angemeldeten Nutzers mit Titel, Veranstaltung/Fach, Zieltyp, Zieldatum, Fortschritt und naechster Aufgabe.
 
 ## Akzeptanzkriterien
 
 - [ ] Lernplan-Seite ist ueber die Navigation erreichbar.
 - [ ] Bestehende Lernplaene werden als Liste oder Karten angezeigt.
-- [ ] Jeder Lernplan zeigt mindestens Titel, Fach und Klausurdatum.
+- [ ] Jeder Lernplan zeigt mindestens Titel, Veranstaltung/Fach, Zieltyp und Zieldatum.
 - [ ] Leerer Zustand bietet Aktion zum Anlegen eines Lernplans.
 - [ ] Klick auf einen Lernplan fuehrt zur Detailansicht.
 
@@ -463,7 +471,7 @@ Vorschlag: `3`
 
 ## User Story
 
-Als Studierender moechte ich Lernplaene anlegen, bearbeiten und loeschen, damit ich meine Klausurvorbereitungen verwalten kann.
+Als Studierender moechte ich Lernplaene anlegen, bearbeiten und loeschen, damit ich meine Vorbereitungen fuer Veranstaltungen, Fristen und Lernziele verwalten kann.
 
 ## Beschreibung
 
@@ -471,7 +479,7 @@ Formulare und API-Logik fuer CRUD-Operationen auf Lernplaenen werden umgesetzt. 
 
 ## Akzeptanzkriterien
 
-- [ ] Lernplan kann mit Titel, Fach, Beschreibung und Klausurdatum angelegt werden.
+- [ ] Lernplan kann mit Titel, Veranstaltung/Fach, Beschreibung, Zieltyp und Zieldatum angelegt werden.
 - [ ] Lernplan kann bearbeitet werden.
 - [ ] Lernplan kann geloescht werden.
 - [ ] Eingaben werden validiert.
@@ -551,7 +559,7 @@ Die vorhandenen Kalender-Komponenten arbeiten aktuell mit Dummy-Events. Das Even
 ## Akzeptanzkriterien
 
 - [ ] Bestehendes `CalEvent`-Format ist dokumentiert oder angepasst.
-- [ ] Event-Typen fuer Vorlesung, Klausur, Lerneinheit und Sonstiges sind definiert.
+- [ ] Event-Typen fuer Vorlesung, Zieltermin, Lerneinheit und Sonstiges sind definiert.
 - [ ] Farbzuordnung je Termintyp ist festgelegt.
 - [ ] Start-/Endzeit, Datum und Zeitzonenannahmen sind geklaert.
 
@@ -608,21 +616,21 @@ Relevant: `src/app/api/events`, `src/components/calendar`.
 
 Team-Schaetzung: offen
 
-## E3 - Lernaufgaben und Klausuren im Kalender anzeigen
+## E3 - Lernaufgaben und Zieltermine im Kalender anzeigen
 
 ## User Story
 
-Als Studierender moechte ich Lernaufgaben und Klausurtermine im Kalender sehen, damit mein Lernplan zeitlich sichtbar wird.
+Als Studierender moechte ich Lernaufgaben und Zieltermine im Kalender sehen, damit mein Lernplan zeitlich sichtbar wird.
 
 ## Beschreibung
 
-Faelligkeiten aus Lernplaenen und Aufgaben werden in der Kalenderansicht dargestellt. Klausurtermine erscheinen als eigener Termintyp.
+Faelligkeiten aus Lernplaenen und Aufgaben werden in der Kalenderansicht dargestellt. Zieltermine erscheinen als eigener Termintyp, z. B. fuer Klausuren, Abgaben, Praesentationen oder selbst gesetzte Fristen.
 
 ## Akzeptanzkriterien
 
-- [ ] Klausurdatum eines Lernplans erscheint im Kalender.
+- [ ] Zieldatum eines Lernplans erscheint im Kalender.
 - [ ] Faellige Lernaufgaben erscheinen im Kalender.
-- [ ] Kalender unterscheidet Klausuren, Lerneinheiten und manuelle Termine visuell.
+- [ ] Kalender unterscheidet Zieltermine, Lerneinheiten und manuelle Termine visuell.
 - [ ] Klick auf eine Lernaufgabe fuehrt zur passenden Detailansicht oder zeigt relevante Details.
 
 ## Umsetzungshinweise
@@ -631,7 +639,7 @@ Kann zunaechst lesend umgesetzt werden; vollstaendige bidirektionale Verknuepfun
 
 ## Testing / Verifikation
 
-- [ ] Lernplan mit Klausurdatum anlegen und Kalender pruefen.
+- [ ] Lernplan mit Zieldatum anlegen und Kalender pruefen.
 - [ ] Aufgabe mit Faelligkeit anlegen und Kalender pruefen.
 
 ## Abhaengigkeiten
@@ -841,7 +849,7 @@ In der Lernplan-Detailansicht kann eine Neuplanung ausgeloest werden. Nur offene
 - [ ] Button/Aktion "Plan neu verteilen" ist in der Lernplanansicht vorhanden.
 - [ ] Nur offene Aufgaben erhalten neue Faelligkeiten.
 - [ ] Erledigte Aufgaben bleiben unveraendert.
-- [ ] Neue Verteilung beruecksichtigt verbleibende Zeit bis zur Klausur.
+- [ ] Neue Verteilung beruecksichtigt verbleibende Zeit bis zum Zieldatum.
 - [ ] Nutzer sieht das Ergebnis und kann Aufgaben weiter manuell bearbeiten.
 
 ## Umsetzungshinweise
@@ -880,7 +888,7 @@ Es werden Beispieldaten fuer Nutzer, Lernplaene, Aufgaben und Termine vorbereite
 
 - [ ] Demo-Nutzer ist definiert.
 - [ ] Mindestens zwei Lernplaene mit Aufgaben existieren.
-- [ ] Kalender enthaelt Vorlesung, Klausur, Lerneinheit und sonstigen Termin.
+- [ ] Kalender enthaelt Vorlesung, Zieltermin, Lerneinheit und sonstigen Termin.
 - [ ] Mindestens ein Beispiel zeigt algorithmische Planung.
 - [ ] Seed/Setup ist dokumentiert.
 
@@ -1035,6 +1043,41 @@ Optional. Nicht fuer den MVP-Projektplan fest einplanen, solange Must-Haves offe
 ## Abhaengigkeiten
 
 - Blockiert durch: I1, G3.
+
+## Schaetzung
+
+Team-Schaetzung: offen
+
+## I3 - KI-gestuetzte Aufgabenextraktion aus Lernmaterialien konzipieren
+
+## User Story
+
+Als Studierender moechte ich optional aus hochgeladenen Arbeitsblaettern oder Lernmaterialien moegliche Aufgaben vorschlagen lassen, damit ich Lerninhalte schneller in einen Lernplan uebertragen kann.
+
+## Beschreibung
+
+Dieses Ticket klaert nur das Konzept einer optionalen KI-Erweiterung. Die KI liest keine verbindliche Planung aus, sondern schlaegt moegliche Tasks/ToDos vor, die der Nutzer pruefen und einem Lernplan hinzufuegen kann.
+
+## Akzeptanzkriterien
+
+- [ ] Unterstuetzte Materialtypen sind grob definiert, z. B. PDF oder Bild.
+- [ ] Erwartete KI-Ausgabe ist definiert, z. B. Aufgaben mit Titel, Aufwandsvorschlag und optionaler Beschreibung.
+- [ ] Nutzer muss vorgeschlagene Aufgaben pruefen und aktiv uebernehmen.
+- [ ] Datenschutz- und API-Key-Annahmen sind dokumentiert.
+- [ ] Feature ist eindeutig als Could-Have markiert.
+
+## Umsetzungshinweise
+
+Nur bearbeiten, wenn Must-Haves stabil sind. Dieses Ticket ist eine alternative oder ergaenzende KI-Idee zu I1/I2.
+
+## Testing / Verifikation
+
+- [ ] Konzept im Team abgestimmt.
+- [ ] Beispielmaterial und beispielhafte erwartete Aufgaben sind dokumentiert.
+
+## Abhaengigkeiten
+
+- Blockiert durch: D3, G3.
 
 ## Schaetzung
 
