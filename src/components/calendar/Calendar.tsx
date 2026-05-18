@@ -5,16 +5,32 @@ import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { DayView } from "./DayView";
-import { formatMonthYear, formatWeekRange, formatDay } from "./utils";
-import { CalEvent } from "./events";
+import { ListView } from "./ListView";
+import {
+  formatMonthYear,
+  formatWeekRange,
+  formatDay,
+  getMonthGrid,
+  startOfWeek,
+} from "./utils";
+import { CalEvent, expandRecurring } from "./events";
 import { useExternalEvents } from "@/lib/calendar/useExternalEvents";
 
-type View = "month" | "week" | "day";
+type View = "month" | "week" | "day" | "list";
 
-export function Calendar() {
+interface CalendarProps {
+  localEvents: CalEvent[];
+  onLocalEventsChange: (next: CalEvent[]) => void;
+  onRequestCreate?: (defaults?: { start?: Date; end?: Date }) => void;
+}
+
+export function Calendar({
+  localEvents,
+  onLocalEventsChange,
+  onRequestCreate,
+}: CalendarProps) {
   const [view, setView] = useState<View>("week");
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [localEvents, setLocalEvents] = useState<CalEvent[]>([]);
   const {
     events: externalEvents,
     loading: externalLoading,
@@ -22,11 +38,45 @@ export function Calendar() {
     refresh: refreshExternal,
   } = useExternalEvents();
 
-  const events: CalEvent[] = [...localEvents, ...externalEvents];
+  // Sichtbarer Zeitraum je nach View
+  function getViewRange(): { start: Date; end: Date } {
+    if (view === "month") {
+      const grid = getMonthGrid(currentDate);
+      const start = new Date(grid[0]);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(grid[grid.length - 1]);
+      end.setHours(23, 59, 59, 999);
+      return { start, end };
+    }
+    if (view === "week") {
+      const start = startOfWeek(currentDate);
+      const end = new Date(start);
+      end.setDate(end.getDate() + 6);
+      end.setHours(23, 59, 59, 999);
+      return { start, end };
+    }
+    if (view === "day") {
+      const start = new Date(currentDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(currentDate);
+      end.setHours(23, 59, 59, 999);
+      return { start, end };
+    }
+    // list: 90 Tage Horizont ab aktuellem Datum
+    const start = new Date(currentDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 90);
+    return { start, end };
+  }
+
+  const range = getViewRange();
+  const expandedLocal = expandRecurring(localEvents, range.start, range.end);
+  const visibleEvents: CalEvent[] = [...expandedLocal, ...externalEvents];
 
   function handleEventChange(next: CalEvent) {
     if (next.readOnly) return;
-    setLocalEvents((prev) => prev.map((e) => (e.id === next.id ? next : e)));
+    onLocalEventsChange(localEvents.map((e) => (e.id === next.id ? next : e)));
   }
 
   function goPrev() {
@@ -54,7 +104,9 @@ export function Calendar() {
       ? formatMonthYear(currentDate)
       : view === "week"
       ? formatWeekRange(currentDate)
-      : formatDay(currentDate);
+      : view === "day"
+      ? formatDay(currentDate)
+      : "Anstehende Termine";
 
   return (
     <div className="flex flex-col h-full bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -98,7 +150,7 @@ export function Calendar() {
             <RefreshCw className={`w-4 h-4 ${externalLoading ? "animate-spin" : ""} ${externalError ? "text-red-500" : "text-gray-600"}`} />
           </button>
           <div className="flex items-center gap-1 p-1 rounded-xl bg-gray-100">
-          {(["month", "week", "day"] as View[]).map((v) => (
+          {(["month", "week", "day", "list"] as View[]).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
@@ -108,7 +160,13 @@ export function Calendar() {
                   : "text-gray-500 hover:text-gray-700"
               }`}
             >
-              {v === "month" ? "Monat" : v === "week" ? "Woche" : "Tag"}
+              {v === "month"
+                ? "Monat"
+                : v === "week"
+                ? "Woche"
+                : v === "day"
+                ? "Tag"
+                : "Liste"}
             </button>
           ))}
           </div>
@@ -118,19 +176,23 @@ export function Calendar() {
       {/* Body */}
       <div className="flex-1 overflow-auto">
         {view === "month" ? (
-          <MonthView currentDate={currentDate} />
+          <MonthView currentDate={currentDate} events={visibleEvents} />
         ) : view === "week" ? (
           <WeekView
             currentDate={currentDate}
-            events={events}
+            events={visibleEvents}
             onEventChange={handleEventChange}
+            onRequestCreate={onRequestCreate}
           />
-        ) : (
+        ) : view === "day" ? (
           <DayView
             currentDate={currentDate}
-            events={events}
+            events={visibleEvents}
             onEventChange={handleEventChange}
+            onRequestCreate={onRequestCreate}
           />
+        ) : (
+          <ListView currentDate={currentDate} events={visibleEvents} />
         )}
       </div>
     </div>

@@ -2,6 +2,9 @@
 
 export type EventSource = "local" | "dhbw";
 
+export type EventType = "Lernsession" | "Klausur" | "Deadline" | "Pause";
+export type RepeatRule = "none" | "daily" | "weekly";
+
 export type CalEvent = {
   id: string;
   title: string;
@@ -12,7 +15,27 @@ export type CalEvent = {
   readOnly?: boolean;
   location?: string;
   allDay?: boolean;
+  type?: EventType;
+  subject?: string;
+  notes?: string;
+  repeat?: RepeatRule;
 };
+
+// Gemeinsame Stammdaten für Sidebar + Event-Modal
+export const SUBJECTS: { name: string; color: string }[] = [
+  { name: "Mathematik", color: "bg-brand-red" },
+  { name: "Englisch", color: "bg-blue-500" },
+  { name: "Geschichte", color: "bg-amber-500" },
+  { name: "Biologie", color: "bg-emerald-500" },
+  { name: "Informatik", color: "bg-purple-500" },
+  { name: "Spanisch", color: "bg-orange-400" },
+];
+
+export const EVENT_TYPES: { name: EventType; color: string }[] = [
+  { name: "Lernsession", color: "bg-blue-500" },
+  { name: "Deadline", color: "bg-amber-500" },
+  { name: "Pause", color: "bg-emerald-500" },
+];
 
 // Layout-Konstanten (müssen mit den Views übereinstimmen)
 export const DAY_START_HOUR = 7;
@@ -125,4 +148,73 @@ export function layoutDayEvents(events: CalEvent[]): EventLayout[] {
   }
   flushCluster();
   return result;
+}
+
+/**
+ * Expandiert wiederkehrende Events (daily/weekly) zu einzelnen Instanzen
+ * im Zeitraum [rangeStart, rangeEnd]. Nicht wiederkehrende Events werden
+ * unverändert durchgereicht. Erzeugte Instanzen bekommen eine zusammengesetzte
+ * ID (`${id}__YYYY-MM-DD`) und sind read-only, damit einzelne Instanzen
+ * nicht ungewollt die ganze Serie verschieben.
+ */
+export function expandRecurring(
+  events: CalEvent[],
+  rangeStart: Date,
+  rangeEnd: Date,
+): CalEvent[] {
+  const out: CalEvent[] = [];
+
+  function addDays(d: Date, n: number): Date {
+    const r = new Date(d);
+    r.setDate(r.getDate() + n);
+    return r;
+  }
+
+  function dateKey(d: Date): string {
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+
+  for (const ev of events) {
+    if (!ev.repeat || ev.repeat === "none") {
+      out.push(ev);
+      continue;
+    }
+    const stepDays = ev.repeat === "daily" ? 1 : ev.repeat === "weekly" ? 7 : 0;
+    if (!stepDays) {
+      out.push(ev);
+      continue;
+    }
+
+    const durMs = ev.end.getTime() - ev.start.getTime();
+
+    // Schritte zwischen Originalstart und rangeStart (aufgerundet aufs Raster)
+    const oneDay = 24 * 60 * 60 * 1000;
+    const evStartDay = new Date(ev.start);
+    evStartDay.setHours(0, 0, 0, 0);
+    const rangeStartDay = new Date(rangeStart);
+    rangeStartDay.setHours(0, 0, 0, 0);
+    let diffDays = Math.round(
+      (rangeStartDay.getTime() - evStartDay.getTime()) / oneDay,
+    );
+    if (diffDays < 0) diffDays = 0;
+    diffDays = Math.ceil(diffDays / stepDays) * stepDays;
+
+    let occStart = addDays(ev.start, diffDays);
+    let safety = 0;
+    while (occStart.getTime() <= rangeEnd.getTime() && safety < 500) {
+      const occEnd = new Date(occStart.getTime() + durMs);
+      const isOriginal = occStart.getTime() === ev.start.getTime();
+      out.push({
+        ...ev,
+        id: isOriginal ? ev.id : `${ev.id}__${dateKey(occStart)}`,
+        start: occStart,
+        end: occEnd,
+        readOnly: isOriginal ? ev.readOnly : true,
+      });
+      occStart = addDays(occStart, stepDays);
+      safety++;
+    }
+  }
+  return out;
 }

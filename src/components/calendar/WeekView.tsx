@@ -8,15 +8,18 @@ import {
   DAY_END_HOUR,
   HOUR_HEIGHT,
   eventOnDay,
+  formatTime,
   layoutDayEvents,
 } from "./events";
 import { EventBlock } from "./EventBlock";
 import { AllDayBar } from "./AllDayBar";
+import { useDragCreate } from "./useDragCreate";
 
 interface WeekViewProps {
   currentDate: Date;
   events: CalEvent[];
   onEventChange: (next: CalEvent) => void;
+  onRequestCreate?: (defaults: { start: Date; end: Date }) => void;
 }
 
 const HOURS = Array.from(
@@ -24,10 +27,11 @@ const HOURS = Array.from(
   (_, i) => i + DAY_START_HOUR
 );
 
-export function WeekView({ currentDate, events, onEventChange }: WeekViewProps) {
+export function WeekView({ currentDate, events, onEventChange, onRequestCreate }: WeekViewProps) {
   const days = getWeekDays(currentDate);
   const today = new Date();
   const totalHeight = HOURS.length * HOUR_HEIGHT;
+  const { onColumnMouseDown, preview } = useDragCreate(onRequestCreate);
 
   // Spaltenbreite messen, damit EventBlock weiß, wie viele px = 1 Tag
   const colRef = useRef<HTMLDivElement>(null);
@@ -90,11 +94,13 @@ export function WeekView({ currentDate, events, onEventChange }: WeekViewProps) 
         {days.map((day, di) => {
           const dayEvents = events.filter((e) => !e.allDay && eventOnDay(e, day));
           const laidOut = layoutDayEvents(dayEvents);
+          const showPreview = preview && isSameDay(preview.day, day);
           return (
             <div
               key={di}
               ref={di === 0 ? colRef : undefined}
-              className="relative border-r border-gray-200 last:border-r-0"
+              onMouseDown={(e) => onColumnMouseDown(e, day)}
+              className="relative border-r border-gray-200 last:border-r-0 cursor-crosshair select-none"
               style={{ height: totalHeight }}
             >
               {/* Stunden-Linien */}
@@ -105,6 +111,15 @@ export function WeekView({ currentDate, events, onEventChange }: WeekViewProps) 
                   style={{ height: HOUR_HEIGHT }}
                 />
               ))}
+              {/* Drag-Create Preview */}
+              {showPreview && (
+                <div
+                  className="absolute left-1 right-1 rounded-md bg-brand-red/20 border-2 border-brand-red pointer-events-none flex items-center justify-center text-[11px] font-semibold text-brand-red"
+                  style={{ top: preview!.top, height: preview!.height }}
+                >
+                  {formatTime(preview!.start)} – {formatTime(preview!.end)}
+                </div>
+              )}
               {/* Events */}
               {laidOut.map(({ event: ev, column, columns }) => (
                 <EventBlock

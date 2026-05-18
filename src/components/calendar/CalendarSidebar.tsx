@@ -2,24 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Filter, Lightbulb } from "lucide-react";
-
-// Fächer mit festen Farben
-const SUBJECTS = [
-  { name: "Mathematik", color: "bg-brand-red" },
-  { name: "Englisch", color: "bg-blue-500" },
-  { name: "Geschichte", color: "bg-amber-500" },
-  { name: "Biologie", color: "bg-emerald-500" },
-  { name: "Informatik", color: "bg-purple-500" },
-  { name: "Spanisch", color: "bg-orange-400" },
-];
-
-// Event-Typ-Legende
-const EVENT_TYPES = [
-  { name: "Lernsession", color: "bg-blue-500" },
-  { name: "Klausur", color: "bg-brand-red" },
-  { name: "Deadline", color: "bg-amber-500" },
-  { name: "Pause", color: "bg-emerald-500" },
-];
+import { SUBJECTS, EVENT_TYPES } from "./events";
 
 interface CalendarSidebarProps {
   onNewEvent?: () => void;
