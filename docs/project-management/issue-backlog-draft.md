@@ -5,6 +5,8 @@ Zweck: Arbeitsentwurf fuer den Projektplan in GitHub Projects bis 2026-05-19.
 
 Dieser Entwurf ist als Grundlage fuer die gemeinsame Schaetzung und Verteilung im Team gedacht. Die Tickets sind bewusst so formuliert, dass sie einzeln bearbeitbar, pruefbar und in GitHub Issues uebertragbar sind.
 
+Hinweis vom 2026-05-18: Nach der Uebertragung in GitHub ist das GitHub Project die fuehrende Quelle fuer den Projektplan. Dieser Backlog bleibt ein Arbeitsentwurf. Nachtraeglich wurden die PRD-Should-Haves S1, S2 und S5 direkt als GitHub Issues #59, #60 und #61 angelegt.
+
 ## Ticket-Standard
 
 Jedes Umsetzungsticket sollte mindestens diese Struktur haben:

@@ -49,7 +49,7 @@ Vermeiden:
 | Styling       | Tailwind CSS v4                      |
 | UI            | shadcn + `@base-ui/react`            |
 | Icons         | `lucide-react` only                  |
-| DB            | Prisma 7 + PostgreSQL                |
+| DB            | Prisma CLI 7, `@prisma/client` 5.22 + PostgreSQL |
 | Auth          | Noch nicht implementiert             |
 | Utilities     | `clsx` + `tailwind-merge` via `cn()` |
 | External APIs | `node-ical` für DHBW ICS Feed        |

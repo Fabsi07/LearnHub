@@ -2,7 +2,7 @@
 
 **Project:** Learning Management Application (MVP)  
 **Stack:** Next.js 15 + React 18 + TypeScript + Tailwind CSS + Prisma  
-**Status:** Early-stage scaffold with foundational components ready for feature development
+**Status:** Early MVP scaffold with app shell, calendar UI, settings/notifications mocks, and core backend work still open
 
 ---
 
@@ -45,9 +45,9 @@ See [design documentation](./docs/design/design.md) and [tech stack details](./d
 - **Form & Variants:** class-variance-authority, clsx, tailwind-merge
 
 ### Backend & Data
-- **Database:** PostgreSQL (defined in Prisma)
-- **ORM:** Prisma v7.8.0
-- **API Routes:** Next.js API routes (scaffolded, ready for implementation)
+- **Database:** PostgreSQL (configured in Prisma, domain models still open)
+- **ORM:** Prisma CLI v7.8.0 with `@prisma/client` v5.22.0
+- **API Routes:** Next.js API routes; `/api/calendar/external` already loads the DHBW ICS feed, other feature routes are still scaffolded
 
 ### Project Setup
 - **Component Library Setup:** shadcn/ui (base-nova style, Base UI icons)
@@ -71,12 +71,15 @@ See [full tech stack](./docs/tech-stack.md) for detailed rationale.
 ```
 src/
 ├── app/                    # Next.js App Router pages & layouts
+│   ├── (app)/              # Authenticated app route group with DashboardShell
+│   │   ├── dashboard/      # Dashboard route (/dashboard)
+│   │   ├── calendar/       # Calendar route (/calendar)
+│   │   ├── notifications/  # Notifications route (/notifications)
+│   │   ├── settings/       # Settings route (/settings)
+│   │   └── layout.tsx      # App shell layout
 │   ├── page.tsx            # Home route (/)
 │   ├── login/page.tsx      # Login route (/login)
-│   ├── dashboard/page.tsx  # Dashboard route (/dashboard)
-│   ├── study-plan/         # Study plan routes
-│   ├── calendar/           # Calendar routes
-│   ├── api/                # API routes (scaffolded)
+│   ├── api/                # API routes
 │   ├── layout.tsx          # Root layout
 │   └── globals.css         # Global styles
 │
@@ -85,12 +88,15 @@ src/
 │   ├── layout/             # Layout components (DashboardShell, Sidebar, Topbar)
 │   ├── login/              # Login-specific components
 │   ├── dashboard/          # Dashboard components (placeholder)
-│   ├── calendar/           # Calendar components (placeholder)
+│   ├── calendar/           # Calendar components and views
+│   ├── notifications/      # Notifications mock UI
+│   ├── settings/           # Settings mock UI
 │   ├── study-plan/         # Study plan components (placeholder)
 │   └── app-shell/          # App shell components (placeholder)
 │
 ├── lib/                    # Utilities & helpers
 │   ├── utils.ts            # `cn()` utility for Tailwind class merging
+│   ├── calendar/           # ICS mapping and external calendar hook
 │   ├── api/                # API client utilities (empty, ready for implementation)
 │   ├── db/                 # Database queries & helpers (empty)
 │   ├── calculations/       # Business logic (empty)
@@ -137,18 +143,14 @@ These use the `cn()` utility from `src/lib/utils.ts` to merge Tailwind classes.
 **Location:** `src/app/*/page.tsx`  
 **Pattern:** Typically server components by default, use "use client" only for interactivity
 
-**Example:** [dashboard/page.tsx](src/app/dashboard/page.tsx)
+**Example:** [dashboard/page.tsx](src/app/(app)/dashboard/page.tsx)
 ```typescript
-import { DashboardShell } from "@/components/layout/DashboardShell";
-
 export default function DashboardPage() {
-  return (
-    <DashboardShell>
-      {/* Dashboard content */}
-    </DashboardShell>
-  );
+  return <div className="p-6">{/* Dashboard content */}</div>;
 }
 ```
+
+Pages inside `src/app/(app)/` are already wrapped by `src/app/(app)/layout.tsx`, so they must not render `DashboardShell` again.
 
 ### 4. Creating New Components
 **When adding a component:**
@@ -170,11 +172,9 @@ export default function DashboardPage() {
 ### API Routes (Current Status: Scaffolded)
 **Location:** `src/app/api/`
 
-Directories created but empty:
-- `api/activities/` - Activities endpoints
-- `api/activity/` - Single activity endpoint
-- `api/events/` - Events endpoints
-- `api/study-plan/` - Study plan endpoints
+Current status:
+- `api/calendar/external/route.ts` loads external DHBW ICS events.
+- `api/activity/`, `api/events/`, and `api/study-plan/` are scaffolded but still empty.
 
 **When implementing API routes:**
 Use Next.js App Router API route conventions:
@@ -267,12 +267,12 @@ className={cn("p-4", someCondition && "p-2")}
 **Current state:** Prisma expects `DATABASE_URL` environment variable  
 **Note:** No `.env.local` or database models are set up yet. This will need configuration when backend development starts.
 
-### 3. API Routes Are Scaffolded But Empty
-**Current state:** Directories exist but no route handlers  
-**Next step:** Add `route.ts` files with GET/POST handlers when backend development begins
+### 3. API Routes Are Mostly Scaffolded
+**Current state:** Calendar external sync exists; study-plan, activity, and events handlers are still missing.  
+**Next step:** Add `route.ts` files with GET/POST handlers when backend development begins.
 
-### 4. Feature Directories Are Placeholders
-Directories exist for calendar, study-plan, dashboard components but are empty. Use these to organize feature-specific components as development progresses.
+### 4. Feature Directories Are Mixed
+Calendar, settings, and notifications already contain components. Dashboard and study-plan are still placeholders.
 
 ### 5. TypeScript Strict Mode Enabled
 - All types must be properly defined
