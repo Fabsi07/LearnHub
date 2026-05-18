@@ -85,7 +85,7 @@ Der Funktionsumfang ist nach dem MoSCoW-Prinzip priorisiert. **Must-Have**-Funkt
 ### 6.1 Must-Have (verbindlicher Lieferumfang)
 
 **M1 — Nutzerkonto und Anmeldung**
-Studierende können sich mit E-Mail und Passwort registrieren und anmelden. Jeder Nutzer sieht ausschließlich seine eigenen Daten. Die Anmeldung bleibt optional über eine Sitzung erhalten („eingeloggt bleiben"). Es gibt eine Abmeldung.
+Studierende können sich mit E-Mail und Passwort registrieren und anmelden. Jeder Nutzer sieht ausschließlich seine eigenen Daten. Die Anmeldung bleibt optional über eine Sitzung erhalten („eingeloggt bleiben"). Es gibt eine Abmeldung. Der konkrete Auth-Flow für das MVP ist in [docs/auth-concept.md](./auth-concept.md) beschrieben.
 
 **M2 — Dashboard als Startseite**
 Nach der Anmeldung landet der Nutzer auf einem Dashboard. Es zeigt:
@@ -271,7 +271,7 @@ Eine ausführliche Begründung steht in [docs/tech-stack.md](./tech-stack.md). Z
 | Datenzugriff             | Prisma ORM                                                                                                                                     |
 | Planungslogik            | Eigener deterministischer Algorithmus in TypeScript                                                                                            |
 | Optionale KI-Integration | OpenAI-API als mögliche Erweiterung zur Prüfung oder Verbesserung bestehender Pläne oder zur Extraktion möglicher Aufgaben aus Lernmaterialien |
-| Authentifizierung        | E-Mail/Passwort mit gehashten Passwörtern und HTTP-Only-Cookies                                                                                |
+| Authentifizierung        | Eigene minimale E-Mail/Passwort-Auth mit bcrypt-Hashing und DB-Sessions per HTTP-Only-Cookie — siehe [docs/auth-concept.md](./auth-concept.md) |
 | Versionsverwaltung       | Git, Repository auf GitHub, Aufgabensteuerung über GitHub Projects                                                                             |
 
 Die Auswahl wurde getroffen, um eine schnelle prototypische Entwicklung zu ermöglichen, einen modernen Stack abzubilden und gleichzeitig die Komplexität für ein Studierenden-Team handhabbar zu halten.
