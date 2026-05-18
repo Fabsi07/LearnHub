@@ -11,6 +11,16 @@ Der Projektplan wird im GitHub Project des Repositories gepflegt:
 
 Das Project bildet den aktuellen Projektplan ueber GitHub Issues ab. Die Issues enthalten User Story, Beschreibung, Akzeptanzkriterien, Umsetzungshinweise, Verifikation, Abhaengigkeiten und eine Schaetzung, sofern diese bereits final im Team abgestimmt wurde.
 
+Da wir in Github keine Klarnamen verwenden, hier die Aufschlüsselung der Github-Usernames:
+
+| Github-Username | Klarname            |
+| --------------- | ------------------- |
+| Brati10         | Lucas Sedelmayr     |
+| Fabsi07         | Fabian Winterhalter |
+| Finnbimb        | Finn Pfleghaar      |
+| Lennard79       | Lennard Wiek        |
+| Lostthetige     | Yannik Roeder       |
+
 ## Planungsstand
 
 Die Projektplanung ist issue-basiert aufgebaut. Bereits vollstaendig besprochene und geschaetzte Tickets sind als normale Issues angelegt. Noch nicht final besprochene Tickets sind im Titel mit `[DRAFT]` markiert und koennen sich in Umfang, Zustaendigkeit oder Schaetzung noch aendern.
