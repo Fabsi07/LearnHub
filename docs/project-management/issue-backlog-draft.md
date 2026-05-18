@@ -62,37 +62,13 @@ Assignee-Mapping fuer GitHub:
 - Lenni -> `Lennard79`
 - Finn -> `Finnbimb`
 
-## Bestehende Issues
-
-Aktuell offene Issues, die beim Aufraeumen beruecksichtigt werden sollten:
-
-- `#1 Mockups`
-- `#2 Projektidee skizzieren`
-- `#5 Doku-Dateien initial erstellen`
-- `#7 Design-Skizzen erstellen`
-- `#9 Prototypen`
-- `#12 Erste Wireframes exportieren und im Repo ablegen`
-- `#17 Logo erstellen`
-- `#18 Umfang dokumentieren`
-- `#21 Backend aufbauen`
-- `#22 Ueberlegungen zum Backend`
-- `#23 Backend grundlegend implementieren`
-- `#24 Datenbank aufbauen`
-- `#25 Datenbank-Modell erstellen`
-
-Empfehlung:
-
-- Abgeschlossene Meilenstein-1-Issues schliessen oder im Project eindeutig als erledigt markieren.
-- Sammel-Issues wie `#21` und `#24` als Epics/Parent-Issues verwenden.
-- Neue Umsetzungstickets darunter verlinken, statt die Sammel-Issues als einzelne Arbeitsaufgaben zu behandeln.
-
 ## Milestone-Zuordnung
 
 Vorschlag fuer GitHub Milestones:
 
 - `1. Projektidee und Planung` bis 2026-04-27. Status: abgeschlossen.
 - `2. Umfang und PRD` bis 2026-05-21. Status: aktueller fachlicher Fokus.
-- `3. Prototyp` Termin laut Kursvorgabe pflegen. Status: Umsetzung und Demo.
+- `3. Prototyp` bis 2026-06-29 (präsentabel) / 2026-07-05 (fertig für Abgabe). Status: Umsetzung und Demo.
 
 Projektmanagement-Frist:
 
@@ -1084,12 +1060,3 @@ Nur bearbeiten, wenn Must-Haves stabil sind. Dieses Ticket ist eine alternative 
 Team-Schaetzung: offen
 
 ---
-
-# Vorschlag fuer naechste Team-Schritte
-
-1. PRD-Variante algorithmische Planung im Team bestaetigen oder anpassen.
-2. Bestehende M1-Issues im GitHub Project als erledigt/alt markieren.
-3. Tickets aus diesem Entwurf in GitHub Issues uebertragen.
-4. Im Team Schaetzungen setzen und `8`er-Tickets weiter splitten.
-5. Verantwortliche je Epic/Ticket verteilen.
-6. Fuer die Projektmanagement-Abgabe am 2026-05-19 ein kurzes Moodle-README mit Project-Link erstellen.
