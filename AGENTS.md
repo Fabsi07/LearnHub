@@ -45,8 +45,8 @@ See [design documentation](./docs/design/design.md) and [tech stack details](./d
 - **Form & Variants:** class-variance-authority, clsx, tailwind-merge
 
 ### Backend & Data
-- **Database:** PostgreSQL (configured in Prisma, domain models still open)
-- **ORM:** Prisma CLI v7.8.0 with `@prisma/client` v5.22.0
+- **Database:** PostgreSQL (configured in Prisma, core domain models defined)
+- **ORM:** Prisma 6 (`prisma` CLI + `@prisma/client`, both on 6.x)
 - **API Routes:** Next.js API routes; `/api/calendar/external` already loads the DHBW ICS feed, other feature routes are still scaffolded
 
 ### Project Setup

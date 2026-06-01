@@ -40,7 +40,7 @@ Geplanter Kern:
 - `Task`
 - `CalendarEvent`
 
-Derzeit ist die Persistenz noch nicht umgesetzt. Das Prisma-Schema enthaelt bisher nur Generator und PostgreSQL-Datasource. Die Ausarbeitung des Datenmodells ist ueber GitHub Issues geplant.
+Das Prisma-Schema enthaelt Generator, PostgreSQL-Datasource und die Kernmodelle (`User`, `Session`, `StudyPlan`, `Task`, `CalendarEvent`, `CalendarSource`) inklusive Enums fuer Zieltyp und Termin-Typ. Die erste Migration (Issue B3 / #41) und die lokale DB-Konfiguration (Issue B2 / #35) stehen noch aus, bevor die Persistenz tatsaechlich genutzt werden kann.
 
 ---
 

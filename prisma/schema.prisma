@@ -1,3 +1,8 @@
+// LearnHub Prisma-Schema.
+//
+// Modellumfang siehe docs/prd.md §6.1 (Must-Haves M1–M5) und
+// docs/auth-concept.md §3 (User, Session). Loeschverhalten gemaess PRD §8.1.
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -5,4 +10,155 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+// =====================================================================
+// Auth (siehe docs/auth-concept.md §3)
+// =====================================================================
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  displayName  String
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  sessions        Session[]
+  studyPlans      StudyPlan[]
+  calendarEvents  CalendarEvent[]
+  calendarSources CalendarSource[]
+}
+
+model Session {
+  // id ist gleichzeitig der opake Token im lh_session-Cookie
+  // (siehe auth-concept.md §5.1).
+  id        String   @id
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// =====================================================================
+// Lernpläne und Aufgaben (PRD §6.1 M3 + M4)
+// =====================================================================
+
+enum GoalType {
+  KLAUSUR
+  ABGABE
+  PRAESENTATION
+  SELBSTLERNZIEL
+  SONSTIGES
+}
+
+model StudyPlan {
+  id          String   @id @default(cuid())
+  title       String
+  subject     String   // Veranstaltung / Fach
+  description String?
+  goalType    GoalType
+  targetDate  DateTime
+  ownerId     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner          User            @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  tasks          Task[]
+  calendarEvents CalendarEvent[]
+
+  @@index([ownerId])
+  @@index([targetDate])
+}
+
+model Task {
+  id               String    @id @default(cuid())
+  title            String
+  description      String?
+  estimatedMinutes Int       // im UI als Std/Min eingebbar, intern immer Minuten
+  difficulty       Int       // 1 (leicht) bis 5 (sehr schwer)
+  dueDate          DateTime
+  completed        Boolean   @default(false)
+  completedAt      DateTime?
+  studyPlanId      String
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Beim Löschen eines Lernplans werden Aufgaben mit gelöscht (PRD §8.1).
+  studyPlan     StudyPlan      @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
+  // Optional 1:1 mit einem Kalender-Slot (Should-Have S1, PRD §6.2).
+  calendarEvent CalendarEvent?
+
+  @@index([studyPlanId])
+  @@index([dueDate])
+}
+
+// =====================================================================
+// Kalender (PRD §6.1 M5)
+// =====================================================================
+
+enum EventType {
+  VORLESUNG
+  ZIELTERMIN
+  LERNEINHEIT
+  SONSTIGES
+}
+
+enum EventSource {
+  LOCAL
+  EXTERNAL
+}
+
+model CalendarEvent {
+  id          String      @id @default(cuid())
+  title       String
+  startsAt    DateTime
+  endsAt      DateTime
+  allDay      Boolean     @default(false)
+  type        EventType
+  location    String?
+  ownerId     String
+  // Quelle des Events. EXTERNAL z.B. aus DHBW-ICS-Feed → read-only im UI.
+  source      EventSource @default(LOCAL)
+  // UID aus externer Quelle (ICS), für Dedupe bei späterem persistenten Import.
+  externalUid String?
+  // Optionale Verknüpfungen:
+  //  - taskId: Lerneinheit, die zu einer Aufgabe gehört (Should-Have S1).
+  //  - studyPlanId: z.B. Zieltermin direkt am Lernplan.
+  taskId      String?     @unique
+  studyPlanId String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  // Bei Task-Löschung bleibt der Kalendereintrag erhalten und verliert nur
+  // die Verknüpfung (PRD §8.1).
+  task      Task?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  studyPlan StudyPlan? @relation(fields: [studyPlanId], references: [id], onDelete: SetNull)
+
+  @@index([ownerId])
+  @@index([startsAt])
+  @@index([externalUid])
+}
+
+// =====================================================================
+// Externe Kalender-Quellen (siehe docs/kalender-db-todos.md)
+// =====================================================================
+
+model CalendarSource {
+  id           String    @id @default(cuid())
+  userId       String
+  name         String    // z.B. "DHBW Stundenplan"
+  url          String
+  type         String    @default("ics") // "ics" | "google" | ...
+  lastSyncedAt DateTime?
+  createdAt    DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
