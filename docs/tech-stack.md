@@ -46,9 +46,16 @@ Derzeit ist die Persistenz noch nicht umgesetzt. Das Prisma-Schema enthaelt bish
 
 ## Authentifizierung
 
-Status: noch nicht implementiert.
+Status: Konzept finalisiert (Issue #36 / C1), Implementierung steht aus (Tickets C2, C3).
 
-Der Login existiert aktuell als UI-Stub. Die Middleware enthaelt bereits eine vorbereitete Schutzlogik, ist aber ueber `AUTH_ENABLED = false` deaktiviert. Fuer das MVP ist E-Mail/Passwort-Authentifizierung mit gehashten Passwoertern und Session-Schutz vorgesehen.
+Festlegung fuer das MVP:
+
+- Eigene minimale Implementierung in Next.js Route Handlers (keine externe Auth-Library wie NextAuth oder Lucia).
+- Passwort-Hashing mit bcrypt (`bcryptjs`, Cost 12).
+- Server-Sessions in der Datenbank (`Session`-Tabelle in Prisma); opaker Token im `lh_session`-Cookie (HTTP-Only, SameSite=Lax).
+- Schutzlogik in [src/middleware.ts](../src/middleware.ts) ist vorbereitet, aber ueber `AUTH_ENABLED = false` deaktiviert. C3 aktiviert sie.
+
+Vollstaendiges Konzept inklusive Datenmodell, Endpunkten, geschuetzten Routen und Sicherheits-Erwaegungen: [docs/auth-concept.md](./auth-concept.md).
 
 ---
 
@@ -108,8 +115,8 @@ Einsatz:
 
 ## Offene technische Punkte
 
-- Datenmodell und erste Prisma-Migration definieren
+- Datenmodell und erste Prisma-Migration definieren (inkl. `User` und `Session` aus [docs/auth-concept.md](./auth-concept.md))
 - Lokale Datenbankkonfiguration dokumentieren
-- Authentifizierung implementieren
+- Authentifizierung implementieren (Tickets C2, C3 nach Bestaetigung des Konzepts)
 - ESLint-Konfiguration reparieren oder ergaenzen
 - Root-README zu einer vollstaendigen Setup-Anleitung ausbauen
