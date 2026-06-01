@@ -292,6 +292,7 @@ Calendar, settings, and notifications already contain components. Dashboard and 
 - **Design Board:** Collaborative Excalidraw board referenced in [design.md](./docs/design/design.md)
 - **Roles & Team:** See [roles.md](./docs/roles.md) for team structure
 - **Tech Stack Rationale:** [tech-stack.md](./docs/tech-stack.md)
+- **Manual Acceptance Test:** [testing/manual-acceptance-test.md](./docs/testing/manual-acceptance-test.md) — UC1–UC6 checklist, run before milestones
 
 ---
 

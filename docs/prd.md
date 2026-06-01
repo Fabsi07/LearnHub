@@ -314,7 +314,7 @@ Der genaue Zeitplan wird laufend in GitHub Projects gepflegt. Die Meilensteine a
 Die Anwendung gilt als abgenommen, wenn:
 
 1. Alle in §6.1 als Must-Have gekennzeichneten Funktionen demonstrierbar sind.
-2. Die in §7 beschriebenen Nutzungsabläufe UC1 bis UC6 in einer Live-Vorführung ohne Fehler durchlaufen werden.
+2. Die in §7 beschriebenen Nutzungsabläufe UC1 bis UC6 in einer Live-Vorführung ohne Fehler durchlaufen werden. Der manuelle Abnahmetest wird vor Meilensteinen anhand der Checkliste in [docs/testing/manual-acceptance-test.md](./testing/manual-acceptance-test.md) durchlaufen und dokumentiert.
 3. Die algorithmische Lernplan-Erstellung und Umplanung anhand eines Beispiels nachvollziehbar demonstriert werden kann.
 4. Die Anwendung auf einem unbeteiligten Rechner anhand der Setup-Anleitung im [README](../README.md) startbar ist.
 5. Quellcode, Dokumentation und dieses PRD im Repository vorliegen.
