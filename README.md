@@ -16,6 +16,18 @@ Bevor du startest, brauchst du auf deinem Rechner:
 
 Docker Desktop muss nach der Installation einmal manuell gestartet werden und im Hintergrund laufen, damit `docker compose`-Befehle funktionieren.
 
+### Erster Start von Docker Desktop
+
+Beim allerersten Start fragt Docker einmalig nach Setup-Entscheidungen. Empfohlener Ablauf:
+
+1. Docker Desktop aus dem Programme-Ordner (oder via Spotlight) starten.
+2. Dialog „Finish setting up Docker Desktop" → **„Use recommended settings"** ausgewaehlt lassen, auf **„Finish"** klicken.
+3. macOS fordert das Login-Passwort an — wird einmalig fuer die Installation der Privileged-Helper-Tools gebraucht.
+4. Sign-In-Screen / Onboarding-Tutorial → **„Skip"** / „Continue without sign in" waehlen. Ein Docker-Account ist fuer LearnHub nicht erforderlich.
+5. In der macOS-Menueleiste oben rechts erscheint ein **Wal-Symbol**. Solange es animiert ist, startet Docker. Sobald das Symbol still steht, ist Docker bereit und `docker`-Befehle funktionieren.
+
+Der erste Start kann 1–3 Minuten dauern. Spaetere Starts brauchen nur wenige Sekunden.
+
 ---
 
 ## Erstes Setup
