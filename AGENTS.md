@@ -265,7 +265,7 @@ className={cn("p-4", someCondition && "p-2")}
 
 ### 2. Database Not Yet Configured
 **Current state:** Prisma expects `DATABASE_URL` environment variable  
-**Note:** No `.env.local` or database models are set up yet. This will need configuration when backend development starts.
+**Note:** Local `.env` file with `DATABASE_URL` is required for Prisma — see README setup section. Schema and initial migration are committed (see `prisma/schema.prisma` and `prisma/migrations/`).
 
 ### 3. API Routes Are Mostly Scaffolded
 **Current state:** Calendar external sync exists; study-plan, activity, and events handlers are still missing.  

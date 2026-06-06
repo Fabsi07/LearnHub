@@ -38,7 +38,7 @@ Vor jedem Durchlauf folgende Voraussetzungen prüfen:
 - [ ] `git status` ist clean, aktueller Commit-Hash notiert.
 - [ ] `npm install` ist auf dem aktuellen Stand (`package-lock.json` unverändert nach `install`).
 - [ ] `npm run build` läuft ohne Fehler durch.
-- [ ] Lokale PostgreSQL-Datenbank läuft, `DATABASE_URL` in `.env.local` gesetzt.
+- [ ] Lokale PostgreSQL-Datenbank läuft, `DATABASE_URL` in `.env` gesetzt.
 - [ ] `npm run prisma:migrate` wurde ausgeführt; Schema ist aktuell.
 - [ ] Demo-Daten geladen (siehe Issue #53 / H1 für den Demo-Daten-Mechanismus). Falls H1 noch nicht umgesetzt: manuell vorbereiteten Datenstand verwenden und das in den Notizen vermerken.
 - [ ] Browser: aktueller Chrome, Firefox **oder** Safari (laut PRD §8.2 Browser-Unterstützung).
