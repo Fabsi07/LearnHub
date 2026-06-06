@@ -1,0 +1,33 @@
+# Lokale PostgreSQL-Datenbank fuer LearnHub-Entwicklung.
+#
+# Befehle (im Projekt-Root ausfuehren):
+#   Starten:  docker compose up -d
+#   Status:   docker compose ps
+#   Logs:     docker compose logs -f db
+#   Stoppen:  docker compose down
+#   Reset:    docker compose down -v   (loescht auch alle DB-Daten)
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: learnhub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: learnhub
+      POSTGRES_PASSWORD: learnhub_dev
+      POSTGRES_DB: learnhub
+    ports:
+      # Nur an localhost binden — andere Geraete im selben Netz koennen
+      # den Port nicht erreichen, das Default-Passwort wird damit irrelevant
+      # fuer externe Angreifer.
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - learnhub_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U learnhub -d learnhub"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  learnhub_pgdata:
