@@ -43,7 +43,7 @@ cd LearnHub
 npm install
 
 # 3. Umgebungsvariablen vorbereiten
-cp .env.example .env.local
+cp .env.example .env
 
 # 4. Lokale PostgreSQL via Docker starten
 docker compose up -d
@@ -77,7 +77,7 @@ Anschliessend ist die App unter [http://localhost:3000](http://localhost:3000) e
 
 ## Datenbank und Prisma
 
-Die lokale PostgreSQL laeuft als Docker-Container, beschrieben in [docker-compose.yml](./docker-compose.yml). Die Verbindungs-URL steht in `.env.local`. Beide Werte muessen zusammenpassen — wenn du das eine aenderst, das andere mitziehen.
+Die lokale PostgreSQL laeuft als Docker-Container, beschrieben in [docker-compose.yml](./docker-compose.yml). Die Verbindungs-URL steht in `.env`. Beide Werte muessen zusammenpassen — wenn du das eine aenderst, das andere mitziehen.
 
 | Befehl | Was passiert |
 | --- | --- |
@@ -102,7 +102,7 @@ Wahrscheinlich laeuft schon eine andere PostgreSQL auf deinem Rechner (native In
 lsof -i :5432
 ```
 
-Loesung: die andere Instanz stoppen oder in `docker-compose.yml` das Port-Mapping aendern (z.B. `"5433:5432"`) und in `.env.local` die DATABASE_URL anpassen.
+Loesung: die andere Instanz stoppen oder in `docker-compose.yml` das Port-Mapping aendern (z.B. `"5433:5432"`) und in `.env` die DATABASE_URL anpassen.
 
 ### `npm run prisma:migrate` faellt mit „Can't reach database server"
 
@@ -113,7 +113,7 @@ docker compose ps         # Status: db sollte "running" / "healthy" sein
 docker compose logs db    # Auf Fehler in den Logs achten
 ```
 
-Falls der Container nicht laeuft: `docker compose up -d`. Falls die URL nicht stimmt: `.env.local` mit `docker-compose.yml` abgleichen.
+Falls der Container nicht laeuft: `docker compose up -d`. Falls die URL nicht stimmt: `.env` mit `docker-compose.yml` abgleichen.
 
 ### `npm run prisma:generate` zeigt eine Major-Version-Warnung
 
