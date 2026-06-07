@@ -209,11 +209,10 @@ Die funktionalen Anforderungen ergeben sich aus dem Funktionsumfang in §6 und d
 - Jeder Nutzer sieht ausschließlich seine eigenen Lernpläne, Aufgaben und Termine.
 - Lernpläne, Aufgaben und Termine sind persistent gespeichert und nach Abmeldung und erneutem Login unverändert verfügbar.
 - Die automatische Lernplanung basiert auf reproduzierbaren Regeln und erzeugt bei gleichen Eingaben gleiche Ergebnisse.
-- Die Planungslogik berücksichtigt mindestens Zieldatum, geschätzten Aufwand, Schwierigkeit, Erledigungsstatus und verfügbare Lernzeit.
+- Die Planungslogik berücksichtigt mindestens Zieldatum, geschätzte Schwierigkeit, aktuellen Wissensstand, Umfang des Lernstoffs und ECTS für die Vorlesung.
 - Die Umplanung verschiebt nur offene Aufgaben; erledigte Aufgaben bleiben unverändert.
 - Die Kalenderansicht stellt Termine korrekt in Tages-, Wochen- und Monatsansicht dar.
-- Beim Löschen eines Lernplans werden zugehörige Aufgaben mit gelöscht. Verknüpfte Kalendereinträge bleiben erhalten, verlieren aber ihre Verknüpfung zur Aufgabe.
-- Optionale KI-Funktionen dürfen den Kernfluss nicht blockieren. Wenn keine KI-Konfiguration vorhanden ist, bleibt die algorithmische Planung vollständig nutzbar.
+- Beim Löschen eines Lernplans werden zugehörige Aufgaben mit gelöscht.
 
 ### 8.2 Nicht-funktionale Anforderungen
 
@@ -301,9 +300,9 @@ Der genaue Zeitplan wird laufend in GitHub Projects gepflegt. Die Meilensteine a
 | Meilenstein                              | Inhalt                                                                                                          | Status        |
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------- |
 | **M1 — Projektstart**                    | Teamfindung, Rollenverteilung, erste Wireframes, technische Grundsatzentscheidungen, Repository-Setup           | abgeschlossen |
-| **M2 — Frontend-Gerüst**                 | Lauffähiges Next.js-Projekt, Login-Maske, Dashboard-Shell, Kalenderansicht mit Beispieldaten                    | in Arbeit     |
+| **M2 — Frontend-Gerüst**                 | Lauffähiges Next.js-Projekt, Login-Maske, Dashboard-Shell, Kalenderansicht mit Beispieldaten                    | abgeschlossen |
 | **M3 — Datenmodell und API**             | Datenbankschema, persistente Speicherung, Anbindung des bestehenden Frontends an reale Daten, Authentifizierung | in Arbeit     |
-| **M4 — Planungslogik**                   | Algorithmische Lernplan-Erstellung und Umplanung im Lernplan- und Kalenderfluss verfügbar                       | offen         |
+| **M4 — Planungslogik**                   | Algorithmische Lernplan-Erstellung und Umplanung im Lernplan- und Kalenderfluss verfügbar                       | in Arbeit     |
 | **M5 — Optionale KI-Prüfung**            | Falls zeitlich möglich: KI-gestützte Prüfung oder Verbesserungsvorschläge für bestehende Lernpläne              | offen         |
 | **M6 — Stabilisierung und Präsentation** | Fehlerbehebung, manuelle Abnahmetests, Demonstrationsdaten, Setup-Dokumentation, finale Präsentation            | offen         |
 
