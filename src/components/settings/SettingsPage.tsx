@@ -383,10 +383,8 @@ function CalendarSettings() {
       .then((r) => r.json())
       .then((data) => {
         if (data.source?.name) {
-          // Name ist z.B. "DHBW Stundenplan (TIF25A)" → Kurskennung extrahieren
           const match = data.source.name.match(/\((.+)\)$/);
-          if (match) setCourseCode(match[1]);
-        }
+          if (match) setCourseCode(match[1].trim());
       })
       .catch(() => {/* nicht eingeloggt oder Fehler – ignorieren */})
       .finally(() => setIsLoading(false));
