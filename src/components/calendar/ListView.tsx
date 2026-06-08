@@ -95,7 +95,7 @@ export function ListView({ events, currentDate }: ListViewProps) {
             </h3>
           </div>
 
-          <ul className="space-y-2 ml-15 pl-0">
+          <ul className="space-y-2 ml-[60px] pl-0">
             {items.map((ev) => (
               <li
                 key={ev.id}
