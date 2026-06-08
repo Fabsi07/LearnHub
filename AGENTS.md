@@ -263,9 +263,9 @@ className="p-4 p-2"  // Last class wins inconsistently
 className={cn("p-4", someCondition && "p-2")}
 ```
 
-### 2. Database Not Yet Configured
-**Current state:** Prisma expects `DATABASE_URL` environment variable  
-**Note:** No `.env.local` or database models are set up yet. This will need configuration when backend development starts.
+### 2. Database: Schema Defined, Local Setup Required
+**Current state:** Prisma schema and initial migration are committed (`prisma/schema.prisma`, `prisma/migrations/`).  
+**Note:** Each developer needs a local `.env` with `DATABASE_URL` (see README setup section) and runs `npm run prisma:migrate` once to apply the migration against the local Docker PostgreSQL.
 
 ### 3. API Routes Are Mostly Scaffolded
 **Current state:** Calendar external sync exists; study-plan, activity, and events handlers are still missing.  
