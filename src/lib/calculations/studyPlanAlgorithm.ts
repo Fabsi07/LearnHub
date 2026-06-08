@@ -76,7 +76,9 @@ function getVolumeFactor(pages: number): number {
 }
 
 function getCreditFactor(credits: number): number {
-  return Math.min(credits, 10) * 0.2;
+  const value = Number.isFinite(credits) ? credits : 1;
+  const clamped = Math.min(Math.max(value, 1), 10);
+  return clamped * 0.2;
 }
 
 // ─── Phasen ──────────────────────────────────────────────────────────────────
