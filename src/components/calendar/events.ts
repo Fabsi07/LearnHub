@@ -190,14 +190,13 @@ export function expandRecurring(
     const durMs = ev.end.getTime() - ev.start.getTime();
 
     // Schritte zwischen Originalstart und rangeStart (aufgerundet aufs Raster)
-    const oneDay = 24 * 60 * 60 * 1000;
+    const dayMs = 24 * 60 * 60 * 1000;
     const evStartDay = new Date(ev.start);
     evStartDay.setHours(0, 0, 0, 0);
     const rangeStartDay = new Date(rangeStart);
     rangeStartDay.setHours(0, 0, 0, 0);
-    let diffDays = Math.round(
-      (rangeStartDay.getTime() - evStartDay.getTime()) / oneDay,
-    );
+    const utcDay = (d: Date) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+    let diffDays = Math.floor((utcDay(rangeStartDay) - utcDay(evStartDay)) / dayMs);
     if (diffDays < 0) diffDays = 0;
     diffDays = Math.ceil(diffDays / stepDays) * stepDays;
 
