@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Calendar, MessageSquare, Settings } from "lucide-react";
+import { LayoutDashboard, Calendar, BookOpen, MessageSquare, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,7 @@ const navItems = [
     section: "Learning",
     items: [
       { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+      { label: "Lernpläne", href: "/study-plan", icon: BookOpen },
       { label: "Kalender", href: "/calendar", icon: Calendar },
     ],
   },

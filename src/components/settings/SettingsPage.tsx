@@ -372,45 +372,92 @@ function NotificationSettings() {
 }
 
 function CalendarSettings() {
-  const [isImporting, setIsImporting] = useState(false);
+  const [courseCode, setCourseCode] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
 
-  // S-10 Hinweis: Fake-Import bis API/ICS-Endpoint existiert.
-  function handleScheduleImport(event: React.FormEvent<HTMLFormElement>) {
+  // Gespeicherte Kurskennung beim Laden abrufen
+  useEffect(() => {
+    fetch("/api/calendar/sources")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.source?.name) {
+          // Name ist z.B. "DHBW Stundenplan (TIF25A)" → Kurskennung extrahieren
+          const match = data.source.name.match(/\((.+)\)$/);
+          if (match) setCourseCode(match[1]);
+        }
+      })
+      .catch(() => {/* nicht eingeloggt oder Fehler – ignorieren */})
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  async function handleScheduleImport(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (isSaving || !courseCode.trim()) return;
 
-    if (isImporting) {
-      return;
+    setIsSaving(true);
+    setFeedback(null);
+
+    try {
+      const res = await fetch("/api/calendar/sources", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseCode }),
+      });
+
+      if (res.ok) {
+        setFeedback({ type: "success", message: `Stundenplan für ${courseCode.toUpperCase()} gespeichert.` });
+      } else {
+        const data = await res.json();
+        setFeedback({ type: "error", message: data.error ?? "Fehler beim Speichern." });
+      }
+    } catch {
+      setFeedback({ type: "error", message: "Netzwerkfehler. Bitte erneut versuchen." });
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsImporting(true);
-    // TODO: Echten Import an /api/calendar/import anbinden.
-    window.setTimeout(() => setIsImporting(false), 1600);
   }
 
   return (
     <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
       <div className="flex flex-col gap-1 border-b border-gray-100 pb-4">
-        {/* S-1 Fix: Englische Überschrift -> Deutsch. */}
         <h2 className="text-base font-semibold text-gray-950">Kalender</h2>
         <p className="text-sm text-gray-500">
-          Wähle aus, welchen Stundenplan du in den Kalender importieren willst.
+          Gib deine Kurskennung ein (z.&nbsp;B. <strong>TIF25A</strong>). Der DHBW-Stundenplan wird automatisch geladen.
         </p>
       </div>
 
       <form className="mt-5 grid max-w-xl gap-5" onSubmit={handleScheduleImport}>
-        <Field label="Stundenplan" htmlFor="schedule-group">
-          <Input id="schedule-group" name="scheduleGroup" placeholder="TIF25A" />
+        <Field label="Kurskennung" htmlFor="schedule-group">
+          <Input
+            id="schedule-group"
+            name="scheduleGroup"
+            placeholder="TIF25A"
+            value={isLoading ? "" : courseCode}
+            disabled={isLoading}
+            onChange={(e) => setCourseCode(e.target.value)}
+          />
+          <p className="text-xs text-gray-400">
+            Der Link wird automatisch zusammengestellt: stash.dhbw-loerrach.de/calendar/<strong>{courseCode ? courseCode.toLowerCase() : "kurskennung"}</strong>@dhbw-loerrach.de.ics
+          </p>
         </Field>
 
+        {feedback && (
+          <p className={`text-sm font-medium ${feedback.type === "success" ? "text-green-600" : "text-red-600"}`}>
+            {feedback.message}
+          </p>
+        )}
+
         <div className="flex justify-end border-t border-gray-100 pt-4">
-          {isImporting ? (
+          {isSaving ? (
             <div
               role="status"
               aria-live="polite"
               className="flex h-9 items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3"
             >
               <CalendarDays className="h-4 w-4 text-gray-600" />
-              <span className="text-sm font-medium text-gray-700">Stundenplan wird importiert</span>
+              <span className="text-sm font-medium text-gray-700">Stundenplan wird gespeichert</span>
               <div className="flex items-center gap-1" aria-hidden="true">
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-500 [animation-delay:-0.2s]" />
                 <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-gray-500 [animation-delay:-0.1s]" />
@@ -418,9 +465,9 @@ function CalendarSettings() {
               </div>
             </div>
           ) : (
-            <Button type="submit">
+            <Button type="submit" disabled={!courseCode.trim()}>
               <CalendarDays className="h-4 w-4" />
-              Stundenplan importieren
+              Stundenplan speichern
             </Button>
           )}
         </div>
