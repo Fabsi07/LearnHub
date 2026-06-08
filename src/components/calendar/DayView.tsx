@@ -7,15 +7,18 @@ import {
   DAY_END_HOUR,
   HOUR_HEIGHT,
   eventOnDay,
+  formatTime,
   layoutDayEvents,
 } from "./events";
 import { EventBlock } from "./EventBlock";
 import { AllDayBar } from "./AllDayBar";
+import { useDragCreate } from "./useDragCreate";
 
 interface DayViewProps {
   currentDate: Date;
   events: CalEvent[];
   onEventChange: (next: CalEvent) => void;
+  onRequestCreate?: (defaults: { start: Date; end: Date }) => void;
 }
 
 const HOURS = Array.from(
@@ -23,11 +26,12 @@ const HOURS = Array.from(
   (_, i) => i + DAY_START_HOUR
 );
 
-export function DayView({ currentDate, events, onEventChange }: DayViewProps) {
+export function DayView({ currentDate, events, onEventChange, onRequestCreate }: DayViewProps) {
   const today = new Date();
   const isToday = isSameDay(currentDate, today);
   const totalHeight = HOURS.length * HOUR_HEIGHT;
   const dayEvents = events.filter((e) => !e.allDay && eventOnDay(e, currentDate));
+  const { onColumnMouseDown, preview } = useDragCreate(onRequestCreate);
 
   return (
     <div className="flex flex-col h-full">
@@ -67,7 +71,11 @@ export function DayView({ currentDate, events, onEventChange }: DayViewProps) {
         </div>
 
         {/* Tages-Spalte mit Events */}
-        <div className="relative" style={{ height: totalHeight }}>
+        <div
+          onMouseDown={(e) => onColumnMouseDown(e, currentDate)}
+          className="relative cursor-crosshair select-none"
+          style={{ height: totalHeight }}
+        >
           {HOURS.map((hour) => (
             <div
               key={hour}
@@ -75,6 +83,14 @@ export function DayView({ currentDate, events, onEventChange }: DayViewProps) {
               style={{ height: HOUR_HEIGHT }}
             />
           ))}
+          {preview && isSameDay(preview.day, currentDate) && (
+            <div
+              className="absolute left-1 right-1 rounded-md bg-brand-red/20 border-2 border-brand-red pointer-events-none flex items-center justify-center text-[11px] font-semibold text-brand-red"
+              style={{ top: preview.top, height: preview.height }}
+            >
+              {formatTime(preview.start)} – {formatTime(preview.end)}
+            </div>
+          )}
           {layoutDayEvents(dayEvents).map(({ event: ev, column, columns }) => (
             <EventBlock
               key={ev.id}

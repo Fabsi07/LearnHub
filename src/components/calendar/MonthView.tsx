@@ -1,12 +1,19 @@
 "use client";
 
 import { WEEKDAYS, getMonthGrid, isSameDay } from "./utils";
+import { CalEvent, eventOnDay, eventOverlapsDay } from "./events";
 
 interface MonthViewProps {
   currentDate: Date;
+  events?: CalEvent[];
 }
 
-export function MonthView({ currentDate }: MonthViewProps) {
+function formatTime(d: Date): string {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+export function MonthView({ currentDate, events = [] }: MonthViewProps) {
   const days = getMonthGrid(currentDate);
   const today = new Date();
   const currentMonth = currentDate.getMonth();
@@ -30,10 +37,17 @@ export function MonthView({ currentDate }: MonthViewProps) {
         {days.map((day, i) => {
           const isCurrentMonth = day.getMonth() === currentMonth;
           const isToday = isSameDay(day, today);
+          const dayEvents = events
+            .filter((ev) =>
+              ev.allDay ? eventOverlapsDay(ev, day) : eventOnDay(ev, day),
+            )
+            .sort((a, b) => a.start.getTime() - b.start.getTime());
+          const visible = dayEvents.slice(0, 3);
+          const overflow = dayEvents.length - visible.length;
           return (
             <div
               key={i}
-              className={`border-r border-b border-gray-200 p-2 min-h-[90px] flex flex-col gap-1 transition-colors hover:bg-gray-50 cursor-pointer ${
+              className={`border-r border-b border-gray-200 p-1.5 min-h-[90px] flex flex-col gap-1 transition-colors hover:bg-gray-50 cursor-pointer overflow-hidden ${
                 isCurrentMonth ? "bg-white" : "bg-gray-50/50"
               }`}
             >
@@ -50,7 +64,28 @@ export function MonthView({ currentDate }: MonthViewProps) {
                   {day.getDate()}
                 </span>
               </div>
-              {/* Platz für Events */}
+              {/* Events */}
+              <div className="flex flex-col gap-0.5">
+                {visible.map((ev) => (
+                  <div
+                    key={ev.id}
+                    title={`${ev.title}${ev.allDay ? "" : ` · ${formatTime(ev.start)}`}`}
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] leading-tight text-white truncate ${ev.color}`}
+                  >
+                    {!ev.allDay && (
+                      <span className="font-medium opacity-90 shrink-0">
+                        {formatTime(ev.start)}
+                      </span>
+                    )}
+                    <span className="truncate">{ev.title}</span>
+                  </div>
+                ))}
+                {overflow > 0 && (
+                  <span className="text-[10px] text-gray-500 px-1">
+                    +{overflow} weitere
+                  </span>
+                )}
+              </div>
             </div>
           );
         })}
@@ -58,3 +93,4 @@ export function MonthView({ currentDate }: MonthViewProps) {
     </div>
   );
 }
+
