@@ -221,7 +221,7 @@ function handleSubmit(e: React.FormEvent) {
           <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gray-300 bg-gray-50 gap-3 p-12">
             <Calculator className="w-10 h-10 text-gray-300" />
             <p className="text-sm text-gray-400 text-center">
-              Fülle das Formular aus und klicke auf „Lernplan berechnen"
+              Fülle das Formular aus und klicke auf „Lernplan berechnen“
             </p>
           </div>
         )}
