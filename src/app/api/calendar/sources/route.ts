@@ -32,14 +32,19 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const courseCode: string = body?.courseCode ?? "";
+  const courseCode = String(body?.courseCode ?? "").trim();
 
-  if (!courseCode.trim()) {
+  if (!courseCode) {
     return NextResponse.json({ error: "Kurskennung darf nicht leer sein" }, { status: 400 });
+  }
+  if (!/^[A-Za-z0-9]+$/.test(courseCode)) {
+    return NextResponse.json(
+      { error: "Kurskennung enthält ungültige Zeichen" },
+      { status: 400 },
+    );
   }
 
   const url = buildDhbwUrl(courseCode);
-
   // Upsert: ein User hat genau eine DHBW-Quelle
   const existing = await prisma.calendarSource.findFirst({
     where: { userId: session.userId, type: "ics-dhbw" },
