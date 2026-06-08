@@ -203,6 +203,7 @@ export function EventBlock({
 
   return (
     <div
+      onMouseDown={(e) => e.stopPropagation()}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
