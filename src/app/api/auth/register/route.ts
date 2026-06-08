@@ -8,9 +8,11 @@ const registerSchema = z.object({
   email: z.string().trim().email("Bitte gib eine gültige E-Mail-Adresse an."),
   displayName: z
     .string()
+  displayName: z
+    .string()
     .trim()
     .min(1, "Bitte gib einen Anzeigenamen an.")
-    .max(80, "Der Anzeigename darf hoechstens 80 Zeichen lang sein."),
+    .max(80, "Der Anzeigename darf höchstens 80 Zeichen lang sein."),
   password: z
     .string()
     .min(8, "Das Passwort muss mindestens 8 Zeichen lang sein."),
