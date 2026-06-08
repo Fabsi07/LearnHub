@@ -51,15 +51,25 @@ export async function POST(request: Request) {
 
   const passwordHash = await hashPassword(password);
 
-  const user = await prisma.user.create({
-    data: {
-      email: normalizedEmail,
-      displayName,
-      passwordHash,
-    },
-  });
+  try {
+    const user = await prisma.user.create({
+      data: {
+        email: normalizedEmail,
+        displayName,
+        passwordHash,
+      },
+    });
 
-  await createSession(user.id, rememberMe);
+    await createSession(user.id, rememberMe);
 
-  return NextResponse.json({ ok: true }, { status: 201 });
-}
+    return NextResponse.json({ ok: true }, { status: 201 });
+  } catch (err) {
+    const code = (err as { code?: string } | null)?.code;
+    if (code === "P2002") {
+      return NextResponse.json(
+        { error: "Diese E-Mail-Adresse ist bereits registriert." },
+        { status: 409 },
+      );
+    }
+    throw err;
+  }
