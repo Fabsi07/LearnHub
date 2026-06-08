@@ -148,10 +148,10 @@ export function calculateStudyPlan(input: AlgorithmInput): AlgorithmResult {
   today.setHours(0, 0, 0, 0);
   const deadline = new Date(input.deadlineDate);
   deadline.setHours(0, 0, 0, 0);
-  const daysUntilDeadline = Math.max(
-    1,
-    Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)),
-  );
+
+  const diffMs = deadline.getTime() - today.getTime();
+  const diffDays = Number.isFinite(diffMs) ? diffMs / (1000 * 60 * 60 * 24) : 0;
+  const daysUntilDeadline = Math.max(1, Math.ceil(diffDays));
 
   const D = getDeadlineFactor(daysUntilDeadline);
   const S = getDifficultyFactor(input.difficulty);
