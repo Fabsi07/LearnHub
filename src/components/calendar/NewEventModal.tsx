@@ -123,12 +123,15 @@ export function NewEventModal({
       onClick={onClose}
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="new-event-title"
         className="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-bold text-gray-900">Neues Event</h3>
+          <h3 id="new-event-title" className="text-lg font-bold text-gray-900">Neues Event</h3>
           <button
             type="button"
             onClick={onClose}
