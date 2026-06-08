@@ -72,7 +72,9 @@ export function Calendar({
 
   const range = getViewRange();
   const expandedLocal = expandRecurring(localEvents, range.start, range.end);
-  const visibleEvents: CalEvent[] = [...expandedLocal, ...externalEvents];
+  const visibleEvents: CalEvent[] = [...expandedLocal, ...externalEvents].filter(
+    (ev) => ev.end.getTime() >= range.start.getTime() && ev.start.getTime() <= range.end.getTime(),
+  );
 
   function handleEventChange(next: CalEvent) {
     if (next.readOnly) return;
