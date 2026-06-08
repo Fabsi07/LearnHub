@@ -27,17 +27,22 @@ export function StudyPlanPageContent() {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const input: AlgorithmInput = {
-      deadlineDate: new Date(form.deadline),
-      difficulty: Number(form.difficulty) as AlgorithmInput["difficulty"],
-      priorKnowledge: Number(form.priorKnowledge) as AlgorithmInput["priorKnowledge"],
-      pages: Number(form.pages),
-      credits: Number(form.credits),
-    };
-    setResult(calculateStudyPlan(input));
-  }
+function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+
+  // `new Date("YYYY-MM-DD")` wird als UTC geparst und kann in lokalen Zeitzonen um einen Tag verschoben sein.
+  const [year, month, day] = form.deadline.split("-").map(Number);
+  const deadlineDate = new Date(year, month - 1, day);
+
+  const input: AlgorithmInput = {
+    deadlineDate,
+    difficulty: Number(form.difficulty) as AlgorithmInput["difficulty"],
+    priorKnowledge: Number(form.priorKnowledge) as AlgorithmInput["priorKnowledge"],
+    pages: Number(form.pages),
+    credits: Number(form.credits),
+  };
+  setResult(calculateStudyPlan(input));
+}
 
   const selectClass =
     "h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20";
