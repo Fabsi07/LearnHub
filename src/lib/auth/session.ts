@@ -14,6 +14,24 @@ function generateSessionToken(): string {
 }
 
 /**
+ * Liest den Session-Cookie und gibt die userId zurück, oder null wenn
+ * keine gültige Session existiert.
+ */
+export async function getSession(): Promise<{ userId: string } | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+
+  const session = await prisma.session.findUnique({
+    where: { id: token },
+    select: { userId: true, expiresAt: true },
+  });
+
+  if (!session || session.expiresAt < new Date()) return null;
+  return { userId: session.userId };
+}
+
+/**
  * Erstellt eine neue Session fuer den User: Token erzeugen, DB-Eintrag
  * anlegen, Cookie setzen. Wird von Register und (spaeter, in C3) Login
  * aufgerufen.

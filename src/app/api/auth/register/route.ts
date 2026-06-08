@@ -8,8 +8,6 @@ const registerSchema = z.object({
   email: z.string().trim().email("Bitte gib eine gültige E-Mail-Adresse an."),
   displayName: z
     .string()
-  displayName: z
-    .string()
     .trim()
     .min(1, "Bitte gib einen Anzeigenamen an.")
     .max(80, "Der Anzeigename darf höchstens 80 Zeichen lang sein."),
@@ -75,3 +73,4 @@ export async function POST(request: Request) {
     }
     throw err;
   }
+}
