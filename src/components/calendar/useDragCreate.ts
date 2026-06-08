@@ -42,10 +42,10 @@ export function useDragCreate(
   const dragRef = useRef<DragState | null>(null);
 
   const onColumnMouseDown = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>, day: Date) => {
+    (e: import("react").MouseEvent<HTMLDivElement>, day: Date) => {
       if (e.button !== 0) return;
+      if (e.target !== e.currentTarget) return;
       if (!onRequestCreate) return;
-      const columnEl = e.currentTarget;
       const rect = columnEl.getBoundingClientRect();
       const y = e.clientY - rect.top;
       const state: DragState = { day, startY: y, currY: y, columnEl };
