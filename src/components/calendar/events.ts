@@ -33,6 +33,7 @@ export const SUBJECTS: { name: string; color: string }[] = [
 
 export const EVENT_TYPES: { name: EventType; color: string }[] = [
   { name: "Lernsession", color: "bg-blue-500" },
+  { name: "Klausur", color: "bg-brand-red" },
   { name: "Deadline", color: "bg-amber-500" },
   { name: "Pause", color: "bg-emerald-500" },
 ];
