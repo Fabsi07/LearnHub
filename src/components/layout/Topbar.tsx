@@ -3,6 +3,7 @@
 import { Search, PanelLeftClose, PanelLeftOpen, Moon, Sun, LogOut } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface TopbarProps {
   sidebarOpen: boolean;
@@ -13,12 +14,19 @@ interface TopbarProps {
 
 export function Topbar({ sidebarOpen, onToggleSidebar, darkMode, onToggleDarkMode }: TopbarProps) {
   const router = useRouter();
+  const [logoutError, setLogoutError] = useState<string | null>(null);
 
   async function handleLogout() {
-    const res = await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
-    if (res && res.ok) {
+    try {
+      const res = await fetch("/api/auth/logout", { method: "POST" });
+      if (!res.ok) {
+        setLogoutError("Abmelden fehlgeschlagen. Bitte versuche es erneut.");
+        return;
+      }
       router.push("/login");
       router.refresh();
+    } catch {
+      setLogoutError("Abmelden fehlgeschlagen. Bitte versuche es erneut.");
     }
   }
   return (
@@ -73,6 +81,13 @@ export function Topbar({ sidebarOpen, onToggleSidebar, darkMode, onToggleDarkMod
           />
         </div>
       </div>
+
+      {/* Fehler beim Logout */}
+      {logoutError && (
+        <div className="px-6 py-2 text-sm text-red-600 bg-red-50 border-b border-red-200">
+          {logoutError}
+        </div>
+      )}
 
       {/* Trennlinie */}
       <div style={{ borderBottom: "1px solid #cfcfcf" }} />

@@ -57,4 +57,5 @@ export const config = {
     // API-Routen einschließen damit die 401-Logik greift.
     // _next-Interna und statische Assets ausschließen.
     "/((?!_next|favicon.ico|icons|images).*)",
+  ],
 };
