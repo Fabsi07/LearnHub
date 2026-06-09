@@ -9,7 +9,7 @@ function isPublicPath(pathname: string) {
 
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const isLoggedIn = request.cookies.has(SESSION_COOKIE);
+  const isLoggedIn = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
   const isPublic = isPublicPath(pathname);
 
   if (!isLoggedIn && !isPublic) {
