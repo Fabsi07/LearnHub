@@ -25,6 +25,8 @@ interface EventBlockProps {
   columns?: number;
   /** DHBW-Events, in die nicht verschoben/vergrößert werden darf. */
   blockedEvents?: CalEvent[];
+  /** Wird aufgerufen wenn der Nutzer auf das Event klickt (kein Drag). */
+  onEventClick?: (event: CalEvent) => void;
 }
 
 type DragMode = "move" | "resize-top" | "resize-bottom";
@@ -54,9 +56,12 @@ export function EventBlock({
   column = 0,
   columns = 1,
   blockedEvents = [],
+  onEventClick,
 }: EventBlockProps) {
   const dragRef = useRef<DragState | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
+  // Tracking ob es ein echter Drag war (> 5px Bewegung)
+  const didDragRef = useRef(false);
 
   const baseTop = dateToTop(event.start);
   const baseHeight = Math.max(
@@ -86,6 +91,7 @@ export function EventBlock({
     e.stopPropagation();
     e.preventDefault();
     (e.target as Element).setPointerCapture?.(e.pointerId);
+    didDragRef.current = false;
     dragRef.current = {
       mode,
       startX: e.clientX,
@@ -101,6 +107,11 @@ export function EventBlock({
     if (!drag) return;
     const deltaY = e.clientY - drag.startY;
     const deltaX = e.clientX - drag.startX;
+
+    // Als Drag markieren sobald Bewegung > 5px
+    if (!didDragRef.current && (Math.abs(deltaY) > 5 || Math.abs(deltaX) > 5)) {
+      didDragRef.current = true;
+    }
 
     if (drag.mode === "move") {
       // Vertikal: pixelgenaue Vorschau (kein Snap → flüssig)
@@ -131,6 +142,13 @@ export function EventBlock({
     dragRef.current = null;
     if (!drag) {
       setPreview(null);
+      return;
+    }
+
+    // Kein echter Drag → Click-Handler aufrufen
+    if (!didDragRef.current) {
+      setPreview(null);
+      onEventClick?.(event);
       return;
     }
 
@@ -240,8 +258,9 @@ export function EventBlock({
     >
       <div
         onPointerDown={(e) => onPointerDown(e, "move")}
+        onClick={isReadOnly ? () => onEventClick?.(event) : undefined}
         className={`absolute inset-0 rounded-md overflow-hidden px-2 py-1 ${
-          isReadOnly ? "cursor-default" : "cursor-grab active:cursor-grabbing"
+          isReadOnly ? "cursor-pointer" : "cursor-grab active:cursor-grabbing"
         }`}
       >
         <div className="font-semibold leading-tight truncate">{event.title}</div>

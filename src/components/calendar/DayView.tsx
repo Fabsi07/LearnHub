@@ -19,6 +19,7 @@ interface DayViewProps {
   events: CalEvent[];
   onEventChange: (next: CalEvent) => void;
   onRequestCreate?: (defaults: { start: Date; end: Date }) => void;
+  onEventClick?: (event: CalEvent) => void;
 }
 
 const HOURS = Array.from(
@@ -26,7 +27,7 @@ const HOURS = Array.from(
   (_, i) => i + DAY_START_HOUR
 );
 
-export function DayView({ currentDate, events, onEventChange, onRequestCreate }: DayViewProps) {
+export function DayView({ currentDate, events, onEventChange, onRequestCreate, onEventClick }: DayViewProps) {
   const today = new Date();
   const isToday = isSameDay(currentDate, today);
   const totalHeight = HOURS.length * HOUR_HEIGHT;
@@ -100,6 +101,7 @@ export function DayView({ currentDate, events, onEventChange, onRequestCreate }:
               column={column}
               columns={columns}
               blockedEvents={dhbwEvents}
+              onEventClick={onEventClick}
             />
           ))}
         </div>
