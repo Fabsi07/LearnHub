@@ -81,7 +81,7 @@ export default function LoginPage() {
       </div>
 
       <div className="flex flex-1 items-center justify-center bg-gray-50 p-6 lg:p-12">
-        <Suspense>
+        <Suspense fallback={null}>
           <LoginForm />
         </Suspense>
       </div>
