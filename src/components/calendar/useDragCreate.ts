@@ -6,6 +6,8 @@ import {
   HOUR_HEIGHT,
   SNAP_MIN,
   MIN_EVENT_MIN,
+  overlapsAnyDhbwEvent,
+  type CalEvent,
 } from "./events";
 
 function snap(min: number): number {
@@ -34,9 +36,13 @@ type DragState = {
  * Liefert `onColumnMouseDown(e, day)` für jede Spalte sowie ein Preview-Objekt
  * mit den px-Koordinaten des Ghost-Blocks, das aktiv ist, solange der Nutzer
  * zieht. Auf Mouse-Up wird `onRequestCreate({start, end})` aufgerufen.
+ *
+ * DHBW-Events (source === "dhbw") sind geblockt – in deren Zeitfenstern
+ * kann kein neuer Termin per Drag angelegt werden.
  */
 export function useDragCreate(
   onRequestCreate?: (defaults: { start: Date; end: Date }) => void,
+  blockedEvents: CalEvent[] = [],
 ) {
   const [drag, setDrag] = useState<DragState | null>(null);
   const dragRef = useRef<DragState | null>(null);
@@ -48,6 +54,13 @@ export function useDragCreate(
       const columnEl = e.currentTarget as HTMLDivElement;
       const rect = columnEl.getBoundingClientRect();
       const y = e.clientY - rect.top;
+      const colHeight = columnEl.offsetHeight;
+
+      // Prüfen ob der Klickpunkt in einem DHBW-Event liegt
+      const clickTime = yToDate(day, y, colHeight);
+      const clickEnd = new Date(clickTime.getTime() + MIN_EVENT_MIN * 60000);
+      if (overlapsAnyDhbwEvent(clickTime, clickEnd, blockedEvents)) return;
+
       const state: DragState = { day, startY: y, currY: y, columnEl };
       dragRef.current = state;
       setDrag(state);
@@ -69,22 +82,24 @@ export function useDragCreate(
         dragRef.current = null;
         setDrag(null);
         if (!s) return;
-        const colHeight = s.columnEl.offsetHeight;
+        const height = s.columnEl.offsetHeight;
         const a = Math.min(s.startY, s.currY);
         const b = Math.max(s.startY, s.currY);
-        const start = yToDate(s.day, a, colHeight);
-        let end = yToDate(s.day, b, colHeight);
+        const start = yToDate(s.day, a, height);
+        let end = yToDate(s.day, b, height);
         const durMin = (end.getTime() - start.getTime()) / 60000;
         if (durMin < MIN_EVENT_MIN) {
           end = new Date(start.getTime() + MIN_EVENT_MIN * 60000);
         }
+        // Nochmal prüfen ob der finale Zeitraum ein DHBW-Event überlappt
+        if (overlapsAnyDhbwEvent(start, end, blockedEvents)) return;
         onRequestCreate?.({ start, end });
       }
 
       window.addEventListener("mousemove", onMove);
       window.addEventListener("mouseup", onUp);
     },
-    [onRequestCreate],
+    [onRequestCreate, blockedEvents],
   );
 
   const preview = drag

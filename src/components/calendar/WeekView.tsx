@@ -31,7 +31,8 @@ export function WeekView({ currentDate, events, onEventChange, onRequestCreate }
   const days = getWeekDays(currentDate);
   const today = new Date();
   const totalHeight = HOURS.length * HOUR_HEIGHT;
-  const { onColumnMouseDown, preview } = useDragCreate(onRequestCreate);
+  const dhbwEvents = events.filter((e) => e.source === "dhbw");
+  const { onColumnMouseDown, preview } = useDragCreate(onRequestCreate, dhbwEvents);
 
   // Spaltenbreite messen, damit EventBlock weiß, wie viele px = 1 Tag
   const colRef = useRef<HTMLDivElement>(null);
@@ -129,6 +130,7 @@ export function WeekView({ currentDate, events, onEventChange, onRequestCreate }
                   dayWidth={dayWidth}
                   column={column}
                   columns={columns}
+                  blockedEvents={dhbwEvents}
                 />
               ))}
             </div>

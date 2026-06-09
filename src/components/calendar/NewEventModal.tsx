@@ -8,6 +8,7 @@ import {
   EventType,
   RepeatRule,
   SUBJECTS,
+  overlapsAnyDhbwEvent,
 } from "./events";
 
 interface NewEventModalProps {
@@ -16,6 +17,8 @@ interface NewEventModalProps {
   onCreate: (event: CalEvent) => void;
   defaultStart?: Date;
   defaultEnd?: Date;
+  /** DHBW-Events, in die kein eigener Termin gelegt werden darf. */
+  blockedEvents?: CalEvent[];
 }
 
 function toLocalInputValue(d: Date): string {
@@ -38,6 +41,7 @@ export function NewEventModal({
   onCreate,
   defaultStart,
   defaultEnd,
+  blockedEvents = [],
 }: NewEventModalProps) {
   const initialStart = defaultStart ?? roundedHour(new Date(), 1);
   const initialEnd =
@@ -55,6 +59,7 @@ export function NewEventModal({
   const [end, setEnd] = useState<string>(toLocalInputValue(initialEnd));
   const [repeat, setRepeat] = useState<RepeatRule>("none");
   const [notes, setNotes] = useState("");
+  const [conflictError, setConflictError] = useState<string | null>(null);
 
   // Reset bei Schließen/Öffnen
   useEffect(() => {
@@ -74,6 +79,7 @@ export function NewEventModal({
       setEnd(toLocalInputValue(e));
       setRepeat("none");
       setNotes("");
+      setConflictError(null);
     }
   }, [open, defaultStart, defaultEnd]);
 
@@ -96,6 +102,14 @@ export function NewEventModal({
     const endDate = new Date(end);
     if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
     if (endDate.getTime() <= startDate.getTime()) return;
+
+    // DHBW-Konfliktprüfung
+    if (overlapsAnyDhbwEvent(startDate, endDate, blockedEvents)) {
+      setConflictError(
+        "Dieser Zeitraum überschneidet sich mit einer DHBW-Vorlesung. Bitte wähle einen anderen Zeitraum.",
+      );
+      return;
+    }
 
     const typeColor =
       EVENT_TYPES.find((t) => t.name === type)?.color ??
@@ -208,7 +222,7 @@ export function NewEventModal({
                 type="datetime-local"
                 required
                 value={start}
-                onChange={(e) => setStart(e.target.value)}
+                onChange={(e) => { setStart(e.target.value); setConflictError(null); }}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"
               />
             </div>
@@ -221,7 +235,7 @@ export function NewEventModal({
                 type="datetime-local"
                 required
                 value={end}
-                onChange={(e) => setEnd(e.target.value)}
+                onChange={(e) => { setEnd(e.target.value); setConflictError(null); }}
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"
               />
             </div>
@@ -268,21 +282,28 @@ export function NewEventModal({
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-end gap-2 pt-2 border-t border-gray-100">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-            >
-              Abbrechen
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 text-sm font-bold text-white rounded-lg shadow-sm transition-opacity hover:opacity-90 active:scale-95"
-              style={{ backgroundColor: "#ef233c" }}
-            >
-              Speichern
-            </button>
+          <div className="flex flex-col gap-2 pt-2 border-t border-gray-100">
+            {conflictError && (
+              <p className="text-xs font-medium text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                {conflictError}
+              </p>
+            )}
+            <div className="flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+              >
+                Abbrechen
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-bold text-white rounded-lg shadow-sm transition-opacity hover:opacity-90 active:scale-95"
+                style={{ backgroundColor: "#ef233c" }}
+              >
+                Speichern
+              </button>
+            </div>
           </div>
         </form>
       </div>

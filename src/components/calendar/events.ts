@@ -68,6 +68,24 @@ export function eventOverlapsDay(ev: CalEvent, day: Date): boolean {
   return ev.start.getTime() <= dayEnd.getTime() && ev.end.getTime() > dayStart.getTime();
 }
 
+/**
+ * True wenn [start, end) zeitlich mit irgendeinem DHBW-Event überlappt.
+ * Ganztägige Events werden ignoriert (kein konkretes Zeitfenster).
+ */
+export function overlapsAnyDhbwEvent(
+  start: Date,
+  end: Date,
+  events: CalEvent[],
+): boolean {
+  return events.some(
+    (ev) =>
+      ev.source === "dhbw" &&
+      !ev.allDay &&
+      start.getTime() < ev.end.getTime() &&
+      end.getTime() > ev.start.getTime(),
+  );
+}
+
 /** Minuten ab DAY_START_HOUR (kann negativ / >range sein, Caller clampt). */
 export function minutesFromDayStart(date: Date): number {
   return (date.getHours() - DAY_START_HOUR) * 60 + date.getMinutes();

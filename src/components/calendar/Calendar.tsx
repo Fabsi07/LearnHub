@@ -14,7 +14,6 @@ import {
   startOfWeek,
 } from "./utils";
 import { CalEvent, expandRecurring } from "./events";
-import { useExternalEvents } from "@/lib/calendar/useExternalEvents";
 
 type View = "month" | "week" | "day" | "list";
 
@@ -22,21 +21,23 @@ interface CalendarProps {
   localEvents: CalEvent[];
   onLocalEventsChange: (next: CalEvent[]) => void;
   onRequestCreate?: (defaults?: { start?: Date; end?: Date }) => void;
+  externalEvents: CalEvent[];
+  externalLoading: boolean;
+  externalError: string | null;
+  refreshExternal: (force?: boolean) => void;
 }
 
 export function Calendar({
   localEvents,
   onLocalEventsChange,
   onRequestCreate,
+  externalEvents,
+  externalLoading,
+  externalError,
+  refreshExternal,
 }: CalendarProps) {
   const [view, setView] = useState<View>("week");
   const [currentDate, setCurrentDate] = useState(new Date());
-  const {
-    events: externalEvents,
-    loading: externalLoading,
-    error: externalError,
-    refresh: refreshExternal,
-  } = useExternalEvents();
 
   // Sichtbarer Zeitraum je nach View
   function getViewRange(): { start: Date; end: Date } {

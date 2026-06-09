@@ -12,6 +12,7 @@ import {
   durationToHeight,
   formatTime,
   snapMinutes,
+  overlapsAnyDhbwEvent,
 } from "./events";
 
 interface EventBlockProps {
@@ -22,6 +23,8 @@ interface EventBlockProps {
   /** Spalten-Layout für überlappende Events. */
   column?: number;
   columns?: number;
+  /** DHBW-Events, in die nicht verschoben/vergrößert werden darf. */
+  blockedEvents?: CalEvent[];
 }
 
 type DragMode = "move" | "resize-top" | "resize-bottom";
@@ -50,6 +53,7 @@ export function EventBlock({
   dayWidth,
   column = 0,
   columns = 1,
+  blockedEvents = [],
 }: EventBlockProps) {
   const dragRef = useRef<DragState | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
@@ -163,6 +167,10 @@ export function EventBlock({
         newStart !== event.start.getTime() ||
         newEnd !== event.end.getTime()
       ) {
+        if (overlapsAnyDhbwEvent(new Date(newStart), new Date(newEnd), blockedEvents)) {
+          setPreview(null);
+          return;
+        }
         onChange({
           ...event,
           start: new Date(newStart),
@@ -178,6 +186,10 @@ export function EventBlock({
         newStart = drag.origEnd.getTime() - minLen;
       }
       if (newStart !== event.start.getTime()) {
+        if (overlapsAnyDhbwEvent(new Date(newStart), event.end, blockedEvents)) {
+          setPreview(null);
+          return;
+        }
         onChange({ ...event, start: new Date(newStart) });
       }
     } else if (drag.mode === "resize-bottom") {
@@ -189,6 +201,10 @@ export function EventBlock({
         newEnd = drag.origStart.getTime() + minLen;
       }
       if (newEnd !== event.end.getTime()) {
+        if (overlapsAnyDhbwEvent(event.start, new Date(newEnd), blockedEvents)) {
+          setPreview(null);
+          return;
+        }
         onChange({ ...event, end: new Date(newEnd) });
       }
     }
