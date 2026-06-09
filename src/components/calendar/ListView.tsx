@@ -7,6 +7,7 @@ import { MONTHS, WEEKDAYS, isSameDay } from "./utils";
 interface ListViewProps {
   events: CalEvent[];
   currentDate: Date;
+  onEventClick?: (event: CalEvent) => void;
 }
 
 function formatTimeRange(ev: CalEvent): string {
@@ -41,7 +42,7 @@ function dayKey(d: Date): string {
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 }
 
-export function ListView({ events, currentDate }: ListViewProps) {
+export function ListView({ events, currentDate, onEventClick }: ListViewProps) {
   const from = new Date(currentDate);
   from.setHours(0, 0, 0, 0);
 
@@ -97,10 +98,13 @@ export function ListView({ events, currentDate }: ListViewProps) {
 
           <ul className="space-y-2 ml-[60px] pl-0">
             {items.map((ev) => (
-              <li
-                key={ev.id}
-                className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors"
-              >
+              <li key={ev.id}>
+                <button
+                  type="button"
+                  onClick={() => onEventClick?.(ev)}
+                  onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onEventClick?.(ev); } }}
+                  className="flex w-full items-start gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                >
                 <span
                   className={`mt-1 w-1 self-stretch rounded-full ${ev.color}`}
                   aria-hidden
@@ -121,6 +125,7 @@ export function ListView({ events, currentDate }: ListViewProps) {
                     </div>
                   ) : null}
                 </div>
+                </button>
               </li>
             ))}
           </ul>

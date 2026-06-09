@@ -6,6 +6,7 @@ import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { DayView } from "./DayView";
 import { ListView } from "./ListView";
+import { EventDetailModal } from "./EventDetailModal";
 import {
   formatMonthYear,
   formatWeekRange,
@@ -38,6 +39,7 @@ export function Calendar({
 }: CalendarProps) {
   const [view, setView] = useState<View>("week");
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedEvent, setSelectedEvent] = useState<CalEvent | null>(null);
 
   // Sichtbarer Zeitraum je nach View
   function getViewRange(): { start: Date; end: Date } {
@@ -80,6 +82,15 @@ export function Calendar({
   function handleEventChange(next: CalEvent) {
     if (next.readOnly) return;
     onLocalEventsChange(localEvents.map((e) => (e.id === next.id ? next : e)));
+  }
+
+  function handleEventSave(updated: CalEvent) {
+    if (updated.readOnly) return;
+    onLocalEventsChange(localEvents.map((e) => (e.id === updated.id ? updated : e)));
+  }
+
+  function handleEventDelete(id: string) {
+    onLocalEventsChange(localEvents.filter((e) => e.id !== id));
   }
 
   function goPrev() {
@@ -179,13 +190,18 @@ export function Calendar({
       {/* Body */}
       <div className="flex-1 overflow-auto">
         {view === "month" ? (
-          <MonthView currentDate={currentDate} events={visibleEvents} />
+          <MonthView
+            currentDate={currentDate}
+            events={visibleEvents}
+            onEventClick={setSelectedEvent}
+          />
         ) : view === "week" ? (
           <WeekView
             currentDate={currentDate}
             events={visibleEvents}
             onEventChange={handleEventChange}
             onRequestCreate={onRequestCreate}
+            onEventClick={setSelectedEvent}
           />
         ) : view === "day" ? (
           <DayView
@@ -193,11 +209,24 @@ export function Calendar({
             events={visibleEvents}
             onEventChange={handleEventChange}
             onRequestCreate={onRequestCreate}
+            onEventClick={setSelectedEvent}
           />
         ) : (
-          <ListView currentDate={currentDate} events={visibleEvents} />
+          <ListView
+            currentDate={currentDate}
+            events={visibleEvents}
+            onEventClick={setSelectedEvent}
+          />
         )}
       </div>
+
+      <EventDetailModal
+        event={selectedEvent}
+        onClose={() => setSelectedEvent(null)}
+        onSave={handleEventSave}
+        onDelete={handleEventDelete}
+        blockedEvents={externalEvents.filter((e) => e.source === "dhbw")}
+      />
     </div>
   );
 }
