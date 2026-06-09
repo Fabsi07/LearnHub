@@ -18,24 +18,25 @@ const AUTH_ENABLED = false;
 const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
 
 export function middleware(request: NextRequest) {
-  if (!AUTH_ENABLED) {
-    return NextResponse.next();
-  }
-
   const { pathname } = request.nextUrl;
   const isLoggedIn = request.cookies.has("lh_session");
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
-  if (!isLoggedIn && !isPublic) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
+  if (AUTH_ENABLED) {
+    // Vollständiger Schutz: nicht eingeloggte User → /login
+    if (!isLoggedIn && !isPublic) {
+      const loginUrl = new URL("/login", request.url);
+      loginUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    // Eingeloggte User auf /login → /dashboard
+    if (isLoggedIn && pathname === "/login") {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
-  if (isLoggedIn && pathname === "/login") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
-  }
-
+  // AUTH_ENABLED = false: App ist offen, aber /login ist trotzdem der Einstiegspunkt.
+  // Der Redirect von / → /login passiert bereits in src/app/page.tsx.
   return NextResponse.next();
 }
 
