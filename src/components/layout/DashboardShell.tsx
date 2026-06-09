@@ -6,9 +6,13 @@ import { Topbar } from "./Topbar";
 
 interface DashboardShellProps {
   children?: React.ReactNode;
+  currentUser?: {
+    email: string;
+    displayName: string;
+  };
 }
 
-export function DashboardShell({ children }: DashboardShellProps) {
+export function DashboardShell({ children, currentUser }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const sidebarWidth = 260;
@@ -23,7 +27,7 @@ export function DashboardShell({ children }: DashboardShellProps) {
         className="fixed top-0 left-0 h-screen z-40 transition-all duration-300"
         style={{ width: sidebarOpen ? sidebarWidth : 0, overflow: "hidden" }}
       >
-        <Sidebar darkMode={darkMode} />
+        <Sidebar darkMode={darkMode} currentUser={currentUser} />
       </div>
 
       {/* Rechter Hauptbereich */}
