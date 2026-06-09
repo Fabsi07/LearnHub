@@ -15,9 +15,11 @@ export function Topbar({ sidebarOpen, onToggleSidebar, darkMode, onToggleDarkMod
   const router = useRouter();
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
-    router.push("/login");
-    router.refresh();
+    const res = await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
+    if (res && res.ok) {
+      router.push("/login");
+      router.refresh();
+    }
   }
   return (
     <div className="flex flex-col">
