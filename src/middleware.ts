@@ -19,19 +19,19 @@ const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const isLoggedIn = request.cookies.has("lh_session");
+  const hasSessionCookie = request.cookies.has("lh_session");
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   if (AUTH_ENABLED) {
     // Vollständiger Schutz: nicht eingeloggte User → /login
-    if (!isLoggedIn && !isPublic) {
+    if (!hasSessionCookie && !isPublic) {
       const loginUrl = new URL("/login", request.url);
       const redirectTo = request.nextUrl.pathname + request.nextUrl.search;
       loginUrl.searchParams.set("redirect", redirectTo);
       return NextResponse.redirect(loginUrl);
     }
     // Eingeloggte User auf /login oder /register → /dashboard
-    if (isLoggedIn && (pathname === "/login" || pathname === "/register")) {
+    if (hasSessionCookie && (pathname === "/login" || pathname === "/register")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
