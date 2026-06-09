@@ -1,24 +1,29 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 /**
- * Middleware für LearnHub.
- *
- * Aktuell ist die Authentifizierung **deaktiviert** – jede Route ist offen
- * erreichbar. Sobald echtes Auth integriert ist (z.B. NextAuth oder Clerk),
- * den `AUTH_ENABLED`-Flag auf `true` setzen.
+ * Middleware für LearnHub — Auth-Schutz (C3).
  *
  * Schutzlogik:
- *   - Eingeloggte User auf `/login` werden auf `/dashboard` umgeleitet.
- *   - Nicht eingeloggte User auf geschützten Pfaden landen auf `/login`.
+ *   - Nicht eingeloggte User auf geschützten Pfaden → /login?redirect=<pfad>
+ *   - Eingeloggte User auf /login oder /register → /dashboard
  *
- * Static Assets (Bilder, _next/* etc.) werden über `config.matcher` ausgenommen.
+ * Die Middleware prüft nur die Cookie-Existenz, nicht die DB-Gültigkeit
+ * (Edge-Runtime hat keinen Prisma-Zugang). Echte Session-Validierung
+ * erfolgt in Server Components und Route Handlern via getSession().
+ * Siehe docs/auth-concept.md §6.3.
+ *
+ * Static Assets werden über config.matcher ausgenommen.
  */
-const AUTH_ENABLED = false;
+const AUTH_ENABLED = true;
 
+// Pfade die ohne Login erreichbar sein müssen.
+// /api/auth/* ist bereits durch den matcher ("!api") vom Middleware-Matching ausgenommen.
 const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  // Nur Cookie-Existenz prüfen – keine DB-Validierung (Edge-Runtime hat kein Prisma).
+  // Echte Session-Gültigkeit wird in Server Components / Route Handlern via getSession() geprüft.
   const hasSessionCookie = request.cookies.has("lh_session");
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
@@ -36,8 +41,6 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // AUTH_ENABLED = false: App ist offen, aber /login ist trotzdem der Einstiegspunkt.
-  // Der Redirect von / → /login passiert bereits in src/app/page.tsx.
   return NextResponse.next();
 }
 

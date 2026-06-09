@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,19 +10,44 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 export function LoginForm() {
   const router = useRouter();
-  const [username, setUsername] = useState("");
+  const searchParams = useSearchParams();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    // TODO: Echte Auth-Logik. Aktuell: Stub – einfach aufs Dashboard weiterleiten.
-    // Wenn middleware.ts AUTH_ENABLED = true gesetzt wird, hier noch ein
-    // Session-Cookie setzen (z.B. document.cookie = "lh_session=...; path=/").
-    void rememberMe;
-    void username;
-    void password;
-    router.push("/dashboard");
+    setError(null);
+    setIsLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, rememberMe }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError((data as { error?: string }).error ?? "Anmeldung fehlgeschlagen.");
+        return;
+      }
+
+      // ?redirect= nur akzeptieren wenn es ein lokaler Pfad ist (Open-Redirect-Schutz)
+      const redirect = searchParams.get("redirect");
+      const target =
+        redirect && redirect.startsWith("/") && !redirect.startsWith("//")
+          ? redirect
+          : "/dashboard";
+
+      router.push(target);
+    } catch {
+      setError("Verbindungsfehler. Bitte versuche es erneut.");
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -52,8 +77,8 @@ export function LoginForm() {
             id="username"
             type="text"
             placeholder="name@stud.hs.de"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
             autoComplete="username"
             className="h-11 w-full border-gray-200 bg-white placeholder:text-gray-400 focus-visible:ring-brand-red"
@@ -104,13 +129,21 @@ export function LoginForm() {
           </Link>
         </div>
 
+        {/* Fehlermeldung */}
+        {error && (
+          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
+            {error}
+          </p>
+        )}
+
         {/* 4. CTA Button */}
         <div className="pt-2">
           <Button
             type="submit"
-            className="w-full h-12 rounded-xl bg-brand-red hover:bg-brand-red-dark text-white font-bold text-base"
+            disabled={isLoading}
+            className="w-full h-12 rounded-xl bg-brand-red hover:bg-brand-red-dark text-white font-bold text-base disabled:opacity-60"
           >
-            Anmelden
+            {isLoading ? "Anmelden…" : "Anmelden"}
           </Button>
         </div>
 
