@@ -113,15 +113,13 @@ Termine können manuell angelegt, bearbeitet, verschoben und gelöscht werden. T
 **M6 — Algorithmische Lernplan-Erstellung**
 Beim Anlegen eines Lernplans kann der Nutzer wählen, ob er den Plan leer beginnt oder automatisch berechnen lässt. Für die automatische Berechnung gibt er an:
 
-- die Veranstaltung / das Fach,
-- das Zieldatum,
-- den Zieltyp,
-- die Liste der zu lernenden Themen oder Aufgaben,
-- den geschätzten Zeitaufwand je Thema oder Aufgabe,
-- die subjektive Schwierigkeit je Thema oder Aufgabe,
-- die ungefähr verfügbare Lernzeit pro Woche oder pro Tag,
-- optionale Sperrzeiten oder bevorzugte Lerntage.
-  Anmerkung: diese Eingabeparameter sind noch nicht final und werden bei der Konzipierung des Algorithmus besprochen und festgelegt.
+- Tage bis zur Deadline
+- Volumen der Klausur (Stand jetzt in Seiten gemessen)
+- Schwierigkeit der Klausur
+- Vorwissen des User 
+- ECTS Punkte von der Klausur
+
+(Genaue Formel ist in LearnHub/docs/Algorithmus hinterlegt)
 
 Die Anwendung berechnet daraus eine Liste konkreter Aufgaben oder Lerneinheiten mit Fälligkeitsdaten und geschätzten Bearbeitungszeiten. Die Berechnung erfolgt deterministisch anhand festgelegter Regeln, zum Beispiel nach verbleibender Zeit bis zum Zieldatum, Aufwand, Schwierigkeit und gleichmäßiger Verteilung. Der Nutzer kann den berechneten Plan anschließend frei bearbeiten.
 
@@ -360,7 +358,111 @@ Diese Punkte sind ausdrücklich **nicht** Teil des aktuellen verbindlichen Proje
 
 ---
 
-## 17. Glossar
+## 17. Feature-Checkliste
+
+Gesamtübersicht aller geplanten Features nach Bereich.
+
+---
+
+### Authentifizierung & Nutzerkonten
+
+- [ ] Registrierung mit E-Mail und Passwort
+- [ ] Login / Logout
+- [ ] Session via HTTP-Only-Cookie
+- [ ] Passwort-Hashing (bcrypt)
+- [ ] „Eingeloggt bleiben"-Option
+- [ ] Schutz aller Routen (Middleware / Auth-Guard)
+
+---
+
+### Dashboard
+
+- [ ] Dashboard-Shell (Layout)
+- [ ] Anstehende Aufgaben über alle Lernpläne hinweg
+- [ ] Heutige & morgige Kalendertermine
+- [ ] Schnellzugriff auf aktive Lernpläne
+- [ ] Visuelle Hervorhebung überfälliger Aufgaben
+- [ ] Demonstrationsdaten zum Befüllen
+
+---
+
+### Kalender
+
+- [ ] Wochenansicht
+- [ ] Tagesansicht
+- [ ] Monatsansicht
+- [ ] Listenansicht
+- [ ] DHBW-Kalender-Integration via ICS-Feed
+- [ ] Termine manuell anlegen (per Drag oder Button)
+- [ ] Drag-to-Create (Maus ziehen)
+- [ ] Termin-Typen farblich unterscheidbar
+- [ ] Termine bearbeiten
+- [ ] Termine löschen
+- [ ] Termine verschieben (Drag & Drop)
+- [ ] Filter nach Termintyp
+- [ ] Verknüpfung Aufgabe ↔ Kalendereintrag
+
+---
+
+### Lernpläne
+
+- [ ] Lernplan anlegen (Titel, Fach, Beschreibung, Zieltyp, Zieldatum)
+- [ ] Lernplan bearbeiten
+- [ ] Lernplan löschen (inkl. zugehöriger Aufgaben)
+- [ ] Übersicht aller Lernpläne
+
+---
+
+### Aufgaben (innerhalb von Lernplänen)
+
+- [ ] Aufgabe anlegen (Titel, Aufwand, Schwierigkeit, Fälligkeitsdatum)
+- [ ] Aufgabe bearbeiten
+- [ ] Aufgabe abhaken / als erledigt markieren
+- [ ] Aufgabe löschen
+- [ ] Aufgaben in Kalender sichtbar machen
+
+---
+
+### Algorithmische Lernplanung
+
+- [ ] Automatische Lernplan-Berechnung aus Eingaben (Tage bis Deadline, Seitenvolumen, Schwierigkeit, Vorwissen, ECTS)
+- [ ] Deterministische Planungslogik (reproduzierbare Ergebnisse)
+- [ ] Manuelle Nachbearbeitung des berechneten Plans
+- [ ] Umplanung (Reschedule) offener Aufgaben
+- [ ] Transparenzanzeige: Warum liegt eine Aufgabe an diesem Tag?
+
+---
+
+### KI-Integration (optional)
+
+- [ ] KI-Check eines bestehenden Lernplans mit Verbesserungsvorschlägen
+- [ ] KI-gestützte alternative Planvarianten
+- [ ] KI-gestützte Aufgabenextraktion aus Lernmaterialien
+
+---
+
+### Backend & Datenbank
+
+- [ ] PostgreSQL via Docker (lokal)
+- [ ] Prisma-Schema mit allen Domain-Modellen
+- [ ] Datenbankmigrationen
+- [ ] Prisma Client eingebunden
+- [ ] API: Lernpläne (CRUD)
+- [ ] API: Aufgaben (CRUD)
+- [ ] API: Kalendertermine (CRUD)
+- [ ] API: Algorithmische Planberechnung
+
+---
+
+### Einstellungen & Sonstiges
+
+- [ ] Einstellungsseite
+- [ ] Benachrichtigungsseite
+- [ ] Profil bearbeiten (Anzeigename)
+
+---
+
+## 18. Glossar
 
 | Begriff                                  | Bedeutung im Kontext von LearnHub                                                                                                                                              |
 | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
