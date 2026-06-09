@@ -1,38 +1,28 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { SESSION_COOKIE } from "@/lib/auth/cookie";
 
-/**
- * Middleware für LearnHub.
- *
- * Aktuell ist die Authentifizierung **deaktiviert** – jede Route ist offen
- * erreichbar. Sobald echtes Auth integriert ist (z.B. NextAuth oder Clerk),
- * den `AUTH_ENABLED`-Flag auf `true` setzen.
- *
- * Schutzlogik:
- *   - Eingeloggte User auf `/login` werden auf `/dashboard` umgeleitet.
- *   - Nicht eingeloggte User auf geschützten Pfaden landen auf `/login`.
- *
- * Static Assets (Bilder, _next/* etc.) werden über `config.matcher` ausgenommen.
- */
-const AUTH_ENABLED = false;
+const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/api/auth"];
 
-const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
+function isPublicPath(pathname: string) {
+  return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
+}
 
 export function middleware(request: NextRequest) {
-  if (!AUTH_ENABLED) {
-    return NextResponse.next();
-  }
-
-  const { pathname } = request.nextUrl;
-  const isLoggedIn = request.cookies.has("lh_session");
-  const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  const { pathname, search } = request.nextUrl;
+  const isLoggedIn = request.cookies.has(SESSION_COOKIE);
+  const isPublic = isPublicPath(pathname);
 
   if (!isLoggedIn && !isPublic) {
+    if (pathname.startsWith("/api/")) {
+      return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
+    }
+
     const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
+    loginUrl.searchParams.set("redirect", `${pathname}${search}`);
     return NextResponse.redirect(loginUrl);
   }
 
-  if (isLoggedIn && pathname === "/login") {
+  if (isLoggedIn && (pathname === "/login" || pathname === "/register")) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
@@ -41,7 +31,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Alles außer API-Routen, Next.js-Interna und statische Assets.
-    "/((?!api|_next/static|_next/image|favicon.ico|icons|images).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons|images).*)",
   ],
 };

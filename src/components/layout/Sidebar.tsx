@@ -25,6 +25,23 @@ const navItems = [
 
 interface SidebarProps {
   darkMode?: boolean;
+  currentUser?: {
+    email: string;
+    displayName: string;
+  };
+}
+
+function getInitials(displayName?: string) {
+  if (!displayName) return "LH";
+
+  const initials = displayName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+
+  return initials || "LH";
 }
 
 function isActiveLink(currentPath: string, href: string) {
@@ -35,9 +52,11 @@ function isActiveLink(currentPath: string, href: string) {
   return currentPath === target || currentPath.startsWith(`${target}/`);
 }
 
-export function Sidebar({ darkMode }: SidebarProps) {
+export function Sidebar({ darkMode, currentUser }: SidebarProps) {
   const pathname = usePathname() ?? "";
   const bg = darkMode ? "#2a2a2a" : "#5f6a70";
+  const displayName = currentUser?.displayName ?? "LearnHub";
+  const email = currentUser?.email ?? "";
 
   return (
     <div
@@ -122,12 +141,12 @@ export function Sidebar({ darkMode }: SidebarProps) {
           className="flex shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
           style={{ backgroundColor: "#ef233c", width: 38, height: 38 }}
         >
-          MM
+          {getInitials(displayName)}
         </div>
         <div className="flex flex-col">
-          <span className="text-sm font-semibold text-white">Max Mustermann</span>
+          <span className="text-sm font-semibold text-white">{displayName}</span>
           <span className="text-xs" style={{ color: "#aeb4b8" }}>
-            demo@learnhub.de
+            {email}
           </span>
         </div>
       </Link>
