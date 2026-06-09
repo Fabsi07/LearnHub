@@ -62,6 +62,9 @@ export function CalendarPageContent() {
   }
 
   async function handleCreate(ev: CalEvent) {
+    // Optimistic: sofort im UI anzeigen
+    setLocalEvents((prev) => [...prev, ev]);
+
     try {
       const res = await fetch("/api/calendar/events", {
         method: "POST",
@@ -78,13 +81,22 @@ export function CalendarPageContent() {
           repeat: ev.repeat ?? "none",
         }),
       });
-      const data = await res.json();
-      // Ersetze temporäre local-ID mit echter DB-ID
-      const saved = deserializeEvent(data.event as Record<string, unknown>);
-      setLocalEvents((prev) => [...prev, saved]);
+
+      const data = (await res.json().catch(() => null)) as
+        | { event?: Record<string, unknown>; error?: string }
+        | null;
+
+      if (!res.ok || !data?.event) {
+        throw new Error(data?.error ?? "Event konnte nicht gespeichert werden.");
+      }
+
+      const saved = deserializeEvent(data.event);
+      // Ersetze optimistisch eingefügtes local-Event mit der DB-Version (ohne lokale Änderungen zu überschreiben)
+      setLocalEvents((prev) =>
+        prev.map((e) => (e.id === ev.id ? { ...saved, ...e, id: saved.id } : e)),
+      );
     } catch {
-      // Fallback: Event nur lokal halten wenn DB nicht erreichbar
-      setLocalEvents((prev) => [...prev, ev]);
+      // Fallback: Optimistic-Event bleibt lokal erhalten (DB nicht erreichbar / Fehler)
     }
   }
 
