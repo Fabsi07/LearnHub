@@ -58,9 +58,22 @@ export async function PATCH(
 /** DELETE /api/calendar/events/[id] — Event löschen */
 export async function DELETE(
   _req: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: { id: string } },
 ) {
-  const { id } = await params;
-  await prisma.calendarEvent.delete({ where: { id } });
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
+  }
+
+  const { id } = params;
+
+  const deleted = await prisma.calendarEvent.deleteMany({
+    where: { id, ownerId: session.userId, source: "LOCAL" },
+  });
+
+  if (deleted.count === 0) {
+    return NextResponse.json({ error: "Event nicht gefunden." }, { status: 404 });
+  }
+
   return NextResponse.json({ ok: true });
 }
