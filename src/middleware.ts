@@ -56,6 +56,5 @@ export const config = {
   matcher: [
     // API-Routen einschließen damit die 401-Logik greift.
     // _next-Interna und statische Assets ausschließen.
-    "/((?!_next/static|_next/image|favicon.ico|icons|images).*)",
-  ],
+    "/((?!_next|favicon.ico|icons|images).*)",
 };
