@@ -124,7 +124,10 @@ model CalendarEvent {
   allDay      Boolean     @default(false)
   type        EventType
   location    String?
-  ownerId     String
+  notes       String?
+  subject     String?
+  repeat      String?     // "none" | "daily" | "weekly"
+  ownerId     String?
   // Quelle des Events. EXTERNAL z.B. aus DHBW-ICS-Feed → read-only im UI.
   source      EventSource @default(LOCAL)
   // UID aus externer Quelle (ICS), für Dedupe bei späterem persistenten Import.
@@ -137,7 +140,7 @@ model CalendarEvent {
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 
-  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   // Bei Task-Löschung bleibt der Kalendereintrag erhalten und verliert nur
   // die Verknüpfung (PRD §8.1).
   task      Task?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
