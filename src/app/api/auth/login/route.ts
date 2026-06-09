@@ -20,8 +20,9 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
+  } catch {
     return NextResponse.json(
-      { error: "Ungueltiger Anfrage-Body." },
+      { error: "Ungültiger Anfrage-Body." },
       { status: 400 },
     );
   }
