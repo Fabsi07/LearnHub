@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
   calculateStudyPlan,
+  CRITICAL_STUDY_HOURS_PER_DAY,
   type AlgorithmResult,
   type AlgorithmInput,
 } from "@/lib/calculations/studyPlanAlgorithm";
@@ -46,6 +47,11 @@ function handleSubmit(e: React.FormEvent) {
 
   const selectClass =
     "h-10 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20";
+
+  const plannedHoursPerDay =
+    result?.planType === "kritisch"
+      ? Math.min(result.hoursPerDay, CRITICAL_STUDY_HOURS_PER_DAY)
+      : result?.hoursPerDay;
 
   return (
     <div className="flex flex-col h-full p-6 gap-6 overflow-auto">
@@ -165,7 +171,7 @@ function handleSubmit(e: React.FormEvent) {
             <div className="grid grid-cols-3 gap-3">
               {[
                 { label: "Gesamtstunden", value: `${result.totalHours} h` },
-                { label: "Stunden/Tag", value: `${result.hoursPerDay} h` },
+                { label: "Geplant/Tag", value: `${plannedHoursPerDay} h` },
                 { label: "Tage bis Klausur", value: `${result.daysUntilDeadline}` },
               ].map(({ label, value }) => (
                 <div key={label} className="flex flex-col items-center justify-center rounded-xl bg-gray-50 border border-gray-200 p-3 text-center">
@@ -174,6 +180,13 @@ function handleSubmit(e: React.FormEvent) {
                 </div>
               ))}
             </div>
+
+            {result.planType === "kritisch" ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                Rechnerisch wären {result.hoursPerDay} h pro Tag nötig. Der kritische Plan zeigt maximal{" "}
+                {CRITICAL_STUDY_HOURS_PER_DAY} h pro Tag und priorisiert die wichtigsten Inhalte.
+              </div>
+            ) : null}
 
             {/* Faktoren */}
             <div className="rounded-xl bg-gray-50 border border-gray-200 p-4">

@@ -5,6 +5,8 @@
 
 export type PlanType = "normal" | "kritisch";
 
+export const CRITICAL_STUDY_HOURS_PER_DAY = 2;
+
 export interface AlgorithmInput {
   /** Datum der Klausur */
   deadlineDate: Date;
@@ -162,7 +164,8 @@ export function calculateStudyPlan(input: AlgorithmInput): AlgorithmResult {
   // Formel: Gesamtstunden = 25 × D × ((S + W + V + C) / 4)
   const totalHours = Math.round(25 * D * ((S + W + V + C) / 4) * 10) / 10;
   const hoursPerDay = Math.round((totalHours / daysUntilDeadline) * 100) / 100;
-  const planType: PlanType = hoursPerDay > 2 ? "kritisch" : "normal";
+  const planType: PlanType =
+    hoursPerDay > CRITICAL_STUDY_HOURS_PER_DAY ? "kritisch" : "normal";
 
   const phases =
     planType === "normal"
