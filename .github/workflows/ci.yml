@@ -43,3 +43,7 @@ jobs:
 
       - name: Build
         run: npm run build
+        env:
+          # Dummy-URL damit Prisma Client beim Build-Import nicht abstuerzt.
+          # Es wird keine echte DB-Verbindung aufgebaut.
+          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
