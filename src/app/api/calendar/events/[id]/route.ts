@@ -21,14 +21,14 @@ const TYPE_COLOR: Record<CalEventType, string> = {
 /** PATCH /api/calendar/events/[id] — Start/End eines Events aktualisieren (Drag) */
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
 
   let body: unknown;
   try {
@@ -133,14 +133,14 @@ export async function PATCH(
 /** DELETE /api/calendar/events/[id] — Event löschen */
 export async function DELETE(
   _req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const session = await getSession();
   if (!session) {
     return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
 
   const deleted = await prisma.calendarEvent.deleteMany({
     where: { id, ownerId: session.userId, source: "LOCAL" },
