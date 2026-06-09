@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import type { CurrentUser } from "@/lib/auth/session";
 
 type SettingsCategoryId = "profile" | "notifications" | "calendar";
 
@@ -44,12 +45,22 @@ const SELECT_CLASSES =
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
-export function SettingsPage() {
+export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(
+    currentUser?.avatarUrl ?? null,
+  );
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // displayName → Vorname / Nachname aufsplitten
+  const nameParts = currentUser?.displayName?.split(" ") ?? [];
+  const firstName = nameParts[0] ?? "";
+  const lastName = nameParts.slice(1).join(" ");
+  // Username-Fallback: Teil vor dem @
+  const username = currentUser?.email?.split("@")[0] ?? "";
 
   const tabParam = searchParams.get("tab");
   // S-2 Fix: Default-Tab ist 'profile'.
@@ -90,12 +101,32 @@ export function SettingsPage() {
       return;
     }
 
+    // Lokale Vorschau sofort anzeigen
     setAvatarPreview((previous) => {
-      if (previous) {
+      if (previous && previous.startsWith("blob:")) {
         URL.revokeObjectURL(previous);
       }
       return URL.createObjectURL(file);
     });
+
+    // Hochladen + in DB speichern
+    setAvatarUploading(true);
+    const formData = new FormData();
+    formData.append("avatar", file);
+    fetch("/api/profile/avatar", { method: "POST", body: formData })
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({})) as { error?: string };
+          setAvatarError(body.error ?? "Upload fehlgeschlagen.");
+        } else {
+          // File-Input leeren damit dieselbe Datei erneut auswählbar ist
+          if (fileInputRef.current) fileInputRef.current.value = "";
+          // Sidebar und Layout neu laden damit der neue Avatar sofort erscheint
+          router.refresh();
+        }
+      })
+      .catch(() => setAvatarError("Upload fehlgeschlagen. Bitte erneut versuchen."))
+      .finally(() => setAvatarUploading(false));
   }
 
   function handleCategoryChange(categoryId: SettingsCategoryId) {
@@ -142,8 +173,13 @@ export function SettingsPage() {
           <ProfileSettings
             avatarPreview={avatarPreview}
             avatarError={avatarError}
+            avatarUploading={avatarUploading}
             fileInputRef={fileInputRef}
             onAvatarChange={handleAvatarChange}
+            firstName={firstName}
+            lastName={lastName}
+            username={username}
+            email={currentUser?.email ?? ""}
           />
         )}
         {activeCategory === "notifications" && <NotificationSettings />}
@@ -156,16 +192,31 @@ export function SettingsPage() {
 interface ProfileSettingsProps {
   avatarPreview: string | null;
   avatarError: string | null;
+  avatarUploading: boolean;
   fileInputRef: React.RefObject<HTMLInputElement>;
   onAvatarChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
 }
 
 function ProfileSettings({
   avatarPreview,
   avatarError,
+  avatarUploading,
   fileInputRef,
   onAvatarChange,
+  firstName: initialFirstName,
+  lastName: initialLastName,
+  username: initialUsername,
+  email: initialEmail,
 }: ProfileSettingsProps) {
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
+  const [username, setUsername] = useState(initialUsername);
+  const [email, setEmail] = useState(initialEmail);
+
   // S-5 Fix: Submit-Handler verhindert Page-Reload (echte Persistenz folgt mit API).
   function handleProfileSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -196,10 +247,11 @@ function ProfileSettings({
             type="button"
             variant="outline"
             className="w-full"
+            disabled={avatarUploading}
             onClick={() => fileInputRef.current?.click()}
           >
             <ImagePlus className="h-4 w-4" />
-            Bild hochladen
+            {avatarUploading ? "Wird hochgeladen…" : "Bild hochladen"}
           </Button>
           {avatarError && (
             <p role="alert" className="text-center text-xs text-red-600">
@@ -219,16 +271,16 @@ function ProfileSettings({
         <form className="mt-5 grid gap-5" onSubmit={handleProfileSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Name" htmlFor="first-name">
-              {/* S-11 Fix: Generische Demo-Daten statt echter Personendaten. S-14 Fix: name-Attribut. */}
-              <Input id="first-name" name="firstName" defaultValue="Max" />
+              {/* S-14 Fix: name-Attribut. Controlled input — kein uncontrolled-Warning. */}
+              <Input id="first-name" name="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
             </Field>
             <Field label="Nachname" htmlFor="last-name">
-              <Input id="last-name" name="lastName" defaultValue="Mustermann" />
+              <Input id="last-name" name="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </Field>
           </div>
 
           <Field label="Username" htmlFor="username">
-            <Input id="username" name="username" defaultValue="max.mustermann" />
+            <Input id="username" name="username" value={username} onChange={(e) => setUsername(e.target.value)} />
           </Field>
 
           <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
@@ -237,7 +289,8 @@ function ProfileSettings({
                 id="email"
                 name="email"
                 type="email"
-                defaultValue="demo@learnhub.de"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </Field>
             <Button type="button" variant="outline" className="md:mb-0">

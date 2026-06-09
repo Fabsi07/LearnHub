@@ -1,15 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import type { CurrentUser } from "@/lib/auth/session";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 
 interface DashboardShellProps {
   children?: React.ReactNode;
-  currentUser?: {
-    email: string;
-    displayName: string;
-  };
+  currentUser?: CurrentUser;
 }
 
 export function DashboardShell({ children, currentUser }: DashboardShellProps) {

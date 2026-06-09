@@ -12,12 +12,17 @@ export interface CurrentUser {
   id: string;
   email: string;
   displayName: string;
+  avatarUrl?: string | null;
 }
 
 function generateSessionToken(): string {
   return randomBytes(32).toString("base64url");
 }
 
+/**
+ * Liest den Session-Cookie und gibt die userId zurück, oder null wenn
+ * keine gültige Session existiert. Löscht abgelaufene Sessions aus der DB.
+ */
 export async function getSession(): Promise<{ userId: string } | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
@@ -31,6 +36,7 @@ export async function getSession(): Promise<{ userId: string } | null> {
   if (!session) return null;
 
   if (session.expiresAt < new Date()) {
+    // Abgelaufene Session aus DB entfernen
     await prisma.session.delete({ where: { id: token } }).catch(() => undefined);
     return null;
   }
@@ -38,6 +44,10 @@ export async function getSession(): Promise<{ userId: string } | null> {
   return { userId: session.userId };
 }
 
+/**
+ * Gibt den eingeloggten User als CurrentUser zurück oder null.
+ * Wird in Server Components und Layout genutzt um Userdaten anzuzeigen.
+ */
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
@@ -47,11 +57,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     where: { id: token },
     include: {
       user: {
-        select: {
-          id: true,
-          email: true,
-          displayName: true,
-        },
+        select: { id: true, email: true, displayName: true, avatarUrl: true },
       },
     },
   });
@@ -66,6 +72,23 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   return session.user;
 }
 
+/**
+ * Löscht die aktuelle Session aus der DB und entwertet den Cookie.
+ */
+export async function destroyCurrentSession(): Promise<void> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+
+  if (token) {
+    await prisma.session.delete({ where: { id: token } }).catch(() => undefined);
+  }
+
+  cookieStore.set(SESSION_COOKIE, "", sessionCookieOptions(0));
+}
+
+/**
+ * Erstellt eine neue Session: Token erzeugen, DB-Eintrag anlegen, Cookie setzen.
+ */
 export async function createSession(
   userId: string,
   rememberMe: boolean,
@@ -82,15 +105,4 @@ export async function createSession(
 
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, sessionCookieOptions(ttlSeconds));
-}
-
-export async function destroyCurrentSession(): Promise<void> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
-
-  if (token) {
-    await prisma.session.delete({ where: { id: token } }).catch(() => undefined);
-  }
-
-  cookieStore.set(SESSION_COOKIE, "", sessionCookieOptions(0));
 }

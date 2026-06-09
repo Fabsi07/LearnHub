@@ -3,6 +3,7 @@
 import { LayoutDashboard, Calendar, BookOpen, MessageSquare, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { CurrentUser } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -25,22 +26,17 @@ const navItems = [
 
 interface SidebarProps {
   darkMode?: boolean;
-  currentUser?: {
-    email: string;
-    displayName: string;
-  };
+  currentUser?: CurrentUser;
 }
 
-function getInitials(displayName?: string) {
+function getInitials(displayName?: string): string {
   if (!displayName) return "LH";
-
   const initials = displayName
     .trim()
     .split(/\s+/)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
-
   return initials || "LH";
 }
 
@@ -138,10 +134,19 @@ export function Sidebar({ darkMode, currentUser }: SidebarProps) {
         className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/10"
       >
         <div
-          className="flex shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-bold text-white"
           style={{ backgroundColor: "#ef233c", width: 38, height: 38 }}
         >
-          {getInitials(displayName)}
+          {currentUser?.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={currentUser.avatarUrl}
+              alt={displayName}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            getInitials(displayName)
+          )}
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-semibold text-white">{displayName}</span>
