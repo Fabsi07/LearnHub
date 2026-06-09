@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 
-// Statischer Dummy-Hash für User-Enumeration-Schutz (auth-concept.md §4).
-// bcrypt mit Cost 12 – gleiche Arbeit wie bei echten Passwörtern.
-const DUMMY_HASH =
-  "$2a$12$dummy.hash.for.timing.protection.only.never.matches";
+// Dummy-Hash für User-Enumeration-Schutz (auth-concept.md §4).
+// Muss ein valider bcrypt-Hash sein, sonst wirft bcryptjs.compare() eine Exception.
+const DUMMY_HASH = bcrypt.hashSync("learnhub_dummy_password_for_timing", 12);
 
 const loginSchema = z.object({
   email: z.string().trim().email("Bitte gib eine gültige E-Mail-Adresse an."),
