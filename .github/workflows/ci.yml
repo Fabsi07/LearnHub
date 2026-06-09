@@ -1,6 +1,6 @@
 name: CI
 
-# Loescht broken Builds bevor sie auf main landen.
+# Verhindert kaputte Builds, bevor sie auf main landen.
 # Laeuft auf jedem PR gegen main sowie auf jedem Push auf main (als Safety-Net).
 on:
   pull_request:
