@@ -60,28 +60,60 @@ export async function GET() {
 
 /** POST /api/calendar/events — neues lokales Event speichern */
 export async function POST(req: Request) {
-  const body = await req.json().catch(() => null);
-  const { title, start, end, allDay, type, location, notes, subject, repeat } =
-    body ?? {};
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
+  }
 
-  if (!title || !start || !end || !type) {
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Ungültiger Anfrage-Body." }, { status: 400 });
+  }
+
+  const { title, start, end, allDay, type, location, notes, subject, repeat } =
+    (body ?? {}) as Record<string, unknown>;
+
+  if (
+    typeof title !== "string" ||
+    typeof start !== "string" ||
+    typeof end !== "string" ||
+    typeof type !== "string"
+  ) {
     return NextResponse.json({ error: "Pflichtfelder fehlen" }, { status: 400 });
   }
 
-  const dbType = TYPE_TO_DB[type as CalEventType] ?? "SONSTIGES";
+  if (!Object.prototype.hasOwnProperty.call(TYPE_TO_DB, type)) {
+    return NextResponse.json({ error: "Ungültiger Event-Typ" }, { status: 400 });
+  }
+
+  const startsAt = new Date(start);
+  const endsAt = new Date(end);
+  if (
+    Number.isNaN(startsAt.getTime()) ||
+    Number.isNaN(endsAt.getTime()) ||
+    endsAt.getTime() <= startsAt.getTime()
+  ) {
+    return NextResponse.json({ error: "Ungültiger Zeitraum" }, { status: 400 });
+  }
+
+  const repeatRule: RepeatRule =
+    repeat === "daily" || repeat === "weekly" || repeat === "none" ? repeat : "none";
 
   const row = await prisma.calendarEvent.create({
     data: {
-      title: String(title),
-      startsAt: new Date(start),
-      endsAt: new Date(end),
-      allDay: allDay ?? false,
-      type: dbType,
-      location: location ?? null,
-      notes: notes ?? null,
-      subject: subject ?? null,
-      repeat: repeat ?? "none",
+      title: title.trim(),
+      startsAt,
+      endsAt,
+      allDay: allDay === true,
+      type: TYPE_TO_DB[type as CalEventType],
+      location: typeof location === "string" ? location : null,
+      notes: typeof notes === "string" && notes.trim() ? notes : null,
+      subject: typeof subject === "string" ? subject : null,
+      repeat: repeatRule,
       source: "LOCAL",
+      ownerId: session.userId,
     },
   });
 
