@@ -64,9 +64,8 @@ export function Topbar({ sidebarOpen, onToggleSidebar, darkMode, onToggleDarkMod
             className="p-1.5 rounded-lg hover:bg-black/5 transition-colors"
             style={{ color: darkMode ? "#f3f4f6" : "#4b5563" }}
             title="Abmelden"
+            aria-label="Abmelden"
           >
-            <LogOut className="w-5 h-5" />
-          </button>
           <Image
             src="/images/Dhbw_Icon.png"
             alt="DHBW Logo"
