@@ -68,19 +68,19 @@ export function LoginForm() {
         {/* Feld 1: Benutzerkennung */}
         <div className="space-y-1.5">
           <Label
-            htmlFor="username"
+            htmlFor="email"
             className="text-xs font-semibold uppercase tracking-wider text-gray-500"
           >
             E-Mail
           </Label>
           <Input
-            id="username"
-            type="text"
+            id="email"
+            type="email"
             placeholder="name@stud.hs.de"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            autoComplete="username"
+            autoComplete="email"
             className="h-11 w-full border-gray-200 bg-white placeholder:text-gray-400 focus-visible:ring-brand-red"
           />
         </div>

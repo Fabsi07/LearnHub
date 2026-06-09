@@ -16,22 +16,25 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 const AUTH_ENABLED = true;
 
+// Cookie-Name als Konstante – muss mit createSession() / deleteSession() übereinstimmen.
+const SESSION_COOKIE_NAME = "lh_session";
+
 // Pfade die ohne Login erreichbar sein müssen.
 // /api/auth/* ist bereits durch den matcher ("!api") vom Middleware-Matching ausgenommen.
 const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
 
 export function middleware(request: NextRequest) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
   // Nur Cookie-Existenz prüfen – keine DB-Validierung (Edge-Runtime hat kein Prisma).
   // Echte Session-Gültigkeit wird in Server Components / Route Handlern via getSession() geprüft.
-  const hasSessionCookie = request.cookies.has("lh_session");
+  const hasSessionCookie = request.cookies.has(SESSION_COOKIE_NAME);
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   if (AUTH_ENABLED) {
     // Vollständiger Schutz: nicht eingeloggte User → /login
     if (!hasSessionCookie && !isPublic) {
       const loginUrl = new URL("/login", request.url);
-      const redirectTo = request.nextUrl.pathname + request.nextUrl.search;
+      const redirectTo = pathname + search;
       loginUrl.searchParams.set("redirect", redirectTo);
       return NextResponse.redirect(loginUrl);
     }
