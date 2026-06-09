@@ -35,7 +35,7 @@ export interface AlgorithmResult {
   totalHours: number;
   /** Stunden pro Tag = Gesamtstunden / Tage */
   hoursPerDay: number;
-  /** Plantyp: normal (≤3h/Tag) oder kritisch (>3h/Tag) */
+  /** Plantyp: normal (≤2h/Tag) oder kritisch (>2h/Tag) */
   planType: PlanType;
   /** Phasen des Lernplans mit Stunden */
   phases: Phase[];
@@ -162,7 +162,7 @@ export function calculateStudyPlan(input: AlgorithmInput): AlgorithmResult {
   // Formel: Gesamtstunden = 25 × D × ((S + W + V + C) / 4)
   const totalHours = Math.round(25 * D * ((S + W + V + C) / 4) * 10) / 10;
   const hoursPerDay = Math.round((totalHours / daysUntilDeadline) * 100) / 100;
-  const planType: PlanType = hoursPerDay > 3 ? "kritisch" : "normal";
+  const planType: PlanType = hoursPerDay > 2 ? "kritisch" : "normal";
 
   const phases =
     planType === "normal"

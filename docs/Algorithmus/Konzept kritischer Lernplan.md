@@ -12,7 +12,7 @@ StundenProTag = Gesamtstunden / TageBisDeadline
 
 Wenn:
 
-StundenProTag > 3
+StundenProTag > 2
 
 → Kritischer Lernplan
 
@@ -95,7 +95,7 @@ Tagesplanung
 
 Auch wenn rechnerisch mehr nötig wäre:
 
-Maximal 3 Stunden pro Tag anzeigen
+Maximal 2 Stunden pro Tag anzeigen
 
 Der User soll nicht überfordert werden.
 
@@ -107,15 +107,15 @@ lieber:
 
 Heute:
 - Thema A bearbeiten
-- 3 Übungsaufgaben lösen
+- 2 Übungsaufgaben lösen
 - Wiederholung von Thema B
 
 Entscheidungslogik
 
-StundenProTag ≤ 3
+StundenProTag ≤ 2
 → Normaler Lernplan
 
-StundenProTag > 3
+StundenProTag > 2
 → Kritischer Lernplan
 
 Zusammenfassung
