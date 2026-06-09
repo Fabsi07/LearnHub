@@ -89,28 +89,55 @@ export function CalendarPageContent() {
   }
 
   async function handleEventsChange(newEvents: CalEvent[]) {
-    // Geändertes Event durch Drag-Move/Resize finden und in DB persistieren
     const prev = localEventsRef.current;
+
+    const removed = prev.filter((e) => !newEvents.some((ne) => ne.id === e.id));
     const changed = newEvents.find((ne) => {
       const old = prev.find((e) => e.id === ne.id);
       return (
         old &&
         (old.start.getTime() !== ne.start.getTime() ||
-          old.end.getTime() !== ne.end.getTime())
+          old.end.getTime() !== ne.end.getTime() ||
+          old.title !== ne.title ||
+          (old.allDay ?? false) !== (ne.allDay ?? false) ||
+          (old.type ?? null) !== (ne.type ?? null) ||
+          (old.location ?? null) !== (ne.location ?? null) ||
+          (old.notes ?? null) !== (ne.notes ?? null) ||
+          (old.subject ?? null) !== (ne.subject ?? null) ||
+          (old.repeat ?? "none") !== (ne.repeat ?? "none"))
       );
     });
 
     setLocalEvents(newEvents);
 
+    // Löschungen persistieren
+    removed
+      .filter((e) => !e.id.startsWith("local-"))
+      .forEach((e) => {
+        fetch(`/api/calendar/events/${e.id}`, { method: "DELETE" }).catch(() => {
+          /* Delete gescheitert, UI-State bleibt */
+        });
+      });
+
+    // Änderungen persistieren (Drag + Edit-Modal)
     if (changed && !changed.id.startsWith("local-")) {
       fetch(`/api/calendar/events/${changed.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          title: changed.title,
           start: changed.start.toISOString(),
           end: changed.end.toISOString(),
+          allDay: changed.allDay ?? false,
+          type: changed.type,
+          location: changed.location,
+          notes: changed.notes,
+          subject: changed.subject,
+          repeat: changed.repeat ?? "none",
         }),
-      }).catch(() => {/* Drag-Update gescheitert, UI-State bleibt */});
+      }).catch(() => {
+        /* Update gescheitert, UI-State bleibt */
+      });
     }
   }
 
