@@ -5,7 +5,7 @@ import { verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/prisma";
 
 const loginSchema = z.object({
-  email: z.string().trim().email("Bitte gib eine gueltige E-Mail-Adresse an."),
+  email: z.string().trim().email("Bitte gib eine gültige E-Mail-Adresse an."),
   password: z.string().min(1, "Bitte gib dein Passwort ein."),
   rememberMe: z.boolean().optional().default(false),
 });
