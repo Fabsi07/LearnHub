@@ -12,6 +12,7 @@ export interface CurrentUser {
   id: string;
   email: string;
   displayName: string;
+  avatarUrl?: string | null;
 }
 
 function generateSessionToken(): string {
@@ -56,7 +57,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     where: { id: token },
     include: {
       user: {
-        select: { id: true, email: true, displayName: true },
+        select: { id: true, email: true, displayName: true, avatarUrl: true },
       },
     },
   });

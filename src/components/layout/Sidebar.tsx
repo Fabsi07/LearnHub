@@ -134,10 +134,19 @@ export function Sidebar({ darkMode, currentUser }: SidebarProps) {
         className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/10"
       >
         <div
-          className="flex shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-bold text-white"
           style={{ backgroundColor: "#ef233c", width: 38, height: 38 }}
         >
-          {getInitials(displayName)}
+          {currentUser?.avatarUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={currentUser.avatarUrl}
+              alt={displayName}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            getInitials(displayName)
+          )}
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-semibold text-white">{displayName}</span>

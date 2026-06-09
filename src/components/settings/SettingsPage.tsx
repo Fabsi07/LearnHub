@@ -48,8 +48,11 @@ const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp"];
 export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(
+    currentUser?.avatarUrl ?? null,
+  );
   const [avatarError, setAvatarError] = useState<string | null>(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // displayName → Vorname / Nachname aufsplitten
@@ -98,12 +101,30 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
       return;
     }
 
+    // Lokale Vorschau sofort anzeigen
     setAvatarPreview((previous) => {
-      if (previous) {
+      if (previous && previous.startsWith("blob:")) {
         URL.revokeObjectURL(previous);
       }
       return URL.createObjectURL(file);
     });
+
+    // Hochladen + in DB speichern
+    setAvatarUploading(true);
+    const formData = new FormData();
+    formData.append("avatar", file);
+    fetch("/api/profile/avatar", { method: "POST", body: formData })
+      .then(async (res) => {
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({})) as { error?: string };
+          setAvatarError(body.error ?? "Upload fehlgeschlagen.");
+        } else {
+          // Sidebar und Layout neu laden damit der neue Avatar sofort erscheint
+          router.refresh();
+        }
+      })
+      .catch(() => setAvatarError("Upload fehlgeschlagen. Bitte erneut versuchen."))
+      .finally(() => setAvatarUploading(false));
   }
 
   function handleCategoryChange(categoryId: SettingsCategoryId) {
@@ -150,6 +171,7 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
           <ProfileSettings
             avatarPreview={avatarPreview}
             avatarError={avatarError}
+            avatarUploading={avatarUploading}
             fileInputRef={fileInputRef}
             onAvatarChange={handleAvatarChange}
             firstName={firstName}
@@ -168,6 +190,7 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
 interface ProfileSettingsProps {
   avatarPreview: string | null;
   avatarError: string | null;
+  avatarUploading: boolean;
   fileInputRef: React.RefObject<HTMLInputElement>;
   onAvatarChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
   firstName: string;
@@ -179,6 +202,7 @@ interface ProfileSettingsProps {
 function ProfileSettings({
   avatarPreview,
   avatarError,
+  avatarUploading,
   fileInputRef,
   onAvatarChange,
   firstName: initialFirstName,
@@ -221,10 +245,11 @@ function ProfileSettings({
             type="button"
             variant="outline"
             className="w-full"
+            disabled={avatarUploading}
             onClick={() => fileInputRef.current?.click()}
           >
             <ImagePlus className="h-4 w-4" />
-            Bild hochladen
+            {avatarUploading ? "Wird hochgeladen…" : "Bild hochladen"}
           </Button>
           {avatarError && (
             <p role="alert" className="text-center text-xs text-red-600">
