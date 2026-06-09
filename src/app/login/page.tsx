@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { LoginForm } from "@/components/login/LoginForm";
 import { GraduationCap } from "lucide-react";
 import Image from "next/image";
@@ -80,7 +81,9 @@ export default function LoginPage() {
       </div>
 
       <div className="flex flex-1 items-center justify-center bg-gray-50 p-6 lg:p-12">
-        <LoginForm />
+        <Suspense>
+          <LoginForm />
+        </Suspense>
       </div>
     </div>
   );
