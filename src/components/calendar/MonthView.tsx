@@ -68,11 +68,12 @@ export function MonthView({ currentDate, events = [], onEventClick }: MonthViewP
               {/* Events */}
               <div className="flex flex-col gap-0.5">
                 {visible.map((ev) => (
-                  <div
+                  <button
                     key={ev.id}
+                    type="button"
                     title={`${ev.title}${ev.allDay ? "" : ` · ${formatTime(ev.start)}`}`}
                     onClick={(e) => { e.stopPropagation(); onEventClick?.(ev); }}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] leading-tight text-white truncate cursor-pointer hover:opacity-80 transition-opacity ${ev.color}`}
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] leading-tight text-white truncate w-full text-left cursor-pointer hover:opacity-80 transition-opacity ${ev.color}`}
                   >
                     {!ev.allDay && (
                       <span className="font-medium opacity-90 shrink-0">
@@ -80,7 +81,7 @@ export function MonthView({ currentDate, events = [], onEventClick }: MonthViewP
                       </span>
                     )}
                     <span className="truncate">{ev.title}</span>
-                  </div>
+                  </button>
                 ))}
                 {overflow > 0 && (
                   <span className="text-[10px] text-gray-500 px-1">
