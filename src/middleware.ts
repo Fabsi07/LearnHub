@@ -26,18 +26,20 @@ export function middleware(request: NextRequest) {
   }
 
   const { pathname } = request.nextUrl;
-  const isLoggedIn = request.cookies.has("lh_session");
+  // Nur Cookie-Existenz prüfen – keine DB-Validierung (Edge-Runtime hat kein Prisma).
+  // Echte Session-Gültigkeit wird in Server Components / Route Handlern via getSession() geprüft.
+  const hasSessionCookie = request.cookies.has("lh_session");
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
   // Nicht eingeloggt und auf geschützter Route → Login
-  if (!isLoggedIn && !isPublic) {
+  if (!hasSessionCookie && !isPublic) {
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", pathname);
     return NextResponse.redirect(loginUrl);
   }
 
   // Eingeloggt und auf Login/Register → Dashboard
-  if (isLoggedIn && (pathname === "/login" || pathname === "/register")) {
+  if (hasSessionCookie && (pathname === "/login" || pathname === "/register")) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
