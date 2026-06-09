@@ -119,6 +119,8 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
           const body = await res.json().catch(() => ({})) as { error?: string };
           setAvatarError(body.error ?? "Upload fehlgeschlagen.");
         } else {
+          // File-Input leeren damit dieselbe Datei erneut auswählbar ist
+          if (fileInputRef.current) fileInputRef.current.value = "";
           // Sidebar und Layout neu laden damit der neue Avatar sofort erscheint
           router.refresh();
         }
