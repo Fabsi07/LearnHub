@@ -15,7 +15,11 @@ export function Topbar({ sidebarOpen, onToggleSidebar, darkMode, onToggleDarkMod
   const router = useRouter();
 
   async function handleLogout() {
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+    const res = await fetch("/api/auth/logout", { method: "POST" }).catch(() => null);
+    if (!res?.ok) {
+      window.location.href = "/api/auth/logout?redirect=/login";
+      return;
+    }
     router.push("/login");
     router.refresh();
   }
