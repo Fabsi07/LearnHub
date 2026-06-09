@@ -1,33 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-function getSafeRedirectPath(): string {
-  const redirect = new URLSearchParams(window.location.search).get("redirect");
-  if (!redirect || !redirect.startsWith("/") || redirect.startsWith("//")) {
-    return "/dashboard";
-  }
-  return redirect;
-}
+import { Checkbox } from "@/components/ui/checkbox";
 
 export function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
-    setSubmitting(true);
+    setIsLoading(true);
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -36,43 +29,53 @@ export function LoginForm() {
         body: JSON.stringify({ email, password, rememberMe }),
       });
 
-      if (res.ok) {
-        router.push(getSafeRedirectPath());
-        router.refresh();
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError((data as { error?: string }).error ?? "Anmeldung fehlgeschlagen.");
         return;
       }
 
-      const data = (await res.json().catch(() => null)) as
-        | { error?: string }
-        | null;
-      setError(data?.error ?? "Anmeldung fehlgeschlagen. Bitte erneut versuchen.");
+      // ?redirect= nur akzeptieren wenn es ein lokaler Pfad ist (Open-Redirect-Schutz)
+      const redirect = searchParams.get("redirect");
+      const target =
+        redirect && redirect.startsWith("/") && !redirect.startsWith("//")
+          ? redirect
+          : "/dashboard";
+
+      router.push(target);
     } catch {
-      setError("Verbindung zum Server fehlgeschlagen. Bitte erneut versuchen.");
+      setError("Verbindungsfehler. Bitte versuche es erneut.");
     } finally {
-      setSubmitting(false);
+      setIsLoading(false);
     }
   }
 
   return (
     <div className="w-full max-w-md">
+      {/* 1. Header */}
       <div className="mb-8">
-        <h1 className="mb-2 text-3xl font-bold text-gray-900">
-          Willkommen zurueck
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          Willkommen zurück
         </h1>
-        <p className="text-sm text-gray-500">Melde dich wieder an.</p>
+        <p className="text-gray-500 text-sm">
+          Melde dich wieder an.
+        </p>
       </div>
 
+      {/* 2. Formular */}
       <form onSubmit={handleSubmit} className="space-y-5">
+
+        {/* Feld 1: Benutzerkennung */}
         <div className="space-y-1.5">
           <Label
-            htmlFor="email"
+            htmlFor="username"
             className="text-xs font-semibold uppercase tracking-wider text-gray-500"
           >
             E-Mail
           </Label>
           <Input
-            id="email"
-            type="email"
+            id="username"
+            type="text"
             placeholder="name@stud.hs.de"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -82,6 +85,7 @@ export function LoginForm() {
           />
         </div>
 
+        {/* Feld 2: Passwort */}
         <div className="space-y-1.5">
           <Label
             htmlFor="password"
@@ -92,7 +96,7 @@ export function LoginForm() {
           <Input
             id="password"
             type="password"
-            placeholder="Mindestens 8 Zeichen"
+            placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -101,17 +105,18 @@ export function LoginForm() {
           />
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        {/* 3. Zusatzoptionen */}
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Checkbox
               id="remember"
               checked={rememberMe}
-              onCheckedChange={(val) => setRememberMe(Boolean(val))}
+              onCheckedChange={(val) => setRememberMe(val as boolean)}
               className="border-gray-300"
             />
             <label
               htmlFor="remember"
-              className="cursor-pointer select-none text-sm text-gray-500"
+              className="text-sm text-gray-500 cursor-pointer select-none"
             >
               Eingeloggt bleiben
             </label>
@@ -124,35 +129,36 @@ export function LoginForm() {
           </Link>
         </div>
 
-        {error ? (
-          <p
-            role="alert"
-            className="rounded-lg border border-brand-red/20 bg-brand-red/5 px-3 py-2 text-sm text-brand-red"
-          >
+        {/* Fehlermeldung */}
+        {error && (
+          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
             {error}
           </p>
-        ) : null}
+        )}
 
+        {/* 4. CTA Button */}
         <div className="pt-2">
           <Button
             type="submit"
-            disabled={submitting}
-            className="h-12 w-full rounded-xl bg-brand-red text-base font-bold text-white hover:bg-brand-red-dark disabled:opacity-60"
+            disabled={isLoading}
+            className="w-full h-12 rounded-xl bg-brand-red hover:bg-brand-red-dark text-white font-bold text-base disabled:opacity-60"
           >
-            {submitting ? "Wird angemeldet ..." : "Anmelden"}
+            {isLoading ? "Anmelden…" : "Anmelden"}
           </Button>
         </div>
 
+        {/* 5. Registrieren */}
         <p className="text-center text-sm text-gray-500">
           Noch keinen Account?{" "}
           <Link
             href="/register"
             className="font-semibold text-brand-red hover:text-brand-red-dark hover:underline"
           >
-            Jetzt registrieren
+            Jetzt Registrieren
           </Link>
         </p>
       </form>
     </div>
   );
 }
+

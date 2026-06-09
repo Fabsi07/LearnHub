@@ -1,29 +1,44 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE } from "@/lib/auth/cookie";
 
-const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/api/auth"];
+/**
+ * Middleware für LearnHub — Auth-Schutz (C3).
+ *
+ * Schutzlogik:
+ *   - Nicht eingeloggte User auf geschützten Pfaden → /login?redirect=<pfad>
+ *   - Eingeloggte User auf /login oder /register → /dashboard
+ *
+ * Die Middleware prüft nur die Cookie-Existenz, nicht die DB-Gültigkeit
+ * (Edge-Runtime hat keinen Prisma-Zugang). Echte Session-Validierung
+ * erfolgt in Server Components und Route Handlern via getSession().
+ * Siehe docs/auth-concept.md §6.3.
+ *
+ * Static Assets werden über config.matcher ausgenommen.
+ */
+const AUTH_ENABLED = true;
 
-function isPublicPath(pathname: string) {
-  return PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`));
-}
+// Pfade die ohne Login erreichbar sein müssen.
+// /api/auth/* ist bereits durch den matcher ("!api") vom Middleware-Matching ausgenommen.
+const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
 
 export function middleware(request: NextRequest) {
-  const { pathname, search } = request.nextUrl;
-  const isLoggedIn = Boolean(request.cookies.get(SESSION_COOKIE)?.value);
-  const isPublic = isPublicPath(pathname);
+  const { pathname } = request.nextUrl;
+  // Nur Cookie-Existenz prüfen – keine DB-Validierung (Edge-Runtime hat kein Prisma).
+  // Echte Session-Gültigkeit wird in Server Components / Route Handlern via getSession() geprüft.
+  const hasSessionCookie = request.cookies.has("lh_session");
+  const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
-  if (!isLoggedIn && !isPublic) {
-    if (pathname.startsWith("/api/")) {
-      return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
+  if (AUTH_ENABLED) {
+    // Vollständiger Schutz: nicht eingeloggte User → /login
+    if (!hasSessionCookie && !isPublic) {
+      const loginUrl = new URL("/login", request.url);
+      const redirectTo = request.nextUrl.pathname + request.nextUrl.search;
+      loginUrl.searchParams.set("redirect", redirectTo);
+      return NextResponse.redirect(loginUrl);
     }
-
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", `${pathname}${search}`);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  if (isLoggedIn && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    // Eingeloggte User auf /login oder /register → /dashboard
+    if (hasSessionCookie && (pathname === "/login" || pathname === "/register")) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
   return NextResponse.next();
@@ -31,6 +46,7 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|icons|images).*)",
+    // Alles außer API-Routen, Next.js-Interna und statische Assets.
+    "/((?!api|_next/static|_next/image|favicon.ico|icons|images).*)",
   ],
 };

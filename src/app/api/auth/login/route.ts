@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { createSession } from "@/lib/auth/session";
-import { verifyPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/prisma";
+import { verifyPassword } from "@/lib/auth/password";
+import { createSession } from "@/lib/auth/session";
+
+// Dummy-Hash für User-Enumeration-Schutz (auth-concept.md §4).
+// Muss ein valider bcrypt-Hash sein, sonst wirft bcryptjs.compare() eine Exception.
+const DUMMY_HASH = bcrypt.hashSync("learnhub_dummy_password_for_timing", 12);
 
 const loginSchema = z.object({
   email: z.string().trim().email("Bitte gib eine gültige E-Mail-Adresse an."),
@@ -10,16 +15,10 @@ const loginSchema = z.object({
   rememberMe: z.boolean().optional().default(false),
 });
 
-const DUMMY_PASSWORD_HASH =
-  "$2b$12$k98oNP5DWCCJWf3t.KKUdu9TKIw0HizpZyD/srcNaZZlOQ17acOZS";
-
-const LOGIN_ERROR = "E-Mail oder Passwort ist falsch.";
-
 export async function POST(request: Request) {
   let body: unknown;
   try {
     body = await request.json();
-  } catch {
   } catch {
     return NextResponse.json(
       { error: "Ungültiger Anfrage-Body." },
@@ -27,7 +26,6 @@ export async function POST(request: Request) {
     );
   }
 
-  const parsed = loginSchema.safeParse(body);
   const parsed = loginSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
@@ -44,17 +42,19 @@ export async function POST(request: Request) {
     select: { id: true, passwordHash: true },
   });
 
-  if (!user) {
-    await verifyPassword(password, DUMMY_PASSWORD_HASH);
-    return NextResponse.json({ error: LOGIN_ERROR }, { status: 401 });
-  }
+  // Immer bcrypt ausführen – auch bei unbekannter E-Mail (Dummy-Hash).
+  // Verhindert, dass die Antwortzeit verrät ob eine E-Mail existiert.
+  const hashToCheck = user?.passwordHash ?? DUMMY_HASH;
+  const valid = await verifyPassword(password, hashToCheck);
 
-  const passwordMatches = await verifyPassword(password, user.passwordHash);
-  if (!passwordMatches) {
-    return NextResponse.json({ error: LOGIN_ERROR }, { status: 401 });
+  if (!user || !valid) {
+    return NextResponse.json(
+      { error: "E-Mail oder Passwort ist falsch." },
+      { status: 401 },
+    );
   }
 
   await createSession(user.id, rememberMe);
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true }, { status: 200 });
 }
