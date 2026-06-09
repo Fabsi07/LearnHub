@@ -145,8 +145,8 @@ export function EventBlock({
       return;
     }
 
-    // Kein echter Drag → Click-Handler aufrufen
-    if (!didDragRef.current) {
+    // Kein echter Drag → Click-Handler nur beim "move"-Bereich (nicht bei Resize-Handles) aufrufen
+    if (drag.mode === "move" && !didDragRef.current) {
       setPreview(null);
       onEventClick?.(event);
       return;
