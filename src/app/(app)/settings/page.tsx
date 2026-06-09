@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-
+import { getCurrentUser } from "@/lib/auth/session";
 import { SettingsPage } from "@/components/settings/SettingsPage";
 
 function SettingsSkeleton() {
@@ -17,10 +17,11 @@ function SettingsSkeleton() {
   );
 }
 
-export default function SettingsRoute() {
+export default async function SettingsRoute() {
+  const currentUser = await getCurrentUser();
   return (
     <Suspense fallback={<SettingsSkeleton />}>
-      <SettingsPage />
+      <SettingsPage currentUser={currentUser ?? undefined} />
     </Suspense>
   );
 }

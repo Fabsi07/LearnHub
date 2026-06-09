@@ -19,6 +19,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import type { CurrentUser } from "@/lib/auth/session";
 
 type SettingsCategoryId = "profile" | "notifications" | "calendar";
 
@@ -44,12 +45,19 @@ const SELECT_CLASSES =
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
-export function SettingsPage() {
+export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // displayName → Vorname / Nachname aufsplitten
+  const nameParts = currentUser?.displayName?.split(" ") ?? [];
+  const firstName = nameParts[0] ?? "";
+  const lastName = nameParts.slice(1).join(" ");
+  // Username-Fallback: Teil vor dem @
+  const username = currentUser?.email?.split("@")[0] ?? "";
 
   const tabParam = searchParams.get("tab");
   // S-2 Fix: Default-Tab ist 'profile'.
@@ -144,6 +152,10 @@ export function SettingsPage() {
             avatarError={avatarError}
             fileInputRef={fileInputRef}
             onAvatarChange={handleAvatarChange}
+            firstName={firstName}
+            lastName={lastName}
+            username={username}
+            email={currentUser?.email ?? ""}
           />
         )}
         {activeCategory === "notifications" && <NotificationSettings />}
@@ -158,6 +170,10 @@ interface ProfileSettingsProps {
   avatarError: string | null;
   fileInputRef: React.RefObject<HTMLInputElement>;
   onAvatarChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  firstName: string;
+  lastName: string;
+  username: string;
+  email: string;
 }
 
 function ProfileSettings({
@@ -165,6 +181,10 @@ function ProfileSettings({
   avatarError,
   fileInputRef,
   onAvatarChange,
+  firstName,
+  lastName,
+  username,
+  email,
 }: ProfileSettingsProps) {
   // S-5 Fix: Submit-Handler verhindert Page-Reload (echte Persistenz folgt mit API).
   function handleProfileSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -220,15 +240,15 @@ function ProfileSettings({
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Name" htmlFor="first-name">
               {/* S-11 Fix: Generische Demo-Daten statt echter Personendaten. S-14 Fix: name-Attribut. */}
-              <Input id="first-name" name="firstName" defaultValue="Max" />
+              <Input id="first-name" name="firstName" defaultValue={firstName} />
             </Field>
             <Field label="Nachname" htmlFor="last-name">
-              <Input id="last-name" name="lastName" defaultValue="Mustermann" />
+              <Input id="last-name" name="lastName" defaultValue={lastName} />
             </Field>
           </div>
 
           <Field label="Username" htmlFor="username">
-            <Input id="username" name="username" defaultValue="max.mustermann" />
+            <Input id="username" name="username" defaultValue={username} />
           </Field>
 
           <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
@@ -237,7 +257,7 @@ function ProfileSettings({
                 id="email"
                 name="email"
                 type="email"
-                defaultValue="demo@learnhub.de"
+                defaultValue={email}
               />
             </Field>
             <Button type="button" variant="outline" className="md:mb-0">
