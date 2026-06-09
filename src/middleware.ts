@@ -21,26 +21,24 @@ const AUTH_ENABLED = true;
 const PUBLIC_PATHS = ["/login", "/register", "/forgot-password"];
 
 export function middleware(request: NextRequest) {
-  if (!AUTH_ENABLED) {
-    return NextResponse.next();
-  }
-
   const { pathname } = request.nextUrl;
   // Nur Cookie-Existenz prüfen – keine DB-Validierung (Edge-Runtime hat kein Prisma).
   // Echte Session-Gültigkeit wird in Server Components / Route Handlern via getSession() geprüft.
   const hasSessionCookie = request.cookies.has("lh_session");
   const isPublic = PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 
-  // Nicht eingeloggt und auf geschützter Route → Login
-  if (!hasSessionCookie && !isPublic) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirect", pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // Eingeloggt und auf Login/Register → Dashboard
-  if (hasSessionCookie && (pathname === "/login" || pathname === "/register")) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+  if (AUTH_ENABLED) {
+    // Vollständiger Schutz: nicht eingeloggte User → /login
+    if (!hasSessionCookie && !isPublic) {
+      const loginUrl = new URL("/login", request.url);
+      const redirectTo = request.nextUrl.pathname + request.nextUrl.search;
+      loginUrl.searchParams.set("redirect", redirectTo);
+      return NextResponse.redirect(loginUrl);
+    }
+    // Eingeloggte User auf /login oder /register → /dashboard
+    if (hasSessionCookie && (pathname === "/login" || pathname === "/register")) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
   }
 
   return NextResponse.next();
