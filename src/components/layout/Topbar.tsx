@@ -1,5 +1,8 @@
-import { Search, PanelLeftClose, PanelLeftOpen, Moon, Sun } from "lucide-react";
+"use client";
+
+import { Search, PanelLeftClose, PanelLeftOpen, Moon, Sun, LogOut } from "lucide-react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface TopbarProps {
   sidebarOpen: boolean;
@@ -9,6 +12,13 @@ interface TopbarProps {
 }
 
 export function Topbar({ sidebarOpen, onToggleSidebar, darkMode, onToggleDarkMode }: TopbarProps) {
+  const router = useRouter();
+
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+    router.push("/login");
+    router.refresh();
+  }
   return (
     <div className="flex flex-col">
       <div className="flex items-center justify-between px-6 py-4">
@@ -43,6 +53,14 @@ export function Topbar({ sidebarOpen, onToggleSidebar, darkMode, onToggleDarkMod
             title={darkMode ? "Light Mode" : "Dark Mode"}
           >
             {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+          <button
+            onClick={handleLogout}
+            className="p-1.5 rounded-lg hover:bg-black/5 transition-colors"
+            style={{ color: darkMode ? "#f3f4f6" : "#4b5563" }}
+            title="Abmelden"
+          >
+            <LogOut className="w-5 h-5" />
           </button>
           <Image
             src="/images/Dhbw_Icon.png"

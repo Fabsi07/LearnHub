@@ -8,14 +8,19 @@ import {
   sessionCookieOptions,
 } from "./cookie";
 
-// >= 256 Bit Entropie gemaess docs/auth-concept.md §3 und §5.1.
+export interface CurrentUser {
+  id: string;
+  email: string;
+  displayName: string;
+}
+
 function generateSessionToken(): string {
   return randomBytes(32).toString("base64url");
 }
 
 /**
  * Liest den Session-Cookie und gibt die userId zurück, oder null wenn
- * keine gültige Session existiert.
+ * keine gültige Session existiert. Löscht abgelaufene Sessions aus der DB.
  */
 export async function getSession(): Promise<{ userId: string } | null> {
   const cookieStore = await cookies();
@@ -27,14 +32,61 @@ export async function getSession(): Promise<{ userId: string } | null> {
     select: { userId: true, expiresAt: true },
   });
 
-  if (!session || session.expiresAt < new Date()) return null;
+  if (!session) return null;
+
+  if (session.expiresAt < new Date()) {
+    // Abgelaufene Session aus DB entfernen
+    await prisma.session.delete({ where: { id: token } }).catch(() => undefined);
+    return null;
+  }
+
   return { userId: session.userId };
 }
 
 /**
- * Erstellt eine neue Session fuer den User: Token erzeugen, DB-Eintrag
- * anlegen, Cookie setzen. Wird von Register und (spaeter, in C3) Login
- * aufgerufen.
+ * Gibt den eingeloggten User als CurrentUser zurück oder null.
+ * Wird in Server Components und Layout genutzt um Userdaten anzuzeigen.
+ */
+export async function getCurrentUser(): Promise<CurrentUser | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+  if (!token) return null;
+
+  const session = await prisma.session.findUnique({
+    where: { id: token },
+    include: {
+      user: {
+        select: { id: true, email: true, displayName: true },
+      },
+    },
+  });
+
+  if (!session) return null;
+
+  if (session.expiresAt < new Date()) {
+    await prisma.session.delete({ where: { id: token } }).catch(() => undefined);
+    return null;
+  }
+
+  return session.user;
+}
+
+/**
+ * Löscht die aktuelle Session aus der DB und entwertet den Cookie.
+ */
+export async function destroyCurrentSession(): Promise<void> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(SESSION_COOKIE)?.value;
+
+  if (token) {
+    await prisma.session.delete({ where: { id: token } }).catch(() => undefined);
+  }
+
+  cookieStore.set(SESSION_COOKIE, "", sessionCookieOptions(0));
+}
+
+/**
+ * Erstellt eine neue Session: Token erzeugen, DB-Eintrag anlegen, Cookie setzen.
  */
 export async function createSession(
   userId: string,

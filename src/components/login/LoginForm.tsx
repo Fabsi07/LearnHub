@@ -35,7 +35,6 @@ export function LoginForm() {
         return;
       }
 
-      // ?redirect= nur akzeptieren wenn es ein lokaler Pfad ist (Open-Redirect-Schutz)
       const redirect = searchParams.get("redirect");
       const target =
         redirect && redirect.startsWith("/") && !redirect.startsWith("//")
@@ -43,6 +42,7 @@ export function LoginForm() {
           : "/dashboard";
 
       router.push(target);
+      router.refresh();
     } catch {
       setError("Verbindungsfehler. Bitte versuche es erneut.");
     } finally {
@@ -96,7 +96,7 @@ export function LoginForm() {
           <Input
             id="password"
             type="password"
-            placeholder="••••••••"
+            placeholder="Mindestens 8 Zeichen"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -131,7 +131,7 @@ export function LoginForm() {
 
         {/* Fehlermeldung */}
         {error && (
-          <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600">
+          <p role="alert" className="rounded-lg border border-brand-red/20 bg-brand-red/5 px-3 py-2 text-sm text-brand-red">
             {error}
           </p>
         )}
