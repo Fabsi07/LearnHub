@@ -26,7 +26,8 @@ export function middleware(request: NextRequest) {
     // Vollständiger Schutz: nicht eingeloggte User → /login
     if (!isLoggedIn && !isPublic) {
       const loginUrl = new URL("/login", request.url);
-      loginUrl.searchParams.set("redirect", pathname);
+      const redirectTo = request.nextUrl.pathname + request.nextUrl.search;
+      loginUrl.searchParams.set("redirect", redirectTo);
       return NextResponse.redirect(loginUrl);
     }
     // Eingeloggte User auf /login → /dashboard
