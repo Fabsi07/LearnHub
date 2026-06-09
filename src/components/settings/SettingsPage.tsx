@@ -385,6 +385,7 @@ function CalendarSettings() {
         if (data.source?.name) {
           const match = data.source.name.match(/\((.+)\)$/);
           if (match) setCourseCode(match[1].trim());
+        }
       })
       .catch(() => {/* nicht eingeloggt oder Fehler – ignorieren */})
       .finally(() => setIsLoading(false));

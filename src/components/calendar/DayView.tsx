@@ -31,7 +31,8 @@ export function DayView({ currentDate, events, onEventChange, onRequestCreate }:
   const isToday = isSameDay(currentDate, today);
   const totalHeight = HOURS.length * HOUR_HEIGHT;
   const dayEvents = events.filter((e) => !e.allDay && eventOnDay(e, currentDate));
-  const { onColumnMouseDown, preview } = useDragCreate(onRequestCreate);
+  const dhbwEvents = events.filter((e) => e.source === "dhbw");
+  const { onColumnMouseDown, preview } = useDragCreate(onRequestCreate, dhbwEvents);
 
   return (
     <div className="flex flex-col h-full">
@@ -98,6 +99,7 @@ export function DayView({ currentDate, events, onEventChange, onRequestCreate }:
               onChange={onEventChange}
               column={column}
               columns={columns}
+              blockedEvents={dhbwEvents}
             />
           ))}
         </div>

@@ -5,6 +5,7 @@ import { Calendar } from "./Calendar";
 import { CalendarSidebar } from "./CalendarSidebar";
 import { NewEventModal } from "./NewEventModal";
 import { CalEvent } from "./events";
+import { useExternalEvents } from "@/lib/calendar/useExternalEvents";
 
 type ModalState = {
   open: boolean;
@@ -15,6 +16,12 @@ type ModalState = {
 export function CalendarPageContent() {
   const [localEvents, setLocalEvents] = useState<CalEvent[]>([]);
   const [modal, setModal] = useState<ModalState>({ open: false });
+  const {
+    events: externalEvents,
+    loading: externalLoading,
+    error: externalError,
+    refresh: refreshExternal,
+  } = useExternalEvents();
 
   function openModal(defaults?: { start?: Date; end?: Date }) {
     setModal({
@@ -36,6 +43,10 @@ export function CalendarPageContent() {
           localEvents={localEvents}
           onLocalEventsChange={setLocalEvents}
           onRequestCreate={openModal}
+          externalEvents={externalEvents}
+          externalLoading={externalLoading}
+          externalError={externalError}
+          refreshExternal={refreshExternal}
         />
       </div>
 
@@ -47,6 +58,7 @@ export function CalendarPageContent() {
         onClose={closeModal}
         defaultStart={modal.defaultStart}
         defaultEnd={modal.defaultEnd}
+        blockedEvents={externalEvents}
         onCreate={(ev) => setLocalEvents((prev) => [...prev, ev])}
       />
     </div>
