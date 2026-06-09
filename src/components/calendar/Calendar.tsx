@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";import { MonthView } from "./MonthView";
+import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { DayView } from "./DayView";
 import { ListView } from "./ListView";
