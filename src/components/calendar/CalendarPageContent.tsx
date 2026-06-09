@@ -38,14 +38,15 @@ export function CalendarPageContent() {
   // Lokale Events beim Start aus der DB laden
   useEffect(() => {
     fetch("/api/calendar/events")
-      .then((r) => r.json())
-      .then((data) => {
-        const events: CalEvent[] = (data.events as Record<string, unknown>[]).map(
-          deserializeEvent,
-        );
+      .then(async (r) => {
+        if (!r.ok) throw new Error("Failed to load events");
+        const data = (await r.json()) as { events?: Record<string, unknown>[] };
+        const events: CalEvent[] = (data.events ?? []).map(deserializeEvent);
         setLocalEvents(events);
       })
-      .catch(() => {/* DB nicht erreichbar → leerer Kalender */});
+      .catch(() => {
+        /* DB nicht erreichbar/keine Berechtigung → leerer Kalender */
+      });
   }, []);
 
   function openModal(defaults?: { start?: Date; end?: Date }) {
