@@ -30,8 +30,8 @@ export function middleware(request: NextRequest) {
       loginUrl.searchParams.set("redirect", redirectTo);
       return NextResponse.redirect(loginUrl);
     }
-    // Eingeloggte User auf /login → /dashboard
-    if (isLoggedIn && pathname === "/login") {
+    // Eingeloggte User auf /login oder /register → /dashboard
+    if (isLoggedIn && (pathname === "/login" || pathname === "/register")) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
