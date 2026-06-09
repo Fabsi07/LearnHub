@@ -181,11 +181,16 @@ function ProfileSettings({
   avatarError,
   fileInputRef,
   onAvatarChange,
-  firstName,
-  lastName,
-  username,
-  email,
+  firstName: initialFirstName,
+  lastName: initialLastName,
+  username: initialUsername,
+  email: initialEmail,
 }: ProfileSettingsProps) {
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
+  const [username, setUsername] = useState(initialUsername);
+  const [email, setEmail] = useState(initialEmail);
+
   // S-5 Fix: Submit-Handler verhindert Page-Reload (echte Persistenz folgt mit API).
   function handleProfileSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -239,16 +244,16 @@ function ProfileSettings({
         <form className="mt-5 grid gap-5" onSubmit={handleProfileSubmit}>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Name" htmlFor="first-name">
-              {/* S-11 Fix: Generische Demo-Daten statt echter Personendaten. S-14 Fix: name-Attribut. */}
-              <Input id="first-name" name="firstName" defaultValue={firstName} />
+              {/* S-14 Fix: name-Attribut. Controlled input — kein uncontrolled-Warning. */}
+              <Input id="first-name" name="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
             </Field>
             <Field label="Nachname" htmlFor="last-name">
-              <Input id="last-name" name="lastName" defaultValue={lastName} />
+              <Input id="last-name" name="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
             </Field>
           </div>
 
           <Field label="Username" htmlFor="username">
-            <Input id="username" name="username" defaultValue={username} />
+            <Input id="username" name="username" value={username} onChange={(e) => setUsername(e.target.value)} />
           </Field>
 
           <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
@@ -257,7 +262,8 @@ function ProfileSettings({
                 id="email"
                 name="email"
                 type="email"
-                defaultValue={email}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </Field>
             <Button type="button" variant="outline" className="md:mb-0">
