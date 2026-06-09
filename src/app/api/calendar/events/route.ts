@@ -27,8 +27,13 @@ const TYPE_COLOR: Record<CalEventType, string> = {
 
 /** GET /api/calendar/events — alle lokalen Events aus der DB */
 export async function GET() {
+  const session = await getSession();
+  if (!session) {
+    return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
+  }
+
   const rows = await prisma.calendarEvent.findMany({
-    where: { source: "LOCAL" },
+    where: { source: "LOCAL", ownerId: session.userId },
     orderBy: { startsAt: "asc" },
   });
 
