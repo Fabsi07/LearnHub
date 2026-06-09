@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { EventType as DbEventType } from "@prisma/client";
 import type { EventType as CalEventType, RepeatRule } from "@/components/calendar/events";
