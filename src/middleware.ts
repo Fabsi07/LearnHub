@@ -43,10 +43,10 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Eingeloggte User auf Login/Register → Dashboard
-    if (hasSessionCookie && (pathname === "/login" || pathname === "/register")) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
-    }
+    // Kein Redirect von /login oder /register basierend nur auf Cookie-Existenz:
+    // Cookie kann vorhanden sein obwohl die Session in der DB bereits ungültig ist (z. B. Logout in anderem Tab).
+    // Ein Redirect würde dann zu einem Loop zwischen /login ↔ /dashboard führen.
+
   }
 
   return NextResponse.next();
