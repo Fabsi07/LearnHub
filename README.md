@@ -83,7 +83,7 @@ npm run prisma:migrate
 
 **Woran erkennst du, dass Migrationen fehlen?** API-Routen antworten mit HTTP 500 und im Terminal erscheint ein Fehler wie:
 
-```
+```text
 PrismaClientKnownRequestError: The column `User.xyz` does not exist in the current database. (code: P2022)
 ```
 
