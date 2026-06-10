@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import type { CurrentUser } from "@/lib/auth/session";
+import { AvatarCropperModal } from "@/components/settings/AvatarCropperModal";
 
 type SettingsCategoryId = "profile" | "notifications" | "calendar";
 
@@ -53,6 +54,7 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
   );
   const [avatarError, setAvatarError] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // displayName → Vorname / Nachname aufsplitten
@@ -88,7 +90,6 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
       return;
     }
 
-    // S-4 Fix: MIME- und Größenvalidierung.
     if (!ALLOWED_AVATAR_TYPES.includes(file.type)) {
       setAvatarError("Bitte ein PNG-, JPEG- oder WebP-Bild auswählen.");
       event.target.value = "";
@@ -101,32 +102,39 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
       return;
     }
 
-    // Lokale Vorschau sofort anzeigen
+    setCropFile(file);
+  }
+
+  function handleCropConfirm(blob: Blob) {
+    setCropFile(null);
+
     setAvatarPreview((previous) => {
       if (previous && previous.startsWith("blob:")) {
         URL.revokeObjectURL(previous);
       }
-      return URL.createObjectURL(file);
+      return URL.createObjectURL(blob);
     });
 
-    // Hochladen + in DB speichern
     setAvatarUploading(true);
     const formData = new FormData();
-    formData.append("avatar", file);
+    formData.append("avatar", blob, "avatar.jpg");
     fetch("/api/profile/avatar", { method: "POST", body: formData })
       .then(async (res) => {
         if (!res.ok) {
           const body = await res.json().catch(() => ({})) as { error?: string };
           setAvatarError(body.error ?? "Upload fehlgeschlagen.");
         } else {
-          // File-Input leeren damit dieselbe Datei erneut auswählbar ist
           if (fileInputRef.current) fileInputRef.current.value = "";
-          // Sidebar und Layout neu laden damit der neue Avatar sofort erscheint
           router.refresh();
         }
       })
       .catch(() => setAvatarError("Upload fehlgeschlagen. Bitte erneut versuchen."))
       .finally(() => setAvatarUploading(false));
+  }
+
+  function handleCropCancel() {
+    setCropFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   function handleCategoryChange(categoryId: SettingsCategoryId) {
@@ -185,6 +193,14 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
         {activeCategory === "notifications" && <NotificationSettings />}
         {activeCategory === "calendar" && <CalendarSettings />}
       </div>
+
+      {cropFile && (
+        <AvatarCropperModal
+          file={cropFile}
+          onConfirm={handleCropConfirm}
+          onCancel={handleCropCancel}
+        />
+      )}
     </main>
   );
 }
