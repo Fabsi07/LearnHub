@@ -5,7 +5,6 @@ import { MapPin, Pencil, Trash2, X } from "lucide-react";
 import {
   CalEvent,
   EVENT_TYPES,
-  EventType,
   RepeatRule,
   SUBJECTS,
   overlapsAnyDhbwEvent,
@@ -50,7 +49,7 @@ export function EventDetailModal({
 
   // Edit-Felder
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<EventType>("Lernsession");
+  const [type, setType] = useState<string>("Lernsession");
   const [subject, setSubject] = useState<string>(SUBJECTS[0].name);
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
@@ -305,29 +304,37 @@ export function EventDetailModal({
             <div className="grid grid-cols-2 gap-3">
               <div className="flex flex-col gap-1">
                 <label htmlFor="ed-type" className="text-xs font-semibold text-gray-700">Typ</label>
-                <select
+                <input
                   id="ed-type"
+                  type="text"
+                  list="ed-type-list"
                   value={type}
-                  onChange={(e) => setType(e.target.value as EventType)}
+                  onChange={(e) => setType(e.target.value)}
+                  placeholder="z. B. Sport, Lernsession …"
                   className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red bg-white"
-                >
+                />
+                <datalist id="ed-type-list">
                   {EVENT_TYPES.map((t) => (
-                    <option key={t.name} value={t.name}>{t.name}</option>
+                    <option key={t.name} value={t.name} />
                   ))}
-                </select>
+                </datalist>
               </div>
               <div className="flex flex-col gap-1">
                 <label htmlFor="ed-subject" className="text-xs font-semibold text-gray-700">Fach</label>
-                <select
+                <input
                   id="ed-subject"
+                  type="text"
+                  list="ed-subject-list"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
+                  placeholder="z. B. Sport, Mathematik …"
                   className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red bg-white"
-                >
+                />
+                <datalist id="ed-subject-list">
                   {SUBJECTS.map((s) => (
-                    <option key={s.name} value={s.name}>{s.name}</option>
+                    <option key={s.name} value={s.name} />
                   ))}
-                </select>
+                </datalist>
               </div>
             </div>
 
