@@ -1,5 +1,5 @@
-import { StudyPlanPageContent } from "@/components/study-plan/StudyPlanPageContent";
+import { StudyPlanOverview } from "@/components/study-plan/StudyPlanOverview";
 
 export default function StudyPlanPage() {
-  return <StudyPlanPageContent />;
+  return <StudyPlanOverview />;
 }
