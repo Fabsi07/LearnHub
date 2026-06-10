@@ -68,7 +68,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ events: [] });
   }
 
-  const url = searchParams.get("url") ?? source.url;
+  const url = source.url;
 
   // Frischer Cache-Hit innerhalb der TTL → ohne Upstream-Call zurückgeben.
   // Mit `?force=1` (z. B. vom Refresh-Button) wird das übersprungen.
