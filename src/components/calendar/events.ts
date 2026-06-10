@@ -19,6 +19,7 @@ export type CalEvent = {
   type?: string;
   subject?: string;
   notes?: string;
+  tasks?: string;
   repeat?: RepeatRule;
 };
 

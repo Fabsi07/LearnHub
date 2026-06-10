@@ -58,6 +58,7 @@ export function NewEventModal({
   const [end, setEnd] = useState<string>(toLocalInputValue(initialEnd));
   const [repeat, setRepeat] = useState<RepeatRule>("none");
   const [notes, setNotes] = useState("");
+  const [tasks, setTasks] = useState("");
   const [conflictError, setConflictError] = useState<string | null>(null);
 
   // Reset bei Schließen/Öffnen
@@ -78,6 +79,7 @@ export function NewEventModal({
       setEnd(toLocalInputValue(e));
       setRepeat("none");
       setNotes("");
+      setTasks("");
       setConflictError(null);
     }
   }, [open, defaultStart, defaultEnd]);
@@ -125,6 +127,7 @@ export function NewEventModal({
       type,
       subject,
       notes: notes.trim() || undefined,
+      tasks: tasks.trim() || undefined,
       repeat,
     });
     onClose();
@@ -254,6 +257,20 @@ export function NewEventModal({
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
               placeholder="Optionale Anmerkungen…"
+              className="rounded-lg border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label htmlFor="ev-tasks" className="text-xs font-semibold text-gray-700">
+              Aufgaben
+            </label>
+            <textarea
+              id="ev-tasks"
+              value={tasks}
+              onChange={(e) => setTasks(e.target.value)}
+              rows={3}
+              placeholder="Was möchtest du in diesem Termin erledigen? Eine Aufgabe pro Zeile…"
               className="rounded-lg border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"
             />
           </div>

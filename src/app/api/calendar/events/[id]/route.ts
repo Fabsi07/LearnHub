@@ -37,7 +37,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Ungültiger Anfrage-Body." }, { status: 400 });
   }
 
-  const { start, end, title, allDay, type, location, notes, subject, repeat } =
+  const { start, end, title, allDay, type, location, notes, tasks, subject, repeat } =
     (body ?? {}) as Record<string, unknown>;
 
   const TYPE_TO_DB: Record<CalEventType, DbEventType> = {
@@ -63,6 +63,9 @@ export async function PATCH(
 
   if (typeof notes === "string") data.notes = notes.trim() || null;
   if (notes === null) data.notes = null;
+
+  if (typeof tasks === "string") data.tasks = tasks.trim() || null;
+  if (tasks === null) data.tasks = null;
 
   if (typeof subject === "string") data.subject = subject;
   if (subject === null) data.subject = null;
@@ -123,6 +126,7 @@ export async function PATCH(
       source: "local" as const,
       location: row.location ?? undefined,
       notes: row.notes ?? undefined,
+      tasks: row.tasks ?? undefined,
       subject: row.subject ?? undefined,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
     },

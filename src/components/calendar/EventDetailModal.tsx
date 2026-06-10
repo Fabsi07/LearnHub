@@ -55,6 +55,7 @@ export function EventDetailModal({
   const [end, setEnd] = useState("");
   const [repeat, setRepeat] = useState<RepeatRule>("none");
   const [notes, setNotes] = useState("");
+  const [tasks, setTasks] = useState("");
   const [conflictError, setConflictError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -68,6 +69,7 @@ export function EventDetailModal({
       setEnd(toLocalInputValue(event.end));
       setRepeat(event.repeat ?? "none");
       setNotes(event.notes ?? "");
+      setTasks(event.tasks ?? "");
       setConflictError(null);
       setEditMode(false);
       setConfirmDelete(false);
@@ -121,6 +123,7 @@ export function EventDetailModal({
       end: endDate,
       repeat,
       notes: notes.trim() || undefined,
+      tasks: tasks.trim() || undefined,
       color: typeColor,
     });
     onClose();
@@ -229,6 +232,14 @@ export function EventDetailModal({
               <div className="flex items-start gap-2 text-sm text-gray-700">
                 <MapPin className="w-4 h-4 mt-0.5 shrink-0 text-gray-400" />
                 <span>{event.location}</span>
+              </div>
+            )}
+
+            {/* Aufgaben */}
+            {event.tasks && (
+              <div className="rounded-xl bg-gray-50 px-4 py-3">
+                <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-1">Aufgaben</p>
+                <p className="text-sm text-gray-700 whitespace-pre-wrap">{event.tasks}</p>
               </div>
             )}
 
@@ -371,6 +382,18 @@ export function EventDetailModal({
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
                 placeholder="Optionale Anmerkungen…"
+                className="rounded-lg border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"
+              />
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <label htmlFor="ed-tasks" className="text-xs font-semibold text-gray-700">Aufgaben</label>
+              <textarea
+                id="ed-tasks"
+                value={tasks}
+                onChange={(e) => setTasks(e.target.value)}
+                rows={3}
+                placeholder="Was möchtest du in diesem Termin erledigen? Eine Aufgabe pro Zeile…"
                 className="rounded-lg border border-gray-300 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"
               />
             </div>
