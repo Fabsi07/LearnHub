@@ -163,7 +163,7 @@ Ein **Modal oder Slide-Over** öffnet sich bei „+ Neuer Lernplan" / „Bearbei
 | **Maximale Häufigkeit** | max. 5 Lerneinheiten pro Woche je Thema |
 | **Einheitsdauer** | 2 h pro Timeslot |
 
-> Der Algorithmus verteilt die berechnete Gesamtstundenzahl so, dass pro Thema **bevorzugt 3–4 Sitzungen à 2 h pro Woche** eingeplant werden. Mehr als **5 Sitzungen pro Woche** sind nicht zulässig, um Überlastung zu vermeiden.
+> Der Algorithmus verteilt die berechnete Gesamtstundenzahl so, dass pro Thema **bevorzugt 3–4 Lerneinheiten à 2 h pro Woche** eingeplant werden. Mehr als **5 Lerneinheiten pro Woche** sind nicht zulässig, um Überlastung zu vermeiden.
 
 ---
 
