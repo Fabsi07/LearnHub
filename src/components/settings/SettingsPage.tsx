@@ -501,7 +501,7 @@ function CalendarSettings() {
           <Input
             id="schedule-group"
             name="scheduleGroup"
-            placeholder="Kurskürzel"
+            placeholder="Kurskürzel eingeben, z.B. TIF25A"
             value={isLoading ? "" : courseCode}
             disabled={isLoading}
             onChange={(e) => setCourseCode(e.target.value)}
