@@ -64,6 +64,7 @@ export function AvatarCropperModal({ file, onConfirm, onCancel }: AvatarCropperM
   }
 
   function handlePointerDown(e: React.PointerEvent<HTMLCanvasElement>) {
+    e.preventDefault();
     setDragging(true);
     lastPointer.current = { x: e.clientX, y: e.clientY };
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -71,6 +72,7 @@ export function AvatarCropperModal({ file, onConfirm, onCancel }: AvatarCropperM
 
   function handlePointerMove(e: React.PointerEvent<HTMLCanvasElement>) {
     if (!dragging || !lastPointer.current) return;
+    e.preventDefault();
     const dx = e.clientX - lastPointer.current.x;
     const dy = e.clientY - lastPointer.current.y;
     lastPointer.current = { x: e.clientX, y: e.clientY };
