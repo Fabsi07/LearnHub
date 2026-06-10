@@ -73,6 +73,22 @@ Anschliessend ist die App unter [http://localhost:3000](http://localhost:3000) e
 | Build pruefen | `npm run build` |
 | Linter | `npm run lint` |
 
+### Nach jedem `git pull`
+
+Wenn sich `prisma/migrations/` veraendert hat (neue Migrationsdateien im Diff), muss die lokale Datenbank einmalig aktualisiert werden:
+
+```bash
+npm run prisma:migrate
+```
+
+**Woran erkennst du, dass Migrationen fehlen?** API-Routen antworten mit HTTP 500 und im Terminal erscheint ein Fehler wie:
+
+```
+PrismaClientKnownRequestError: The column `User.xyz` does not exist in the current database. (code: P2022)
+```
+
+In diesem Fall einfach `npm run prisma:migrate` ausfuehren und den Dev-Server neu starten.
+
 ---
 
 ## Datenbank und Prisma
@@ -89,6 +105,16 @@ Nach Aenderungen am Schema (`prisma/schema.prisma`) immer beide Befehle ausfuehr
 ---
 
 ## Troubleshooting
+
+### API antwortet mit HTTP 500 und „column does not exist" (P2022)
+
+Neue Migrationen wurden ins Repository gepusht, aber noch nicht auf der lokalen Datenbank angewendet. Loesung:
+
+```bash
+npm run prisma:migrate
+```
+
+Danach den Dev-Server neu starten. Dies passiert typischerweise nach einem `git pull`, wenn sich der Ordner `prisma/migrations/` veraendert hat.
 
 ### Docker-Befehle schlagen mit „Cannot connect to the Docker daemon" fehl
 
