@@ -3,6 +3,7 @@
 import { LayoutDashboard, Calendar, BookOpen, MessageSquare, Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LearnHubBrand } from "@/components/brand/LearnHubBrand";
 import type { CurrentUser } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 
@@ -65,30 +66,12 @@ export function Sidebar({ darkMode, currentUser }: SidebarProps) {
         aria-label="Zur Startseite"
         className="mb-10 flex items-center gap-3 rounded-lg transition-colors hover:bg-white/10"
       >
-        <div
-          className="flex items-center justify-center rounded-xl"
-          style={{ backgroundColor: "#ef233c", width: 40, height: 40 }}
-        >
-          {/* Haus-Icon */}
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="white"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9.5z" />
-            <polyline points="9 21 9 12 15 12 15 21" />
-          </svg>
-        </div>
-        <span className="text-2xl font-extrabold tracking-tight">
-          <span style={{ color: "#ffffff" }}>Learn</span>
-          <span style={{ color: "#ef233c" }}>Hub</span>
-        </span>
+        <LearnHubBrand
+          className="gap-2.5"
+          markClassName="h-9 w-12"
+          markVariant="plain"
+          hubClassName="text-[#ef233c]"
+        />
       </Link>
 
       {/* Navigation */}
