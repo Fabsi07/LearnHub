@@ -147,10 +147,10 @@ Klausurtraining
 
 Entscheidungslogik
 
-StundenProTag ≤ 3
+StundenProTag ≤ 2
 → Normaler Lernplan
 
-StundenProTag > 3
+StundenProTag > 2
 → Kritischer Lernplan
 
 Zusammenfassung
