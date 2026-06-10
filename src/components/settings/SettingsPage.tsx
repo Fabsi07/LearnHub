@@ -507,7 +507,7 @@ function CalendarSettings() {
             onChange={(e) => setCourseCode(e.target.value)}
           />
           <p className="text-xs text-gray-400">
-            Der Link wird automatisch zusammengestellt: stash.dhbw-loerrach.de/calendar/<strong>{courseCode ? courseCode.toLowerCase() : "kurskürzel"}</strong>@dhbw-loerrach.de.ics
+            Der Link wird automatisch zusammengestellt: stash.dhbw-loerrach.de/calendar/<strong>{courseCode ? courseCode.trim().toLowerCase() : "kurskuerzel"}</strong>@dhbw-loerrach.de.ics
           </p>
         </Field>
 
