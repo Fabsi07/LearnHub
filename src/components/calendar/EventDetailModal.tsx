@@ -122,8 +122,8 @@ export function EventDetailModal({
       start: startDate,
       end: endDate,
       repeat,
-      notes: notes.trim(),
-      tasks: tasks.trim(),
+      notes: notes.trim() || (event!.notes ? "" : undefined),
+      tasks: tasks.trim() || (event!.tasks ? "" : undefined),
       color: typeColor,
     });
     onClose();
