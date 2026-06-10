@@ -5,6 +5,8 @@
 
 export type PlanType = "normal" | "kritisch";
 
+export const CRITICAL_STUDY_HOURS_PER_DAY = 2;
+
 export interface AlgorithmInput {
   /** Datum der Klausur */
   deadlineDate: Date;
@@ -35,7 +37,7 @@ export interface AlgorithmResult {
   totalHours: number;
   /** Stunden pro Tag = Gesamtstunden / Tage */
   hoursPerDay: number;
-  /** Plantyp: normal (≤3h/Tag) oder kritisch (>3h/Tag) */
+  /** Plantyp: normal (≤2h/Tag) oder kritisch (>2h/Tag) */
   planType: PlanType;
   /** Phasen des Lernplans mit Stunden */
   phases: Phase[];
@@ -161,8 +163,12 @@ export function calculateStudyPlan(input: AlgorithmInput): AlgorithmResult {
 
   // Formel: Gesamtstunden = 25 × D × ((S + W + V + C) / 4)
   const totalHours = Math.round(25 * D * ((S + W + V + C) / 4) * 10) / 10;
-  const hoursPerDay = Math.round((totalHours / daysUntilDeadline) * 100) / 100;
-  const planType: PlanType = hoursPerDay > 3 ? "kritisch" : "normal";
+  const rawHoursPerDay = totalHours / daysUntilDeadline;
+  const hoursPerDay = Math.round(rawHoursPerDay * 100) / 100;
+  // Plantyp-Entscheidung basiert auf dem ungerundeten Wert, damit Grenzfaelle
+  // (z.B. 2.004h/Tag → gerundet 2.00) korrekt als "kritisch" klassifiziert werden.
+  const planType: PlanType =
+    rawHoursPerDay > CRITICAL_STUDY_HOURS_PER_DAY ? "kritisch" : "normal";
 
   const phases =
     planType === "normal"

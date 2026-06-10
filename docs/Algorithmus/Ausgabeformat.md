@@ -27,9 +27,9 @@ Der Plantyp kann zwei Werte annehmen:
 - normal
 - kritisch
 
-Ein normaler Lernplan wird gewählt, wenn die berechneten Stunden pro Tag kleiner oder gleich 3 sind.
+Ein normaler Lernplan wird gewählt, wenn die berechneten Stunden pro Tag kleiner oder gleich 2 sind.
 
-Ein kritischer Lernplan wird gewählt, wenn die berechneten Stunden pro Tag größer als 3 sind.
+Ein kritischer Lernplan wird gewählt, wenn die berechneten Stunden pro Tag größer als 2 sind.
 
 Beispiel:
 
@@ -37,10 +37,10 @@ Beispiel:
 Fach: Mathematik
 Deadline: 20.06.2026
 Tage bis zur Deadline: 14
-Gesamtstunden: 32
-Stunden pro Tag: 2,3
+Gesamtstunden: 28
+Stunden pro Tag: 2
 Plantyp: normal
-Begründung: Der berechnete Tagesaufwand liegt bei höchstens 3 Stunden. Deshalb wird ein normaler Lernplan erstellt.
+Begründung: Der berechnete Tagesaufwand liegt bei höchstens 2 Stunden. Deshalb wird ein normaler Lernplan erstellt.
 ```
 
 ## 2. Phasenverteilung
@@ -63,12 +63,12 @@ Bei einem kritischen Lernplan werden folgende Phasen verwendet:
 
 Die Prozentwerte beschreiben, wie die berechnete Gesamtlernzeit auf die einzelnen Phasen verteilt wird.
 
-Beispiel für einen normalen Lernplan mit 32 Gesamtstunden:
+Beispiel für einen normalen Lernplan mit 28 Gesamtstunden:
 
-- Grundlagen: 12,8 Stunden
-- Vertiefung: 11,2 Stunden
-- Anwendung: 4,8 Stunden
-- Wiederholung: 3,2 Stunden
+- Grundlagen: 11,2 Stunden
+- Vertiefung: 9,8 Stunden
+- Anwendung: 4,2 Stunden
+- Wiederholung: 2,8 Stunden
 
 ## 3. Tagesplan
 
@@ -117,30 +117,30 @@ Beispiel:
   "subject": "Mathematik",
   "deadline": "2026-06-20",
   "daysUntilDeadline": 14,
-  "totalHours": 32,
-  "hoursPerDay": 2.3,
+  "totalHours": 28,
+  "hoursPerDay": 2,
   "planType": "normal",
-  "reason": "Der berechnete Tagesaufwand liegt bei höchstens 3 Stunden. Deshalb wird ein normaler Lernplan erstellt.",
+  "reason": "Der berechnete Tagesaufwand liegt bei höchstens 2 Stunden. Deshalb wird ein normaler Lernplan erstellt.",
   "phases": [
     {
       "name": "Grundlagen",
       "percentage": 40,
-      "hours": 12.8
+      "hours": 11.2
     },
     {
       "name": "Vertiefung",
       "percentage": 35,
-      "hours": 11.2
+      "hours": 9.8
     },
     {
       "name": "Anwendung",
       "percentage": 15,
-      "hours": 4.8
+      "hours": 4.2
     },
     {
       "name": "Wiederholung",
       "percentage": 10,
-      "hours": 3.2
+      "hours": 2.8
     }
   ],
   "days": [
@@ -176,7 +176,7 @@ Beispiel:
   "totalHours": 35,
   "hoursPerDay": 5,
   "planType": "kritisch",
-  "reason": "Der berechnete Tagesaufwand liegt über 3 Stunden. Deshalb wird ein kritischer Lernplan erstellt.",
+  "reason": "Der berechnete Tagesaufwand liegt über 2 Stunden. Deshalb wird ein kritischer Lernplan erstellt.",
   "phases": [
     {
       "name": "Priorisierung",
@@ -202,15 +202,15 @@ Beispiel:
   "days": [
     {
       "date": "2026-06-08",
-      "plannedHours": 3,
+      "plannedHours": 2,
       "phase": "Priorisierung und Kernstoff",
       "tasks": [
         "Themen in A-, B- und C-Themen einteilen",
         "wichtigstes A-Thema lernen",
-        "3 typische Klausuraufgaben lösen"
+        "2 typische Klausuraufgaben lösen"
       ],
       "review": "Fehler aus den Aufgaben notieren",
-      "note": "Im kritischen Plan werden maximal 3 Stunden pro Tag angezeigt. Weniger wichtige Themen können entfallen."
+      "note": "Im kritischen Plan werden maximal 2 Stunden pro Tag angezeigt. Weniger wichtige Themen können entfallen."
     }
   ],
   "warnings": [
@@ -229,4 +229,4 @@ Bei einem normalen Lernplan liegt der Fokus auf Verständnis, Vertiefung, Anwend
 
 Bei einem kritischen Lernplan liegt der Fokus auf Priorisierung, Kernstoff, typischen Aufgaben und kurzer Wiederholung.
 
-Wenn ein kritischer Lernplan erstellt wird, darf die App trotzdem maximal 3 Stunden Lernzeit pro Tag anzeigen, damit der Nutzer nicht überfordert wird. Zusätzlich wird eine Warnung ausgegeben.
+Wenn ein kritischer Lernplan erstellt wird, darf die App trotzdem maximal 2 Stunden Lernzeit pro Tag anzeigen, damit der Nutzer nicht überfordert wird. Zusätzlich wird eine Warnung ausgegeben.
