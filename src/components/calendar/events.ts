@@ -41,7 +41,7 @@ export const EVENT_TYPES: { name: EventType; color: string }[] = [
 
 // Layout-Konstanten (müssen mit den Views übereinstimmen)
 export const DAY_START_HOUR = 7;
-export const DAY_END_HOUR = 21; // exclusive Ende → 14 Stunden sichtbar
+export const DAY_END_HOUR = 24; // exclusive Ende → 17 Stunden sichtbar (7–24 Uhr)
 export const HOUR_HEIGHT = 64; // px (= h-16)
 export const SNAP_MIN = 15; // Snap-Raster in Minuten
 export const MIN_EVENT_MIN = 30; // Mindestdauer eines Termins in Minuten
