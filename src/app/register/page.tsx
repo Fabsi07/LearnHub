@@ -1,5 +1,5 @@
 import { RegisterForm } from "@/components/register/RegisterForm";
-import { GraduationCap } from "lucide-react";
+import { LearnHubBrand } from "@/components/brand/LearnHubBrand";
 import Image from "next/image";
 
 export default function RegisterPage() {
@@ -41,13 +41,12 @@ export default function RegisterPage() {
         />
 
         <div className="relative flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <GraduationCap className="h-8 w-8" />
-            <span className="text-5xl font-extrabold tracking-tight">
-              <span className="text-white">Learn</span>
-              <span style={{ color: "#7a000a", filter: "drop-shadow(0 1px 2px rgba(0,0,0,0.4))" }}>Hub</span>
-            </span>
-          </div>
+          <LearnHubBrand
+            markClassName="h-16 w-20"
+            markVariant="white"
+            textClassName="text-5xl"
+            hubClassName="text-[#7a000a] drop-shadow-[0_1px_2px_rgba(0,0,0,0.4)]"
+          />
           <Image
             src="/images/Dhbw_Icon.png"
             alt="DHBW Logo"
