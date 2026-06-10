@@ -86,7 +86,7 @@ Der User gibt an wie viele Credits die Klausur gibt.
 
 C = Credit Faktor
 
-Kritisch = Gesamtstunden/Tage bis zur Deadline > 2h ist dann ist kritisch und man muss den Lernplan umdenken
+Kritisch = Gesamtstunden / Tage bis zur Deadline > 2h → der Plan ist kritisch und man muss den Lernplan umdenken
 
 Der User sollte immer wieder ein Feedback an den Lernplan geben falls dieses mehrere Wochen schlecht ausfällt muss sich was ändern.
 
