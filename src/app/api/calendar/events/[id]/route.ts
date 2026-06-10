@@ -53,10 +53,9 @@ export async function PATCH(
   if (typeof allDay === "boolean") data.allDay = allDay;
 
   if (typeof type === "string") {
-    if (!Object.prototype.hasOwnProperty.call(TYPE_TO_DB, type)) {
-      return NextResponse.json({ error: "Ungültiger Event-Typ" }, { status: 400 });
-    }
-    data.type = TYPE_TO_DB[type as CalEventType];
+    // Bekannte Typen werden auf den passenden DB-Enum gemappt;
+    // unbekannte Freitext-Typen landen als SONSTIGES.
+    data.type = (TYPE_TO_DB as Record<string, DbEventType>)[type] ?? "SONSTIGES";
   }
 
   if (typeof location === "string") data.location = location;

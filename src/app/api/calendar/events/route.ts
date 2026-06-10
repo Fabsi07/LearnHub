@@ -84,9 +84,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Pflichtfelder fehlen" }, { status: 400 });
   }
 
-  if (!Object.prototype.hasOwnProperty.call(TYPE_TO_DB, type)) {
-    return NextResponse.json({ error: "Ungültiger Event-Typ" }, { status: 400 });
-  }
+  // Bekannte Typen werden auf den passenden DB-Enum gemappt;
+  // unbekannte Freitext-Typen landen als SONSTIGES.
+  const dbType: DbEventType =
+    (TYPE_TO_DB as Record<string, DbEventType>)[type] ?? "SONSTIGES";
 
   const startsAt = new Date(start);
   const endsAt = new Date(end);
@@ -107,7 +108,7 @@ export async function POST(req: Request) {
       startsAt,
       endsAt,
       allDay: allDay === true,
-      type: TYPE_TO_DB[type as CalEventType],
+      type: dbType,
       location: typeof location === "string" ? location : null,
       notes: typeof notes === "string" && notes.trim() ? notes : null,
       subject: typeof subject === "string" ? subject : null,
