@@ -112,11 +112,17 @@ export function AvatarCropperModal({ file, onConfirm, onCancel }: AvatarCropperM
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onMouseDown={(e) => { if (e.target === e.currentTarget) onCancel(); }}
+      onClick={onCancel}
     >
-      <div className="flex w-full max-w-sm flex-col gap-5 rounded-xl border border-gray-200 bg-white p-6 shadow-xl">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="avatar-cropper-title"
+        className="flex w-full max-w-sm flex-col gap-5 rounded-xl border border-gray-200 bg-white p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div>
-          <h2 className="text-base font-semibold text-gray-950">Profilbild anpassen</h2>
+          <h2 id="avatar-cropper-title" className="text-base font-semibold text-gray-950">Profilbild anpassen</h2>
           <p className="mt-1 text-sm text-gray-500">
             Bild verschieben und zoomen, dann übernehmen.
           </p>
