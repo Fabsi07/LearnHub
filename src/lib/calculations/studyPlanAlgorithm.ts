@@ -163,9 +163,12 @@ export function calculateStudyPlan(input: AlgorithmInput): AlgorithmResult {
 
   // Formel: Gesamtstunden = 25 × D × ((S + W + V + C) / 4)
   const totalHours = Math.round(25 * D * ((S + W + V + C) / 4) * 10) / 10;
-  const hoursPerDay = Math.round((totalHours / daysUntilDeadline) * 100) / 100;
+  const rawHoursPerDay = totalHours / daysUntilDeadline;
+  const hoursPerDay = Math.round(rawHoursPerDay * 100) / 100;
+  // Plantyp-Entscheidung basiert auf dem ungerundeten Wert, damit Grenzfaelle
+  // (z.B. 2.004h/Tag → gerundet 2.00) korrekt als "kritisch" klassifiziert werden.
   const planType: PlanType =
-    hoursPerDay > CRITICAL_STUDY_HOURS_PER_DAY ? "kritisch" : "normal";
+    rawHoursPerDay > CRITICAL_STUDY_HOURS_PER_DAY ? "kritisch" : "normal";
 
   const phases =
     planType === "normal"
