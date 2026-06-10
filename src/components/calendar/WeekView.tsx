@@ -13,6 +13,8 @@ import {
 } from "./events";
 import { EventBlock } from "./EventBlock";
 import { AllDayBar } from "./AllDayBar";
+import { AllDayBackground } from "./AllDayBackground";
+import { CurrentTimeIndicator } from "./CurrentTimeIndicator";
 import { useDragCreate } from "./useDragCreate";
 
 interface WeekViewProps {
@@ -31,6 +33,7 @@ const HOURS = Array.from(
 export function WeekView({ currentDate, events, onEventChange, onRequestCreate, onEventClick }: WeekViewProps) {
   const days = getWeekDays(currentDate);
   const today = new Date();
+  const todayIndex = days.findIndex((day) => isSameDay(day, today));
   const totalHeight = HOURS.length * HOUR_HEIGHT;
   const dhbwEvents = events.filter((e) => e.source === "dhbw");
   const { onColumnMouseDown, preview } = useDragCreate(onRequestCreate, dhbwEvents);
@@ -75,10 +78,17 @@ export function WeekView({ currentDate, events, onEventChange, onRequestCreate, 
       </div>
 
       {/* All-Day-Leiste (Feiertage, Ferien, mehrtägige Events) */}
-      <AllDayBar days={days} events={events} />
+      <AllDayBar days={days} events={events} onEventClick={onEventClick} />
 
       {/* Body: Zeit-Spalte + 7 Tages-Spalten */}
-      <div className="grid grid-cols-[64px_repeat(7,1fr)]">
+      <div className="relative grid grid-cols-[64px_repeat(7,1fr)]">
+        {todayIndex >= 0 && (
+          <CurrentTimeIndicator
+            day={days[todayIndex]}
+            dayIndex={todayIndex}
+            dayCount={days.length}
+          />
+        )}
         {/* Zeit-Spalte */}
         <div className="border-r border-gray-200" style={{ height: totalHeight }}>
           {HOURS.map((hour) => (
@@ -113,6 +123,7 @@ export function WeekView({ currentDate, events, onEventChange, onRequestCreate, 
                   style={{ height: HOUR_HEIGHT }}
                 />
               ))}
+              <AllDayBackground day={day} events={events} />
               {/* Drag-Create Preview */}
               {showPreview && (
                 <div

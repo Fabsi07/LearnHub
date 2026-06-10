@@ -123,10 +123,13 @@ model CalendarEvent {
   endsAt      DateTime
   allDay      Boolean     @default(false)
   type        EventType
+  typeLabel   String?
+  typeColor   String?
   location    String?
   notes       String?
   tasks       String?     // Aufgaben / To-Do-Liste für diesen Termin
   subject     String?
+  important   Boolean     @default(false)
   repeat      String?     // "none" | "daily" | "weekly"
   ownerId     String?
   // Quelle des Events. EXTERNAL z.B. aus DHBW-ICS-Feed → read-only im UI.

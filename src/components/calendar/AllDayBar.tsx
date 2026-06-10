@@ -1,11 +1,13 @@
 "use client";
 
+import { Star } from "lucide-react";
 import type { CalEvent } from "./events";
 import { eventOverlapsDay } from "./events";
 
 interface AllDayBarProps {
   days: Date[];
   events: CalEvent[];
+  onEventClick?: (event: CalEvent) => void;
 }
 
 /**
@@ -13,7 +15,7 @@ interface AllDayBarProps {
  * (z. B. Feiertage, Ferien). Beeinflusst das Stundenraster nicht und lässt
  * den Tag für Lernzeiten frei.
  */
-export function AllDayBar({ days, events }: AllDayBarProps) {
+export function AllDayBar({ days, events, onEventClick }: AllDayBarProps) {
   const allDay = events.filter((e) => e.allDay);
   if (allDay.length === 0) return null;
 
@@ -30,13 +32,20 @@ export function AllDayBar({ days, events }: AllDayBarProps) {
             className="border-r border-gray-200 last:border-r-0 px-1 py-1 min-h-[28px] space-y-0.5"
           >
             {dayEvents.map((ev) => (
-              <div
+              <button
                 key={ev.id}
+                type="button"
                 title={ev.title}
-                className={`${ev.color} text-white text-[11px] leading-tight rounded px-1.5 py-0.5 truncate opacity-90`}
+                onClick={() => onEventClick?.(ev)}
+                className={`${ev.color} flex w-full items-center gap-1 truncate rounded px-1.5 py-0.5 text-left text-[11px] leading-tight text-white opacity-90 transition-opacity hover:opacity-75 ${
+                  ev.important ? "ring-1 ring-amber-300" : ""
+                }`}
               >
-                {ev.title}
-              </div>
+                {ev.important && (
+                  <Star className="h-3 w-3 shrink-0" fill="currentColor" />
+                )}
+                <span className="truncate">{ev.title}</span>
+              </button>
             ))}
           </div>
         );

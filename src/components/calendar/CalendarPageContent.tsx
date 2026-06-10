@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Calendar } from "./Calendar";
 import { CalendarSidebar } from "./CalendarSidebar";
 import { NewEventModal } from "./NewEventModal";
@@ -24,6 +24,9 @@ function deserializeEvent(raw: Record<string, unknown>): CalEvent {
 
 export function CalendarPageContent() {
   const [localEvents, setLocalEvents] = useState<CalEvent[]>([]);
+  const [hiddenSubjects, setHiddenSubjects] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [modal, setModal] = useState<ModalState>({ open: false });
   const localEventsRef = useRef(localEvents);
   localEventsRef.current = localEvents;
@@ -34,6 +37,38 @@ export function CalendarPageContent() {
     error: externalError,
     refresh: refreshExternal,
   } = useExternalEvents();
+
+  const subjectOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          localEvents
+            .map((event) => event.subject?.trim())
+            .filter((subject): subject is string => !!subject),
+        ),
+      ).sort((left, right) => left.localeCompare(right, "de")),
+    [localEvents],
+  );
+  const typeOptions = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          localEvents
+            .map((event) => event.type?.trim())
+            .filter((type): type is string => !!type),
+        ),
+      ).sort((left, right) => left.localeCompare(right, "de")),
+    [localEvents],
+  );
+  const typeColors = useMemo(
+    () =>
+      Object.fromEntries(
+        localEvents
+          .filter((event) => event.type?.trim())
+          .map((event) => [event.type!.trim(), event.color]),
+      ),
+    [localEvents],
+  );
 
   // Lokale Events beim Start aus der DB laden
   useEffect(() => {
@@ -61,6 +96,15 @@ export function CalendarPageContent() {
     setModal({ open: false });
   }
 
+  function toggleSubject(subject: string) {
+    setHiddenSubjects((current) => {
+      const next = new Set(current);
+      if (next.has(subject)) next.delete(subject);
+      else next.add(subject);
+      return next;
+    });
+  }
+
   async function handleCreate(ev: CalEvent) {
     // Optimistic: sofort im UI anzeigen
     setLocalEvents((prev) => [...prev, ev]);
@@ -75,10 +119,12 @@ export function CalendarPageContent() {
           end: ev.end.toISOString(),
           allDay: ev.allDay ?? false,
           type: ev.type,
+          typeColor: ev.color,
           location: ev.location,
           notes: ev.notes,
           tasks: ev.tasks,
           subject: ev.subject,
+          important: ev.important ?? false,
           repeat: ev.repeat ?? "none",
         }),
       });
@@ -105,7 +151,7 @@ export function CalendarPageContent() {
     const prev = localEventsRef.current;
 
     const removed = prev.filter((e) => !newEvents.some((ne) => ne.id === e.id));
-    const changed = newEvents.find((ne) => {
+    const changed = newEvents.filter((ne) => {
       const old = prev.find((e) => e.id === ne.id);
       return (
         old &&
@@ -114,10 +160,12 @@ export function CalendarPageContent() {
           old.title !== ne.title ||
           (old.allDay ?? false) !== (ne.allDay ?? false) ||
           (old.type ?? null) !== (ne.type ?? null) ||
+          old.color !== ne.color ||
           (old.location ?? null) !== (ne.location ?? null) ||
           (old.notes ?? null) !== (ne.notes ?? null) ||
           (old.tasks ?? null) !== (ne.tasks ?? null) ||
           (old.subject ?? null) !== (ne.subject ?? null) ||
+          (old.important ?? false) !== (ne.important ?? false) ||
           (old.repeat ?? "none") !== (ne.repeat ?? "none"))
       );
     });
@@ -134,26 +182,30 @@ export function CalendarPageContent() {
       });
 
     // Änderungen persistieren (Drag + Edit-Modal)
-    if (changed && !changed.id.startsWith("local-")) {
-      fetch(`/api/calendar/events/${changed.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: changed.title,
-          start: changed.start.toISOString(),
-          end: changed.end.toISOString(),
-          allDay: changed.allDay ?? false,
-          type: changed.type,
-          location: changed.location,
-          notes: changed.notes,
-          tasks: changed.tasks,
-          subject: changed.subject,
-          repeat: changed.repeat ?? "none",
-        }),
-      }).catch(() => {
-        /* Update gescheitert, UI-State bleibt */
+    changed
+      .filter((event) => !event.id.startsWith("local-"))
+      .forEach((event) => {
+        fetch(`/api/calendar/events/${event.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: event.title,
+            start: event.start.toISOString(),
+            end: event.end.toISOString(),
+            allDay: event.allDay ?? false,
+            type: event.type,
+            typeColor: event.color,
+            location: event.location,
+            notes: event.notes,
+            tasks: event.tasks,
+            subject: event.subject,
+            important: event.important ?? false,
+            repeat: event.repeat ?? "none",
+          }),
+        }).catch(() => {
+          /* Update gescheitert, UI-State bleibt */
+        });
       });
-    }
   }
 
   return (
@@ -168,17 +220,31 @@ export function CalendarPageContent() {
           externalLoading={externalLoading}
           externalError={externalError}
           refreshExternal={refreshExternal}
+          hiddenSubjects={hiddenSubjects}
+          typeOptions={typeOptions}
+          typeColors={typeColors}
+          subjectOptions={subjectOptions}
         />
       </div>
 
       {/* Kalender-Seitenleiste (rechts) */}
-      <CalendarSidebar onNewEvent={() => openModal()} />
+      <CalendarSidebar
+        onNewEvent={() => openModal()}
+        subjects={subjectOptions}
+        eventTypes={typeOptions}
+        typeColors={typeColors}
+        hiddenSubjects={hiddenSubjects}
+        onToggleSubject={toggleSubject}
+      />
 
       <NewEventModal
         open={modal.open}
         onClose={closeModal}
         defaultStart={modal.defaultStart}
         defaultEnd={modal.defaultEnd}
+        typeOptions={typeOptions}
+        typeColors={typeColors}
+        subjectOptions={subjectOptions}
         blockedEvents={externalEvents}
         onCreate={handleCreate}
       />

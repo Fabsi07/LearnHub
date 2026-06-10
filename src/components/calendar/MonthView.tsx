@@ -1,7 +1,9 @@
 "use client";
 
+import { Star } from "lucide-react";
 import { WEEKDAYS, getMonthGrid, isSameDay } from "./utils";
 import { CalEvent, eventOnDay, eventOverlapsDay } from "./events";
+import { AllDayBackground } from "./AllDayBackground";
 
 interface MonthViewProps {
   currentDate: Date;
@@ -48,11 +50,12 @@ export function MonthView({ currentDate, events = [], onEventClick }: MonthViewP
           return (
             <div
               key={i}
-              className={`border-r border-b border-gray-200 p-1.5 min-h-[90px] flex flex-col gap-1 transition-colors hover:bg-gray-50 cursor-pointer overflow-hidden ${
+              className={`relative border-r border-b border-gray-200 p-1.5 min-h-[90px] flex flex-col gap-1 transition-colors hover:bg-gray-50 cursor-pointer overflow-hidden ${
                 isCurrentMonth ? "bg-white" : "bg-gray-50/50"
               }`}
             >
-              <div className="flex justify-end">
+              <AllDayBackground day={day} events={dayEvents} />
+              <div className="relative z-10 flex justify-end">
                 <span
                   className={`inline-flex items-center justify-center text-sm rounded-full w-7 h-7 ${
                     isToday
@@ -66,15 +69,20 @@ export function MonthView({ currentDate, events = [], onEventClick }: MonthViewP
                 </span>
               </div>
               {/* Events */}
-              <div className="flex flex-col gap-0.5">
+              <div className="relative z-10 flex flex-col gap-0.5">
                 {visible.map((ev) => (
                   <button
                     key={ev.id}
                     type="button"
                     title={`${ev.title}${ev.allDay ? "" : ` · ${formatTime(ev.start)}`}`}
                     onClick={(e) => { e.stopPropagation(); onEventClick?.(ev); }}
-                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] leading-tight text-white truncate w-full text-left cursor-pointer hover:opacity-80 transition-opacity ${ev.color}`}
+                    className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] leading-tight text-white truncate w-full text-left cursor-pointer hover:opacity-80 transition-opacity ${ev.color} ${
+                      ev.important ? "ring-1 ring-amber-300" : ""
+                    }`}
                   >
+                    {ev.important && (
+                      <Star className="h-3 w-3 shrink-0" fill="currentColor" />
+                    )}
                     {!ev.allDay && (
                       <span className="font-medium opacity-90 shrink-0">
                         {formatTime(ev.start)}
