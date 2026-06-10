@@ -155,6 +155,16 @@ Ein **Modal oder Slide-Over** öffnet sich bei „+ Neuer Lernplan" / „Bearbei
 
 > Wenn Seiten und ECTS angegeben → Algorithmus wird direkt beim Speichern berechnet und das Ergebnis gespeichert.
 
+### Scheduling-Constraints (Lerneinheiten pro Woche)
+
+| Constraint | Wert |
+|------------|------|
+| **Ziel-Häufigkeit** | 3–4 Lerneinheiten pro Woche je Thema |
+| **Maximale Häufigkeit** | max. 5 Lerneinheiten pro Woche je Thema |
+| **Einheitsdauer** | 2 h pro Timeslot |
+
+> Der Algorithmus verteilt die berechnete Gesamtstundenzahl so, dass pro Thema **bevorzugt 3–4 Sitzungen à 2 h pro Woche** eingeplant werden. Mehr als **5 Sitzungen pro Woche** sind nicht zulässig, um Überlastung zu vermeiden.
+
 ---
 
 ## 6. API-Routen (zu implementieren)
