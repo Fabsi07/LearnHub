@@ -183,7 +183,7 @@ function handleSubmit(e: React.FormEvent) {
 
             {result.planType === "kritisch" ? (
               <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-                Rechnerisch wären {result.hoursPerDay} h pro Tag nötig. Der kritische Plan zeigt maximal{" "}
+                Rechnerisch wären {result.hoursPerDay <= CRITICAL_STUDY_HOURS_PER_DAY ? `> ${CRITICAL_STUDY_HOURS_PER_DAY}` : result.hoursPerDay} h pro Tag nötig. Der kritische Plan zeigt maximal{" "}
                 {CRITICAL_STUDY_HOURS_PER_DAY} h pro Tag und priorisiert die wichtigsten Inhalte.
               </div>
             ) : null}
