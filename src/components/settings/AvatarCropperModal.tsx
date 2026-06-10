@@ -147,8 +147,9 @@ export function AvatarCropperModal({ file, onConfirm, onCancel }: AvatarCropperM
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-sm font-medium text-gray-700">Zoom</label>
+          <label htmlFor="avatar-zoom" className="text-sm font-medium text-gray-700">Zoom</label>
           <input
+            id="avatar-zoom"
             type="range"
             min="1"
             max="3"
