@@ -5,10 +5,6 @@ import type { CalEvent } from "@/components/calendar/events";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
-// Fallback-URL solange kein User eingeloggt ist oder noch keine Quelle gespeichert hat.
-const DEFAULT_ICS_URL =
-  "https://stash.dhbw-loerrach.de/calendar/kal-tif25a@dhbw-loerrach.de.ics";
-
 const FETCH_TIMEOUT_MS = 8000;
 const MAX_RETRIES = 4;
 const RETRY_DELAY_MS = 500;
@@ -57,16 +53,22 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const force = searchParams.get("force") === "1";
 
-  // URL aus DB laden wenn User eingeloggt ist, sonst Fallback
-  let url = searchParams.get("url") ?? DEFAULT_ICS_URL;
   const session = await getSession();
-  if (session) {
-    const source = await prisma.calendarSource.findFirst({
-      where: { userId: session.userId, type: "ics-dhbw" },
-      select: { url: true },
-    });
-    if (source?.url) url = source.url;
+  if (!session) {
+    return NextResponse.json({ events: [] });
   }
+
+  const source = await prisma.calendarSource.findFirst({
+    where: { userId: session.userId, type: "ics-dhbw" },
+    select: { url: true },
+  });
+
+  // Kein Kurs konfiguriert → leere Antwort, kein Fallback
+  if (!source?.url) {
+    return NextResponse.json({ events: [] });
+  }
+
+  const url = searchParams.get("url") ?? source.url;
 
   // Frischer Cache-Hit innerhalb der TTL → ohne Upstream-Call zurückgeben.
   // Mit `?force=1` (z. B. vom Refresh-Button) wird das übersprungen.
