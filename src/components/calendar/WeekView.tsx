@@ -84,7 +84,7 @@ export function WeekView({ currentDate, events, onEventChange, onRequestCreate, 
           {HOURS.map((hour) => (
             <div
               key={hour}
-              className="px-2 py-1 text-xs text-gray-500 text-right"
+              className="px-2 pt-0 text-xs text-gray-500 text-right leading-none"
               style={{ height: HOUR_HEIGHT }}
             >
               {hour}:00

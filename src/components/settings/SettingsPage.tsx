@@ -492,7 +492,7 @@ function CalendarSettings() {
       <div className="flex flex-col gap-1 border-b border-gray-100 pb-4">
         <h2 className="text-base font-semibold text-gray-950">Kalender</h2>
         <p className="text-sm text-gray-500">
-          Gib deine Kurskennung ein (z.&nbsp;B. <strong>TIF25A</strong>). Der DHBW-Stundenplan wird automatisch geladen.
+          Gib dein Kurskürzel ein. Der DHBW-Stundenplan wird automatisch geladen.
         </p>
       </div>
 
@@ -501,13 +501,13 @@ function CalendarSettings() {
           <Input
             id="schedule-group"
             name="scheduleGroup"
-            placeholder="TIF25A"
+            placeholder="Kurskürzel eingeben, z.B. TIF25A"
             value={isLoading ? "" : courseCode}
             disabled={isLoading}
             onChange={(e) => setCourseCode(e.target.value)}
           />
           <p className="text-xs text-gray-400">
-            Der Link wird automatisch zusammengestellt: stash.dhbw-loerrach.de/calendar/<strong>{courseCode ? courseCode.toLowerCase() : "kurskennung"}</strong>@dhbw-loerrach.de.ics
+            Der Link wird automatisch zusammengestellt: stash.dhbw-loerrach.de/calendar/<strong>{courseCode ? courseCode.trim().toLowerCase() : "kurskuerzel"}</strong>@dhbw-loerrach.de.ics
           </p>
         </Field>
 
