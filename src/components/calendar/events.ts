@@ -15,7 +15,8 @@ export type CalEvent = {
   readOnly?: boolean;
   location?: string;
   allDay?: boolean;
-  type?: EventType;
+  /** Bekannte Werte: EventType-Konstanten; freie Eingabe ebenfalls erlaubt. */
+  type?: string;
   subject?: string;
   notes?: string;
   repeat?: RepeatRule;
