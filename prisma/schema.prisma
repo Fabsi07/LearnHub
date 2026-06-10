@@ -125,6 +125,7 @@ model CalendarEvent {
   type        EventType
   location    String?
   notes       String?
+  tasks       String?     // Aufgaben / To-Do-Liste für diesen Termin
   subject     String?
   repeat      String?     // "none" | "daily" | "weekly"
   ownerId     String?

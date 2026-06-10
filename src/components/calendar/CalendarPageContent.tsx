@@ -77,6 +77,7 @@ export function CalendarPageContent() {
           type: ev.type,
           location: ev.location,
           notes: ev.notes,
+          tasks: ev.tasks,
           subject: ev.subject,
           repeat: ev.repeat ?? "none",
         }),
@@ -115,6 +116,7 @@ export function CalendarPageContent() {
           (old.type ?? null) !== (ne.type ?? null) ||
           (old.location ?? null) !== (ne.location ?? null) ||
           (old.notes ?? null) !== (ne.notes ?? null) ||
+          (old.tasks ?? null) !== (ne.tasks ?? null) ||
           (old.subject ?? null) !== (ne.subject ?? null) ||
           (old.repeat ?? "none") !== (ne.repeat ?? "none"))
       );
@@ -144,6 +146,7 @@ export function CalendarPageContent() {
           type: changed.type,
           location: changed.location,
           notes: changed.notes,
+          tasks: changed.tasks,
           subject: changed.subject,
           repeat: changed.repeat ?? "none",
         }),

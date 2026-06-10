@@ -50,6 +50,7 @@ export async function GET() {
       source: "local" as const,
       location: e.location ?? undefined,
       notes: e.notes ?? undefined,
+      tasks: e.tasks ?? undefined,
       subject: e.subject ?? undefined,
       repeat: (e.repeat as RepeatRule | null) ?? "none",
     };
@@ -72,7 +73,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Ungültiger Anfrage-Body." }, { status: 400 });
   }
 
-  const { title, start, end, allDay, type, location, notes, subject, repeat } =
+  const { title, start, end, allDay, type, location, notes, tasks, subject, repeat } =
     (body ?? {}) as Record<string, unknown>;
 
   if (
@@ -110,7 +111,8 @@ export async function POST(req: Request) {
       allDay: allDay === true,
       type: dbType,
       location: typeof location === "string" ? location : null,
-      notes: typeof notes === "string" && notes.trim() ? notes : null,
+      notes: typeof notes === "string" ? notes.trim() || null : null,
+      tasks: typeof tasks === "string" ? tasks.trim() || null : null,
       subject: typeof subject === "string" ? subject : null,
       repeat: repeatRule,
       source: "LOCAL",
@@ -132,6 +134,7 @@ export async function POST(req: Request) {
       source: "local" as const,
       location: row.location ?? undefined,
       notes: row.notes ?? undefined,
+      tasks: row.tasks ?? undefined,
       subject: row.subject ?? undefined,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
     },
