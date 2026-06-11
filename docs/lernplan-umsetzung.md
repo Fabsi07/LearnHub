@@ -248,8 +248,8 @@ Nach jeder Phase soll `npm run build` grün sein.
 
 ### Phase G – Abschluss
 - [x] **G1** `npm run build` grün (Lint + Typecheck).
-- [ ] **G2** Manueller Durchlauf: Plan anlegen → Detail → berechnen → Vorschau → eintragen → im Kalender prüfen.
-- [ ] **G3** Doku/PRD kurz aktualisieren, PR erstellen.
+- [x] **G2** Manueller Durchlauf: Plan anlegen → Detail → berechnen → Vorschau → eintragen → im Kalender prüfen.
+- [x] **G3** Doku/PRD kurz aktualisieren, PR erstellen.
 
 ---
 
