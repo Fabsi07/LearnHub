@@ -199,7 +199,7 @@ export function scheduleStudyPlan(
   existingEvents: CalEvent[],
 ): ScheduleResult {
   const warnings: string[] = [];
-  const now = new Date();
+  const now = options.now ?? new Date();
   const deadline = startOfDay(options.deadline);
   const firstDay = startOfDay(options.startDate ?? addDays(now, 1));
   const allowedWeekdays = options.allowedWeekdays ?? [1, 2, 3, 4, 5, 6]; // Mo–Sa
