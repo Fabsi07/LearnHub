@@ -21,9 +21,12 @@ export function AlgorithmResultWidget({
   const [busy, setBusy] = useState(false);
 
   const hasResult = plan.totalHours != null && plan.planType != null;
-  const hasInputs = plan.pages != null && plan.credits != null;
+  const hasInputs =
+    plan.difficulty != null &&
+    plan.priorKnowledge != null &&
+    plan.pages != null &&
+    plan.credits != null;
   const isKritisch = plan.planType === "kritisch";
-
   async function recalculate() {
     setBusy(true);
     try {
