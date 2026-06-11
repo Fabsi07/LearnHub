@@ -12,11 +12,6 @@ interface MonthViewProps {
   onEventClick?: (event: CalEvent) => void;
 }
 
-interface ExpandedDay {
-  day: Date;
-  events: CalEvent[];
-}
-
 function formatTime(date: Date): string {
   const pad = (value: number) => value.toString().padStart(2, "0");
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -36,10 +31,20 @@ export function MonthView({
   events = [],
   onEventClick,
 }: MonthViewProps) {
-  const [expandedDay, setExpandedDay] = useState<ExpandedDay | null>(null);
+  const [expandedDay, setExpandedDay] = useState<Date | null>(null);
   const days = getMonthGrid(currentDate);
   const today = new Date();
   const currentMonth = currentDate.getMonth();
+
+  function getEventsForDay(day: Date): CalEvent[] {
+    return events
+      .filter((event) =>
+        event.allDay ? eventOverlapsDay(event, day) : eventOnDay(event, day),
+      )
+      .sort((left, right) => left.start.getTime() - right.start.getTime());
+  }
+
+  const expandedDayEvents = expandedDay ? getEventsForDay(expandedDay) : [];
 
   useEffect(() => {
     if (!expandedDay) return;
@@ -75,13 +80,7 @@ export function MonthView({
           {days.map((day) => {
             const isCurrentMonth = day.getMonth() === currentMonth;
             const isToday = isSameDay(day, today);
-            const dayEvents = events
-              .filter((event) =>
-                event.allDay
-                  ? eventOverlapsDay(event, day)
-                  : eventOnDay(event, day),
-              )
-              .sort((left, right) => left.start.getTime() - right.start.getTime());
+            const dayEvents = getEventsForDay(day);
             const visibleEvents = dayEvents.slice(0, 3);
             const overflowCount = dayEvents.length - visibleEvents.length;
 
@@ -140,10 +139,7 @@ export function MonthView({
                       type="button"
                       onClick={(clickEvent) => {
                         clickEvent.stopPropagation();
-                        setExpandedDay({
-                          day: new Date(day),
-                          events: dayEvents,
-                        });
+                        setExpandedDay(new Date(day));
                       }}
                       className="w-fit rounded px-1 text-left text-[10px] font-medium text-gray-600 hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-red/40"
                       aria-label={`Alle ${dayEvents.length} Termine am ${formatDay(day)} anzeigen`}
@@ -175,13 +171,13 @@ export function MonthView({
             <header className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">
-                  {expandedDay.events.length} Termine
+                    {expandedDayEvents.length} Termine
                 </p>
                 <h2
-                  id="month-day-events-title"
-                  className="text-lg font-bold capitalize text-gray-900"
+                    id="month-day-events-title"
+                    className="text-lg font-bold capitalize text-gray-900"
                 >
-                  {formatDay(expandedDay.day)}
+                    {formatDay(expandedDay)}
                 </h2>
               </div>
               <button
@@ -195,38 +191,38 @@ export function MonthView({
             </header>
 
             <div className="min-h-0 space-y-2 overflow-y-auto p-4">
-              {expandedDay.events.map((event) => (
+              {expandedDayEvents.map((event) => (
                 <button
-                  key={event.id}
-                  type="button"
-                  onClick={() => openEvent(event)}
-                  className="group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 text-left transition-all duration-150 hover:-translate-y-px hover:border-brand-red/40 hover:bg-red-50/40 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-red/40"
+                    key={event.id}
+                    type="button"
+                    onClick={() => openEvent(event)}
+                    className="group flex w-full cursor-pointer items-center gap-3 rounded-xl border border-gray-200 bg-white p-3 text-left transition-all duration-150 hover:-translate-y-px hover:border-brand-red/40 hover:bg-red-50/40 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-red/40"
                 >
-                  <span
-                    className={`mt-1 h-3 w-3 shrink-0 rounded-full ${event.color}`}
-                    aria-hidden="true"
-                  />
-                  <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-1.5 font-semibold text-gray-900">
-                      {event.important && (
-                        <Star
-                          className="h-3.5 w-3.5 shrink-0 text-amber-500"
-                          fill="currentColor"
-                        />
-                      )}
-                      <span className="truncate">{event.title}</span>
+                    <span
+                      className={`mt-1 h-3 w-3 shrink-0 rounded-full ${event.color}`}
+                      aria-hidden="true"
+                    />
+                    <span className="min-w-0 flex-1">
+                      <span className="flex items-center gap-1.5 font-semibold text-gray-900">
+                        {event.important && (
+                          <Star
+                            className="h-3.5 w-3.5 shrink-0 text-amber-500"
+                            fill="currentColor"
+                          />
+                        )}
+                        <span className="truncate">{event.title}</span>
+                      </span>
+                      <span className="mt-0.5 block text-xs text-gray-500">
+                        {event.allDay
+                          ? "Ganztägig"
+                          : `${formatTime(event.start)} - ${formatTime(event.end)}`}
+                        {event.location ? ` · ${event.location}` : ""}
+                      </span>
                     </span>
-                    <span className="mt-0.5 block text-xs text-gray-500">
-                      {event.allDay
-                        ? "Ganztägig"
-                        : `${formatTime(event.start)} - ${formatTime(event.end)}`}
-                      {event.location ? ` · ${event.location}` : ""}
-                    </span>
-                  </span>
-                  <ChevronRight
-                    className="h-4 w-4 shrink-0 translate-x-1 text-gray-400 opacity-0 transition-all group-hover:translate-x-0 group-hover:text-brand-red group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:text-brand-red group-focus-visible:opacity-100"
-                    aria-hidden="true"
-                  />
+                    <ChevronRight
+                      className="h-4 w-4 shrink-0 translate-x-1 text-gray-400 opacity-0 transition-all group-hover:translate-x-0 group-hover:text-brand-red group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:text-brand-red group-focus-visible:opacity-100"
+                      aria-hidden="true"
+                    />
                 </button>
               ))}
             </div>
