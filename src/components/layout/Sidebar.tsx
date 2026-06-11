@@ -26,7 +26,6 @@ const navItems = [
 ];
 
 interface SidebarProps {
-  darkMode?: boolean;
   currentUser?: CurrentUser;
 }
 
@@ -49,17 +48,13 @@ function isActiveLink(currentPath: string, href: string) {
   return currentPath === target || currentPath.startsWith(`${target}/`);
 }
 
-export function Sidebar({ darkMode, currentUser }: SidebarProps) {
+export function Sidebar({ currentUser }: SidebarProps) {
   const pathname = usePathname() ?? "";
-  const bg = darkMode ? "#2a2a2a" : "#5f6a70";
   const displayName = currentUser?.displayName ?? "LearnHub";
   const email = currentUser?.email ?? "";
 
   return (
-    <div
-      className="flex h-full w-full flex-col px-5 py-6 transition-colors duration-300"
-      style={{ backgroundColor: bg }}
-    >
+    <div className="flex h-full w-full flex-col border-r border-sidebar-border bg-sidebar px-5 py-6 text-sidebar-foreground transition-colors duration-300">
       {/* Logo – führt zur Home/Dashboard-Seite */}
       <Link
         href="/dashboard"
@@ -78,10 +73,7 @@ export function Sidebar({ darkMode, currentUser }: SidebarProps) {
       <nav className="flex flex-1 flex-col gap-8">
         {navItems.map(({ section, items }) => (
           <div key={section}>
-            <p
-              className="mb-3 text-xs font-medium uppercase tracking-wider"
-              style={{ color: "#aeb4b8" }}
-            >
+            <p className="mb-3 text-xs font-medium uppercase tracking-wider text-sidebar-foreground/60">
               {section}
             </p>
             <ul className="flex flex-col gap-3">
@@ -109,7 +101,7 @@ export function Sidebar({ darkMode, currentUser }: SidebarProps) {
       </nav>
 
       {/* Trennlinie */}
-      <div className="my-4" style={{ borderTop: "1px solid #7a868c" }} />
+      <div className="my-4 border-t border-sidebar-border" />
 
       {/* User Card – führt zum Profil-Tab in den Einstellungen */}
       <Link
@@ -133,9 +125,7 @@ export function Sidebar({ darkMode, currentUser }: SidebarProps) {
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-semibold text-white">{displayName}</span>
-          <span className="text-xs" style={{ color: "#aeb4b8" }}>
-            {email}
-          </span>
+          <span className="text-xs text-sidebar-foreground/60">{email}</span>
         </div>
       </Link>
     </div>

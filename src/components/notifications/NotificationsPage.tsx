@@ -263,7 +263,7 @@ export function NotificationsPage() {
           </div>
         </aside>
 
-        <section className="flex min-h-0 flex-col bg-[#f8f8f8]">
+        <section className="flex min-h-0 flex-col bg-gray-50">
           {selectedNotification ? (
             <>
               <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">

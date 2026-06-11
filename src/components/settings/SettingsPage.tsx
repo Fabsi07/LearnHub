@@ -166,7 +166,7 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
                 className={cn(
                   "inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors",
                   isActive
-                    ? "bg-gray-900 text-white shadow-sm"
+                    ? "bg-foreground text-background shadow-sm"
                     : "text-gray-600 hover:bg-gray-100 hover:text-gray-950",
                 )}
               >
