@@ -205,46 +205,46 @@ Reihenfolge: erst Daten/Persistenz (A+B), dann Verwaltungs-UI (C+D), dann Schedu
 Nach jeder Phase soll `npm run build` grün sein.
 
 ### Phase A – Schema & Migration
-- [ ] **A1** `StudyPlan` um Algorithmus-Felder erweitern (§7.1: difficulty, priorKnowledge, pages, credits, totalHours, hoursPerDay, planType).
-- [ ] **A2** Migration erstellen (`npm run prisma:migrate`) + `prisma generate`.
+- [x] **A1** `StudyPlan` um Algorithmus-Felder erweitern (§7.1: difficulty, priorKnowledge, pages, credits, totalHours, hoursPerDay, planType).
+- [x] **A2** Migration erstellen (`npm run prisma:migrate`) + `prisma generate`.
 
 ### Phase B – StudyPlan-API (CRUD)
-- [ ] **B1** `GET /api/study-plan` – alle Lernpläne des eingeloggten Users (inkl. Task-Zähler für Fortschritt).
-- [ ] **B2** `POST /api/study-plan` – Lernplan anlegen (Algorithmus serverseitig berechnen + Felder speichern).
-- [ ] **B3** `GET /api/study-plan/[id]` – ein Plan inkl. Tasks.
-- [ ] **B4** `PATCH /api/study-plan/[id]` – bearbeiten (bei geänderten Eingaben Ergebnis neu berechnen).
-- [ ] **B5** `DELETE /api/study-plan/[id]` – löschen (Tasks via Cascade; Kalender-Events bleiben, Link → null).
-- [ ] **B6** Aufgaben-API: `POST /api/study-plan/[id]/tasks`, `PATCH .../tasks/[taskId]`, `DELETE .../tasks/[taskId]`.
-- [ ] **B7** Server-State-Hook `src/lib/study-plan/useStudyPlans.ts` (Fetch ohne React Query, gemäß `CLAUDE.md`).
+- [x] **B1** `GET /api/study-plan` – alle Lernpläne des eingeloggten Users (inkl. Task-Zähler für Fortschritt).
+- [x] **B2** `POST /api/study-plan` – Lernplan anlegen (Algorithmus serverseitig berechnen + Felder speichern).
+- [x] **B3** `GET /api/study-plan/[id]` – ein Plan inkl. Tasks.
+- [x] **B4** `PATCH /api/study-plan/[id]` – bearbeiten (bei geänderten Eingaben Ergebnis neu berechnen).
+- [x] **B5** `DELETE /api/study-plan/[id]` – löschen (Tasks via Cascade; Kalender-Events bleiben, Link → null).
+- [x] **B6** Aufgaben-API: `POST /api/study-plan/[id]/tasks`, `PATCH .../tasks/[taskId]`, `DELETE .../tasks/[taskId]`.
+- [x] **B7** Server-State-Hook `src/lib/study-plan/useStudyPlans.ts` (Fetch ohne React Query, gemäß `CLAUDE.md`).
 
 ### Phase C – Übersichtsseite (`/study-plan`)
-- [ ] **C1** `StudyPlanOverview.tsx` – Header „Meine Lernpläne" + Button „+ Neuer Lernplan" + Karten-Grid + Leerzustand.
-- [ ] **C2** `StudyPlanCard.tsx` – Titel, Fach, Zieldatum, Zieltyp-Badge, Fortschrittsbalken, nächste Aufgabe, „noch X Tage".
-- [ ] **C3** `StudyPlanForm.tsx` – Modal zum Anlegen/Bearbeiten (Pflichtfelder + Algorithmus-Eingaben, Redesign §5).
-- [ ] **C4** Karte: Klick → Detailseite; 3-Punkte-Menü → Bearbeiten/Löschen (mit Bestätigung).
+- [x] **C1** `StudyPlanOverview.tsx` – Header „Meine Lernpläne" + Button „+ Neuer Lernplan" + Karten-Grid + Leerzustand.
+- [x] **C2** `StudyPlanCard.tsx` – Titel, Fach, Zieldatum, Zieltyp-Badge, Fortschrittsbalken, nächste Aufgabe, „noch X Tage".
+- [x] **C3** `StudyPlanForm.tsx` – Modal zum Anlegen/Bearbeiten (Pflichtfelder + Algorithmus-Eingaben, Redesign §5).
+- [x] **C4** Karte: Klick → Detailseite; 3-Punkte-Menü → Bearbeiten/Löschen (mit Bestätigung).
 
 ### Phase D – Detailseite (`/study-plan/[id]`)
-- [ ] **D1** Route `src/app/(app)/study-plan/[id]/page.tsx` + `StudyPlanDetail.tsx` (Header, Zurück-Link, Bearbeiten).
-- [ ] **D2** Fortschritts-Widget (erledigte/gesamt Tasks).
-- [ ] **D3** `AlgorithmResultWidget.tsx` – gespeichertes Ergebnis (Gesamtstunden, Std/Tag, Plantyp) + „Neu berechnen".
-- [ ] **D4** `TaskList.tsx` / `TaskItem.tsx` / `TaskForm.tsx` – Aufgaben anzeigen, abhaken, anlegen, bearbeiten, löschen.
+- [x] **D1** Route `src/app/(app)/study-plan/[id]/page.tsx` + `StudyPlanDetail.tsx` (Header, Zurück-Link, Bearbeiten).
+- [x] **D2** Fortschritts-Widget (erledigte/gesamt Tasks).
+- [x] **D3** `AlgorithmResultWidget.tsx` – gespeichertes Ergebnis (Gesamtstunden, Std/Tag, Plantyp) + „Neu berechnen".
+- [x] **D4** `TaskList.tsx` / `TaskItem.tsx` / `TaskForm.tsx` – Aufgaben anzeigen, abhaken, anlegen, bearbeiten, löschen.
 
 ### Phase E – Scheduler (Logik, reine Funktion)
-- [ ] **E1** `src/lib/study-plan/scheduler.ts`: Typen `ScheduledSession`, `ScheduleResult`, `ScheduleOptions`.
-- [ ] **E2** Phasen-Templates (konkrete Aufgaben je Phase, normal + kritisch) als Konstanten.
-- [ ] **E3** `scheduleStudyPlan(result, options, existingEvents)` implementieren (Logik aus §6).
-- [ ] **E4** Konfliktprüfung gegen bestehende Events (DHBW + eigene Lernsessions); feste Slots, Sonntag frei.
-- [ ] **E5** Warnungen (Überlastung, kein freier Slot) zurückgeben.
+- [x] **E1** `src/lib/study-plan/scheduler.ts`: Typen `ScheduledSession`, `ScheduleResult`, `ScheduleOptions`.
+- [x] **E2** Phasen-Templates (konkrete Aufgaben je Phase, normal + kritisch) als Konstanten.
+- [x] **E3** `scheduleStudyPlan(result, options, existingEvents)` implementieren (Logik aus §6).
+- [x] **E4** Konfliktprüfung gegen bestehende Events (DHBW + eigene Lernsessions); feste Slots, Sonntag frei.
+- [x] **E5** Warnungen (Überlastung, kein freier Slot) zurückgeben.
 
 ### Phase F – Kalender-Anbindung
-- [ ] **F1** `POST /api/calendar/events` um `studyPlanId` erweitern (annehmen + speichern + zurückgeben).
-- [ ] **F2** In der Detailseite: Button „Lernplan in Kalender eintragen" → bestehende Events laden
+- [x] **F1** `POST /api/calendar/events` um `studyPlanId` erweitern (annehmen + speichern + zurückgeben).
+- [x] **F2** In der Detailseite: Button „Lernplan in Kalender eintragen" → bestehende Events laden
   (`useExternalEvents` + lokale Events) → `scheduleStudyPlan(...)` → **Vorschau** (Wochenübersicht + Liste).
-- [ ] **F3** Warnungen sichtbar machen; Button **„In Kalender übernehmen"** → Sessions als Events speichern (mit `studyPlanId`).
-- [ ] **F4** Termine sind danach im Kalender sichtbar, editierbar und **per Drag&Drop verschiebbar** (bereits vorhanden).
+- [x] **F3** Warnungen sichtbar machen; Button **„In Kalender übernehmen"** → Sessions als Events speichern (mit `studyPlanId`).
+- [x] **F4** Termine sind danach im Kalender sichtbar, editierbar und **per Drag&Drop verschiebbar** (bereits vorhanden).
 
 ### Phase G – Abschluss
-- [ ] **G1** `npm run build` grün (Lint + Typecheck).
+- [x] **G1** `npm run build` grün (Lint + Typecheck).
 - [ ] **G2** Manueller Durchlauf: Plan anlegen → Detail → berechnen → Vorschau → eintragen → im Kalender prüfen.
 - [ ] **G3** Doku/PRD kurz aktualisieren, PR erstellen.
 
