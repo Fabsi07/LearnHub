@@ -115,9 +115,12 @@ Datei: `src/lib/study-plan/scheduler.ts`
 
 ### Konstanten
 ```ts
-const SLOT_HOURS = 2;            // Dauer einer Lerneinheit
+const SLOT_HOURS = 2;                // Dauer einer Lerneinheit
 const TARGET_SESSIONS_PER_WEEK = 4;  // Ziel 3–4
 const MAX_SESSIONS_PER_WEEK = 5;     // hartes Limit
+const MAX_SESSIONS_PER_DAY = 2;      // zweiter Block am selben Tag erlaubt
+const LATEST_END_HOUR = 21;          // keine Einheit endet nach 21 Uhr (schlaffreundlich)
+const SESSION_GAP_MIN = 30;          // Mindestpause zwischen zwei Blöcken am selben Tag
 ```
 
 ### Schritt-Logik

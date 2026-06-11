@@ -6,7 +6,7 @@
 // sein"). Logik und Konstanten: docs/lernplan-umsetzung.md §6.
 
 import type { CalEvent } from "@/components/calendar/events";
-import { DAY_END_HOUR, DAY_START_HOUR } from "@/components/calendar/events";
+import { DAY_START_HOUR } from "@/components/calendar/events";
 import type { AlgorithmResult } from "@/lib/calculations/studyPlanAlgorithm";
 
 /** Dauer einer Lerneinheit in Stunden. */
@@ -17,6 +17,12 @@ export const TARGET_SESSIONS_PER_WEEK = 4;
 export const MAX_SESSIONS_PER_WEEK = 5;
 /** Bevorzugter Beginn einer Einheit (16:00 Uhr, Entscheidung 8.2). */
 export const PREFERRED_START_HOUR = 16;
+/** Maximal zwei Einheiten am selben Tag. */
+export const MAX_SESSIONS_PER_DAY = 2;
+/** Keine Einheit endet nach 21:00 Uhr – auch unter der Woche schlaffreundlich. */
+export const LATEST_END_HOUR = 21;
+/** Mindestpause zwischen zwei Einheiten am selben Tag (Minuten). */
+export const SESSION_GAP_MIN = 30;
 
 export interface ScheduleOptions {
   /** Klausur-/Zieldatum; am Tag selbst wird nicht mehr geplant. */
@@ -27,6 +33,10 @@ export interface ScheduleOptions {
   allowedWeekdays?: number[];
   /** Bevorzugte Startstunde der Einheiten (Default: 16). */
   preferredStartHour?: number;
+  /** Späteste Endzeit einer Einheit in Stunden (Default: 21). */
+  latestEndHour?: number;
+  /** Maximale Einheiten pro Tag (Default: 2). */
+  maxSessionsPerDay?: number;
 }
 
 export interface ScheduledSession {
@@ -128,17 +138,21 @@ function collides(start: Date, end: Date, blockers: { start: Date; end: Date; al
 /**
  * Sucht den ersten freien 2-h-Block an einem Tag: zuerst ab der bevorzugten
  * Startzeit aufwärts (30-min-Raster), dann unterhalb davon abwärts bis zum
- * Tagesfenster-Beginn. null, wenn der Tag voll ist.
+ * Tagesfenster-Beginn. Keine Einheit endet nach `latestEndHour`, damit auch
+ * unter der Woche genug Abstand zum Schlafengehen bleibt.
+ * null, wenn der Tag voll ist.
  */
 function findFreeSlot(
   day: Date,
   preferredStartHour: number,
+  latestEndHour: number,
   blockers: { start: Date; end: Date; allDay?: boolean }[],
   notBefore: Date,
 ): { start: Date; end: Date } | null {
   const slotMin = SLOT_HOURS * 60;
   const windowStart = DAY_START_HOUR * 60;
-  const windowEnd = DAY_END_HOUR * 60; // exklusiv; letzter Start = windowEnd - slotMin
+  const windowEnd = latestEndHour * 60; // exklusiv; letzter Start = windowEnd - slotMin
+  if (windowEnd - slotMin < windowStart) return null;
   const preferred = Math.min(Math.max(preferredStartHour * 60, windowStart), windowEnd - slotMin);
 
   // Kandidaten-Startminuten: bevorzugt → später → früher
@@ -190,6 +204,8 @@ export function scheduleStudyPlan(
   const firstDay = startOfDay(options.startDate ?? addDays(now, 1));
   const allowedWeekdays = options.allowedWeekdays ?? [1, 2, 3, 4, 5, 6]; // Mo–Sa
   const preferredStartHour = options.preferredStartHour ?? PREFERRED_START_HOUR;
+  const latestEndHour = options.latestEndHour ?? LATEST_END_HOUR;
+  const maxPerDay = options.maxSessionsPerDay ?? MAX_SESSIONS_PER_DAY;
 
   let sessionsNeeded = Math.max(1, Math.ceil(result.totalHours / SLOT_HOURS));
   const originallyNeeded = sessionsNeeded;
@@ -205,9 +221,9 @@ export function scheduleStudyPlan(
     return { sessions: [], warnings, sessionsNeeded };
   }
 
-  // Kapazität: max. 5 Einheiten pro Woche
+  // Kapazität: max. 5 Einheiten pro Woche, max. 2 pro Tag
   const weeks = Math.max(1, Math.ceil((deadline.getTime() - firstDay.getTime()) / (7 * DAY_MS)));
-  const capacity = Math.min(weeks * MAX_SESSIONS_PER_WEEK, candidateDays.length);
+  const capacity = Math.min(weeks * MAX_SESSIONS_PER_WEEK, candidateDays.length * maxPerDay);
   if (sessionsNeeded > capacity) {
     warnings.push(
       `Rechnerisch wären ${sessionsNeeded} Lerneinheiten nötig, bis zur Deadline passen aber höchstens ${capacity} ` +
@@ -231,25 +247,54 @@ export function scheduleStudyPlan(
   }
 
   // Pro Woche `perWeek` Tage möglichst gleichmäßig wählen; volle Tage werden
-  // durch die übrigen Tage der Woche ersetzt (Fallback-Reihenfolge).
+  // durch die übrigen Tage der Woche ersetzt (Fallback-Reihenfolge). Reicht das
+  // nicht, darf in einem zweiten Durchgang eine zweite Einheit auf bereits
+  // belegte Tage gelegt werden (max. 2/Tag, mit Pause dazwischen).
   const blockers = existingEvents.map((e) => ({ start: e.start, end: e.end, allDay: e.allDay }));
   const placed: { start: Date; end: Date }[] = [];
+  const perDayCount = new Map<string, number>();
   let remaining = sessionsNeeded;
+
+  const gapMs = SESSION_GAP_MIN * 60 * 1000;
+  // Eigene platzierte Einheiten blockieren mit ±Pause, damit zwei Blöcke am
+  // selben Tag nicht nahtlos aneinanderkleben (4 h am Stück).
+  const paddedPlaced = () =>
+    placed.map((p) => ({
+      start: new Date(p.start.getTime() - gapMs),
+      end: new Date(p.end.getTime() + gapMs),
+    }));
+
+  function tryPlace(day: Date): boolean {
+    const key = day.toDateString();
+    if ((perDayCount.get(key) ?? 0) >= maxPerDay) return false;
+    const slot = findFreeSlot(
+      day,
+      preferredStartHour,
+      latestEndHour,
+      [...blockers, ...paddedPlaced()],
+      now,
+    );
+    if (!slot) return false;
+    placed.push(slot);
+    perDayCount.set(key, (perDayCount.get(key) ?? 0) + 1);
+    return true;
+  }
 
   const sortedWeekIndices = [...weekChunks.keys()].sort((a, b) => a - b);
   for (const weekIndex of sortedWeekIndices) {
     if (remaining <= 0) break;
     const chunk = weekChunks.get(weekIndex)!;
-    const quota = Math.min(perWeek, remaining, chunk.length);
+    const quota = Math.min(perWeek, remaining, chunk.length * maxPerDay);
 
     // Gleichmäßig verteilte Wunsch-Tage zuerst, danach die restlichen als Fallback
+    const dayQuota = Math.min(quota, chunk.length);
     const pickOrder: Date[] = [];
-    if (quota >= chunk.length) {
+    if (dayQuota >= chunk.length) {
       pickOrder.push(...chunk);
     } else {
       const wanted = new Set<number>();
-      for (let i = 0; i < quota; i++) {
-        wanted.add(quota === 1 ? 0 : Math.round((i * (chunk.length - 1)) / (quota - 1)));
+      for (let i = 0; i < dayQuota; i++) {
+        wanted.add(dayQuota === 1 ? 0 : Math.round((i * (chunk.length - 1)) / (dayQuota - 1)));
       }
       pickOrder.push(...[...wanted].sort((a, b) => a - b).map((i) => chunk[i]));
       chunk.forEach((day, i) => {
@@ -258,13 +303,22 @@ export function scheduleStudyPlan(
     }
 
     let placedThisWeek = 0;
+    // Durchgang 1: höchstens eine Einheit pro Tag
     for (const day of pickOrder) {
       if (placedThisWeek >= quota || remaining <= 0) break;
-      const slot = findFreeSlot(day, preferredStartHour, [...blockers, ...placed], now);
-      if (!slot) continue; // Tag ist voll → nächster Fallback-Tag
-      placed.push(slot);
-      placedThisWeek++;
-      remaining--;
+      if ((perDayCount.get(day.toDateString()) ?? 0) >= 1) continue;
+      if (tryPlace(day)) {
+        placedThisWeek++;
+        remaining--;
+      }
+    }
+    // Durchgang 2: zweite Einheit auf bereits belegten Tagen (max. 2/Tag)
+    for (const day of pickOrder) {
+      if (placedThisWeek >= quota || remaining <= 0) break;
+      if (tryPlace(day)) {
+        placedThisWeek++;
+        remaining--;
+      }
     }
   }
 
