@@ -11,8 +11,6 @@ import type { AlgorithmResult } from "@/lib/calculations/studyPlanAlgorithm";
 
 /** Dauer einer Lerneinheit in Stunden. */
 export const SLOT_HOURS = 2;
-/** Ziel: 3–4 Einheiten pro Woche (study-plan-redesign.md §5). */
-export const TARGET_SESSIONS_PER_WEEK = 4;
 /** Hartes Limit gegen Überlastung. */
 export const MAX_SESSIONS_PER_WEEK = 5;
 /** Bevorzugter Beginn einer Einheit (16:00 Uhr, Entscheidung 8.2). */
