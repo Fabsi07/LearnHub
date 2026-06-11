@@ -185,27 +185,32 @@ export function CalendarPageContent() {
     changed
       .filter((event) => !event.id.startsWith("local-"))
       .forEach((event) => {
+        const old = prev.find((e) => e.id === event.id);
+        const payload: Record<string, unknown> = {
+          title: event.title,
+          start: event.start.toISOString(),
+          end: event.end.toISOString(),
+          allDay: event.allDay ?? false,
+          type: event.type,
+          location: event.location,
+          notes: event.notes,
+          tasks: event.tasks,
+          subject: event.subject,
+          important: event.important ?? false,
+          repeat: event.repeat ?? "none",
+        };
+
+        if (old?.color !== event.color) {
+          payload.typeColor = event.color;
+        }
+
         fetch(`/api/calendar/events/${event.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: event.title,
-            start: event.start.toISOString(),
-            end: event.end.toISOString(),
-            allDay: event.allDay ?? false,
-            type: event.type,
-            typeColor: event.color,
-            location: event.location,
-            notes: event.notes,
-            tasks: event.tasks,
-            subject: event.subject,
-            important: event.important ?? false,
-            repeat: event.repeat ?? "none",
-          }),
+          body: JSON.stringify(payload),
         }).catch(() => {
           /* Update gescheitert, UI-State bleibt */
         });
-      });
   }
 
   return (
