@@ -2,154 +2,182 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  AlertCircle,
   Archive,
   ArchiveRestore,
   BookOpen,
   CheckCircle,
-  MoreHorizontal,
   Search,
-  AlertCircle,
+  Trash2,
 } from "lucide-react";
+import type {
+  NotificationDTO,
+  NotificationType,
+} from "@/lib/notifications/types";
 import { cn } from "@/lib/utils";
-
-type NotificationType = "assignment" | "exam";
-
-type Notification = {
-  id: number;
-  type: NotificationType;
-  subject: string;
-  course: string;
-  dueDate: string;
-  description: string;
-  isUrgent: boolean;
-  isDone: boolean;
-  isArchived: boolean;
-};
-
-// NOTE: Mock-Daten – werden später durch /api/notifications ersetzt.
-const initialNotifications: Notification[] = [
-  {
-    id: 1,
-    type: "assignment",
-    subject: "Hausarbeit Mathematik",
-    course: "Mathematik",
-    dueDate: "09. Mai 2026",
-    description: "Abgabe der Hausarbeit zum Thema Differentialrechnung bis 23:59 Uhr",
-    isUrgent: true,
-    isDone: false,
-    isArchived: false,
-  },
-  {
-    id: 2,
-    type: "exam",
-    subject: "Klausur Web Engineering",
-    course: "Web Engineering",
-    dueDate: "15. Mai 2026",
-    description: "Prüfung in Hörsaal 201, 10:00 - 12:00 Uhr",
-    isUrgent: true,
-    isDone: false,
-    isArchived: false,
-  },
-  {
-    id: 3,
-    type: "assignment",
-    subject: "Projekt-Abgabe",
-    course: "Softwareentwicklung",
-    dueDate: "12. Mai 2026",
-    description: "Abgabe des Gruppenprojekts über das Portal",
-    isUrgent: false,
-    isDone: false,
-    isArchived: false,
-  },
-  {
-    id: 4,
-    type: "exam",
-    subject: "Klausur BWL",
-    course: "Betriebswirtschaftslehre",
-    dueDate: "18. Mai 2026",
-    description: "Prüfung in Hörsaal 105, 14:00 - 16:00 Uhr",
-    isUrgent: false,
-    isDone: false,
-    isArchived: false,
-  },
-  {
-    id: 5,
-    type: "assignment",
-    subject: "Übungsaufgaben Blatt 5",
-    course: "Mathematik",
-    dueDate: "07. Mai 2026",
-    description: "Abgabe der Lösungen bis zum Beginn der nächsten Vorlesung",
-    isUrgent: false,
-    isDone: true,
-    isArchived: false,
-  },
-];
 
 const filters = ["Alle", "Offen", "Abgaben", "Klausuren", "Archiviert"] as const;
 type Filter = (typeof filters)[number];
 
+function formatDate(value: string) {
+  return new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
 export function NotificationsPage() {
-  const [items, setItems] = useState<Notification[]>(initialNotifications);
+  const [items, setItems] = useState<NotificationDTO[]>([]);
   const [activeFilter, setActiveFilter] = useState<Filter>("Alle");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedId, setSelectedId] = useState<number | null>(
-    initialNotifications[0]?.id ?? null,
-  );
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadNotifications() {
+      try {
+        const response = await fetch("/api/notifications", { cache: "no-store" });
+        const data = (await response.json().catch(() => ({}))) as {
+          notifications?: NotificationDTO[];
+          error?: string;
+        };
+
+        if (!response.ok) {
+          throw new Error(data.error ?? "Benachrichtigungen konnten nicht geladen werden.");
+        }
+
+        if (!cancelled) {
+          setItems(data.notifications ?? []);
+          setError(null);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setError(
+            loadError instanceof Error
+              ? loadError.message
+              : "Benachrichtigungen konnten nicht geladen werden.",
+          );
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadNotifications();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredNotifications = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
     return items
-      .filter((n) => {
+      .filter((notification) => {
         switch (activeFilter) {
           case "Abgaben":
-            return n.type === "assignment" && !n.isArchived;
+            return notification.type === "assignment" && !notification.isArchived;
           case "Klausuren":
-            return n.type === "exam" && !n.isArchived;
+            return notification.type === "exam" && !notification.isArchived;
           case "Offen":
-            return !n.isDone && !n.isArchived;
+            return !notification.isDone && !notification.isArchived;
           case "Archiviert":
-            return n.isArchived;
+            return notification.isArchived;
           default:
-            return !n.isArchived;
+            return !notification.isArchived;
         }
       })
-      .filter((n) => {
+      .filter((notification) => {
         if (!term) return true;
         return (
-          n.subject.toLowerCase().includes(term) ||
-          n.course.toLowerCase().includes(term) ||
-          n.description.toLowerCase().includes(term)
+          notification.subject.toLowerCase().includes(term) ||
+          notification.course.toLowerCase().includes(term) ||
+          notification.description.toLowerCase().includes(term)
         );
       });
   }, [items, activeFilter, searchTerm]);
 
-  // N-5 Fix: Wenn die aktuelle Auswahl im neuen Filter nicht mehr enthalten ist,
-  // automatisch den ersten Eintrag selektieren.
   useEffect(() => {
     if (filteredNotifications.length === 0) {
       setSelectedId(null);
       return;
     }
-    if (!filteredNotifications.some((n) => n.id === selectedId)) {
+    if (!filteredNotifications.some((notification) => notification.id === selectedId)) {
       setSelectedId(filteredNotifications[0].id);
     }
   }, [filteredNotifications, selectedId]);
 
   const selectedNotification = useMemo(
-    () => filteredNotifications.find((n) => n.id === selectedId) ?? null,
+    () =>
+      filteredNotifications.find((notification) => notification.id === selectedId) ??
+      null,
     [selectedId, filteredNotifications],
   );
 
-  const toggleDone = (id: number) => {
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isDone: !n.isDone } : n)),
-    );
+  const updateNotification = async (
+    id: string,
+    changes: Pick<NotificationDTO, "isDone"> | Pick<NotificationDTO, "isArchived">,
+  ) => {
+    setPendingId(id);
+    try {
+      const response = await fetch(`/api/notifications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(changes),
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        notification?: NotificationDTO;
+        error?: string;
+      };
+
+      if (!response.ok || !data.notification) {
+        throw new Error(data.error ?? "Benachrichtigung konnte nicht gespeichert werden.");
+      }
+
+      const savedNotification = data.notification;
+      setItems((previous) =>
+        previous.map((notification) =>
+          notification.id === id ? savedNotification : notification,
+        ),
+      );
+      setError(null);
+    } catch (updateError) {
+      setError(
+        updateError instanceof Error
+          ? updateError.message
+          : "Benachrichtigung konnte nicht gespeichert werden.",
+      );
+    } finally {
+      setPendingId(null);
+    }
   };
 
-  const toggleArchived = (id: number) => {
-    setItems((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, isArchived: !n.isArchived } : n)),
-    );
+  const deleteNotification = async (id: string) => {
+    setPendingId(id);
+    try {
+      const response = await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      if (!response.ok) {
+        throw new Error(data.error ?? "Benachrichtigung konnte nicht gelöscht werden.");
+      }
+
+      setItems((previous) =>
+        previous.filter((notification) => notification.id !== id),
+      );
+      setError(null);
+    } catch (deleteError) {
+      setError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Benachrichtigung konnte nicht gelöscht werden.",
+      );
+    } finally {
+      setPendingId(null);
+    }
   };
 
   const getTypeIcon = (type: NotificationType) =>
@@ -176,7 +204,7 @@ export function NotificationsPage() {
           <input
             type="search"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(event) => setSearchTerm(event.target.value)}
             placeholder="Benachrichtigungen suchen"
             className="w-full bg-transparent text-sm text-gray-700 placeholder:text-gray-500 focus:outline-none"
           />
@@ -186,7 +214,11 @@ export function NotificationsPage() {
       <div className="grid flex-1 overflow-hidden lg:grid-cols-[360px_minmax(0,1fr)]">
         <aside className="flex min-h-0 flex-col border-b border-gray-200 lg:border-r lg:border-b-0">
           <div className="border-b border-gray-200 px-4 py-3">
-            <div role="tablist" aria-label="Filter" className="flex gap-1 rounded-xl bg-gray-100 p-1">
+            <div
+              role="tablist"
+              aria-label="Filter"
+              className="flex gap-1 rounded-xl bg-gray-100 p-1"
+            >
               {filters.map((filter) => {
                 const isActive = activeFilter === filter;
                 return (
@@ -211,7 +243,13 @@ export function NotificationsPage() {
           </div>
 
           <div className="min-h-0 flex-1 overflow-auto">
-            {filteredNotifications.length === 0 ? (
+            {loading ? (
+              <p className="px-4 py-8 text-center text-sm text-gray-500">
+                Benachrichtigungen werden geladen...
+              </p>
+            ) : error && items.length === 0 ? (
+              <p className="px-4 py-8 text-center text-sm text-red-600">{error}</p>
+            ) : filteredNotifications.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-gray-500">
                 Keine Benachrichtigungen gefunden.
               </p>
@@ -253,7 +291,7 @@ export function NotificationsPage() {
                         )}
                       </div>
                       <p className="mt-2 truncate text-sm font-semibold text-gray-800">
-                        Fällig: {notification.dueDate}
+                        Fällig: {formatDate(notification.dueDate)}
                       </p>
                     </div>
                   </button>
@@ -281,7 +319,8 @@ export function NotificationsPage() {
                       {selectedNotification.subject}
                     </h2>
                     <p className="truncate text-sm text-gray-500">
-                      {selectedNotification.course} • {getTypeLabel(selectedNotification.type)}
+                      {selectedNotification.course} ·{" "}
+                      {getTypeLabel(selectedNotification.type)}
                     </p>
                   </div>
                 </div>
@@ -289,8 +328,13 @@ export function NotificationsPage() {
                 <div className="flex items-center gap-1 text-gray-500">
                   <button
                     type="button"
-                    onClick={() => toggleDone(selectedNotification.id)}
-                    className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+                    disabled={pendingId === selectedNotification.id}
+                    onClick={() =>
+                      updateNotification(selectedNotification.id, {
+                        isDone: !selectedNotification.isDone,
+                      })
+                    }
+                    className="rounded-lg p-2 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label={
                       selectedNotification.isDone
                         ? "Als offen markieren"
@@ -306,10 +350,17 @@ export function NotificationsPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={() => toggleArchived(selectedNotification.id)}
-                    className="rounded-lg p-2 transition-colors hover:bg-gray-100"
+                    disabled={pendingId === selectedNotification.id}
+                    onClick={() =>
+                      updateNotification(selectedNotification.id, {
+                        isArchived: !selectedNotification.isArchived,
+                      })
+                    }
+                    className="rounded-lg p-2 transition-colors hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
                     aria-label={
-                      selectedNotification.isArchived ? "Wiederherstellen" : "Archivieren"
+                      selectedNotification.isArchived
+                        ? "Wiederherstellen"
+                        : "Archivieren"
                     }
                   >
                     {selectedNotification.isArchived ? (
@@ -320,32 +371,47 @@ export function NotificationsPage() {
                   </button>
                   <button
                     type="button"
-                    className="rounded-lg p-2 transition-colors hover:bg-gray-100"
-                    aria-label="Mehr Optionen"
+                    disabled={pendingId === selectedNotification.id}
+                    onClick={() => deleteNotification(selectedNotification.id)}
+                    className="rounded-lg p-2 transition-colors hover:bg-gray-100 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Benachrichtigung löschen"
                   >
-                    <MoreHorizontal className="h-4 w-4" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
 
               <div className="min-h-0 flex-1 space-y-6 overflow-auto px-6 py-6">
+                {error && (
+                  <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {error}
+                  </p>
+                )}
                 <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
                   <div className="space-y-4">
                     <div>
-                      <h3 className="mb-2 text-sm font-semibold text-gray-600">Beschreibung</h3>
-                      <p className="text-gray-800">{selectedNotification.description}</p>
+                      <h3 className="mb-2 text-sm font-semibold text-gray-600">
+                        Beschreibung
+                      </h3>
+                      <p className="text-gray-800">
+                        {selectedNotification.description}
+                      </p>
                     </div>
 
                     <div className="border-t border-gray-200 pt-4">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-xs font-medium uppercase text-gray-500">Fällig am</p>
+                          <p className="text-xs font-medium uppercase text-gray-500">
+                            Fällig am
+                          </p>
                           <p className="mt-1 text-lg font-bold text-gray-900">
-                            {selectedNotification.dueDate}
+                            {formatDate(selectedNotification.dueDate)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs font-medium uppercase text-gray-500">Status</p>
+                          <p className="text-xs font-medium uppercase text-gray-500">
+                            Status
+                          </p>
                           <p
                             className={cn(
                               "mt-1 text-lg font-bold",
@@ -371,7 +437,9 @@ export function NotificationsPage() {
             </>
           ) : (
             <div className="flex flex-1 items-center justify-center p-6 text-sm text-gray-500">
-              Wähle eine Benachrichtigung aus der Liste aus.
+              {loading
+                ? "Benachrichtigungen werden geladen..."
+                : "Wähle eine Benachrichtigung aus der Liste aus."}
             </div>
           )}
         </section>
