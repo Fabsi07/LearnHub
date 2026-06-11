@@ -29,8 +29,8 @@ export function StudyPlanOverview() {
     if (!deleteTarget) return;
     setDeleting(true);
     try {
-      await fetch(`/api/study-plan/${deleteTarget.id}`, { method: "DELETE" });
-      await refresh();
+      const res = await fetch(`/api/study-plan/${deleteTarget.id}`, { method: "DELETE" });
+      if (res.ok) await refresh();
     } finally {
       setDeleting(false);
       setDeleteTarget(null);
