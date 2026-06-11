@@ -235,7 +235,9 @@ export function scheduleStudyPlan(
   const preferredStartHour = options.preferredStartHour ?? PREFERRED_START_HOUR;
   const latestEndHour = options.latestEndHour ?? LATEST_END_HOUR;
   const maxPerDay = options.maxSessionsPerDay ?? MAX_SESSIONS_PER_DAY;
-  const hochschulBufferMin = options.hochschulBufferMin ?? HOCHSCHUL_BUFFER_MIN;
+const hochschulBufferMin = Number.isFinite(options.hochschulBufferMin)
+  ? Math.max(0, options.hochschulBufferMin)
+  : HOCHSCHUL_BUFFER_MIN;
 
   let sessionsNeeded = Math.max(1, Math.ceil(result.totalHours / SLOT_HOURS));
   const originallyNeeded = sessionsNeeded;
