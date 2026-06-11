@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import type { StudyPlanDetailDTO } from "@/lib/study-plan/types";
 import { GOAL_TYPE_META, formatDate, remainingLabel } from "./planMeta";
 import { AlgorithmResultWidget } from "./AlgorithmResultWidget";
+import { SchedulePreviewModal } from "./SchedulePreviewModal";
 import { StudyPlanForm } from "./StudyPlanForm";
 import { TaskList } from "./TaskList";
 
@@ -19,6 +20,7 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     try {
@@ -147,7 +149,11 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
           </div>
         </div>
 
-        <AlgorithmResultWidget plan={plan} onRecalculated={() => void refresh()} />
+        <AlgorithmResultWidget
+          plan={plan}
+          onRecalculated={() => void refresh()}
+          onSchedule={() => setScheduleOpen(true)}
+        />
       </div>
 
       {/* Aufgaben */}
@@ -159,6 +165,14 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
         plan={plan}
         onClose={() => setEditOpen(false)}
         onSaved={() => void refresh()}
+      />
+
+      {/* Kalender-Planung (Vorschau + Eintragen) */}
+      <SchedulePreviewModal
+        open={scheduleOpen}
+        plan={plan}
+        onClose={() => setScheduleOpen(false)}
+        onScheduled={() => void refresh()}
       />
     </div>
   );

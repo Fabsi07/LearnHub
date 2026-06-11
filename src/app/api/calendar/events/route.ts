@@ -53,6 +53,7 @@ export async function GET() {
       tasks: e.tasks ?? undefined,
       subject: e.subject ?? undefined,
       repeat: (e.repeat as RepeatRule | null) ?? "none",
+      studyPlanId: e.studyPlanId ?? undefined,
     };
   });
 
@@ -73,8 +74,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Ungültiger Anfrage-Body." }, { status: 400 });
   }
 
-  const { title, start, end, allDay, type, location, notes, tasks, subject, repeat } =
-    (body ?? {}) as Record<string, unknown>;
+  const {
+    title,
+    start,
+    end,
+    allDay,
+    type,
+    location,
+    notes,
+    tasks,
+    subject,
+    repeat,
+    studyPlanId,
+  } = (body ?? {}) as Record<string, unknown>;
 
   if (
     typeof title !== "string" ||
@@ -103,6 +115,19 @@ export async function POST(req: Request) {
   const repeatRule: RepeatRule =
     repeat === "daily" || repeat === "weekly" || repeat === "none" ? repeat : "none";
 
+  // Optionale Lernplan-Verknüpfung: nur akzeptieren, wenn der Plan dem User gehört.
+  let planId: string | null = null;
+  if (typeof studyPlanId === "string" && studyPlanId) {
+    const plan = await prisma.studyPlan.findFirst({
+      where: { id: studyPlanId, ownerId: session.userId },
+      select: { id: true },
+    });
+    if (!plan) {
+      return NextResponse.json({ error: "Lernplan nicht gefunden." }, { status: 404 });
+    }
+    planId = plan.id;
+  }
+
   const row = await prisma.calendarEvent.create({
     data: {
       title: title.trim(),
@@ -117,6 +142,7 @@ export async function POST(req: Request) {
       repeat: repeatRule,
       source: "LOCAL",
       ownerId: session.userId,
+      studyPlanId: planId,
     },
   });
 
@@ -137,6 +163,7 @@ export async function POST(req: Request) {
       tasks: row.tasks ?? undefined,
       subject: row.subject ?? undefined,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
+      studyPlanId: row.studyPlanId ?? undefined,
     },
   });
 }

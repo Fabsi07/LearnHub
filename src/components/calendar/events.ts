@@ -21,6 +21,8 @@ export type CalEvent = {
   notes?: string;
   tasks?: string;
   repeat?: RepeatRule;
+  /** Verknüpfter Lernplan (gesetzt bei generierten Lerneinheiten). */
+  studyPlanId?: string;
 };
 
 // Gemeinsame Stammdaten für Sidebar + Event-Modal

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, CheckCircle, Calculator, RefreshCw } from "lucide-react";
+import { AlertTriangle, CheckCircle, Calculator, CalendarPlus, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { StudyPlanDTO } from "@/lib/study-plan/types";
 
@@ -9,9 +9,15 @@ interface AlgorithmResultWidgetProps {
   plan: StudyPlanDTO;
   /** Nach erfolgreicher Neuberechnung aufgerufen (Caller lädt neu). */
   onRecalculated: () => void;
+  /** Öffnet die Kalender-Planung (Vorschau-Modal). */
+  onSchedule?: () => void;
 }
 
-export function AlgorithmResultWidget({ plan, onRecalculated }: AlgorithmResultWidgetProps) {
+export function AlgorithmResultWidget({
+  plan,
+  onRecalculated,
+  onSchedule,
+}: AlgorithmResultWidgetProps) {
   const [busy, setBusy] = useState(false);
 
   const hasResult = plan.totalHours != null && plan.planType != null;
@@ -105,6 +111,18 @@ export function AlgorithmResultWidget({ plan, onRecalculated }: AlgorithmResultW
               Rechnerisch wären {plan.hoursPerDay} h pro Tag nötig. Angezeigt werden maximal
               2 h pro Tag – priorisiere die wichtigsten Inhalte.
             </p>
+          )}
+
+          {onSchedule && (
+            <button
+              type="button"
+              onClick={onSchedule}
+              className="flex items-center justify-center gap-1.5 px-4 py-2 text-sm font-bold text-white rounded-lg shadow-sm transition-opacity hover:opacity-90 active:scale-95"
+              style={{ backgroundColor: "#ef233c" }}
+            >
+              <CalendarPlus className="w-4 h-4" />
+              In Kalender eintragen
+            </button>
           )}
         </>
       ) : (
