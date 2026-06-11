@@ -27,6 +27,8 @@ export function CalendarPageContent() {
   const [hiddenSubjects, setHiddenSubjects] = useState<Set<string>>(
     () => new Set(),
   );
+  const [showImportantOnly, setShowImportantOnly] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [modal, setModal] = useState<ModalState>({ open: false });
   const localEventsRef = useRef(localEvents);
   localEventsRef.current = localEvents;
@@ -227,6 +229,8 @@ export function CalendarPageContent() {
           externalError={externalError}
           refreshExternal={refreshExternal}
           hiddenSubjects={hiddenSubjects}
+          showImportantOnly={showImportantOnly}
+          searchQuery={searchQuery}
           typeOptions={typeOptions}
           typeColors={typeColors}
           subjectOptions={subjectOptions}
@@ -236,11 +240,17 @@ export function CalendarPageContent() {
       {/* Kalender-Seitenleiste (rechts) */}
       <CalendarSidebar
         onNewEvent={() => openModal()}
+        searchQuery={searchQuery}
+        onSearchQueryChange={setSearchQuery}
         subjects={subjectOptions}
         eventTypes={typeOptions}
         typeColors={typeColors}
         hiddenSubjects={hiddenSubjects}
         onToggleSubject={toggleSubject}
+        showImportantOnly={showImportantOnly}
+        onToggleImportantOnly={() =>
+          setShowImportantOnly((current) => !current)
+        }
       />
 
       <NewEventModal

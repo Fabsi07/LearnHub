@@ -1,22 +1,30 @@
-import { Plus, Filter, Lightbulb } from "lucide-react";
+import { Plus, Filter, Lightbulb, Search, Star, X } from "lucide-react";
 import { getEventColor } from "./events";
 
 interface CalendarSidebarProps {
   onNewEvent?: () => void;
+  searchQuery: string;
+  onSearchQueryChange: (query: string) => void;
   subjects: string[];
   eventTypes: string[];
   typeColors: Record<string, string>;
   hiddenSubjects: Set<string>;
   onToggleSubject: (subject: string) => void;
+  showImportantOnly: boolean;
+  onToggleImportantOnly: () => void;
 }
 
 export function CalendarSidebar({
   onNewEvent,
+  searchQuery,
+  onSearchQueryChange,
   subjects,
   eventTypes,
   typeColors,
   hiddenSubjects,
   onToggleSubject,
+  showImportantOnly,
+  onToggleImportantOnly,
 }: CalendarSidebarProps) {
   return (
     <aside
@@ -33,6 +41,28 @@ export function CalendarSidebar({
         Neues Event
       </button>
 
+      <div className="relative">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(event) => onSearchQueryChange(event.target.value)}
+          placeholder="Events suchen"
+          aria-label="Kalender durchsuchen"
+          className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-800 shadow-sm outline-none transition-colors placeholder:text-gray-400 focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
+        />
+        {searchQuery && (
+          <button
+            type="button"
+            onClick={() => onSearchQueryChange("")}
+            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
+            aria-label="Suche löschen"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
       {/* Fächer-Filter */}
       <section
         className="rounded-2xl px-4 py-4 shadow-sm"
@@ -47,6 +77,37 @@ export function CalendarSidebar({
             Fächer-Filter
           </span>
         </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={showImportantOnly}
+          onClick={onToggleImportantOnly}
+          className={`mb-3 flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
+            showImportantOnly
+              ? "border-amber-300/80 bg-amber-300/20"
+              : "border-amber-200/25 bg-black/10 hover:bg-amber-300/10"
+          }`}
+        >
+          <span className="flex items-center gap-2 text-sm font-medium text-white">
+            <Star
+              className="h-4 w-4 text-amber-300"
+              fill={showImportantOnly ? "currentColor" : "none"}
+            />
+            Nur markierte Termine
+          </span>
+          <span
+            className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+              showImportantOnly ? "bg-amber-400" : "bg-white/25"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                showImportantOnly ? "translate-x-[18px]" : "translate-x-0.5"
+              }`}
+            />
+          </span>
+        </button>
+        <div className="mb-3 h-px bg-white/15" />
         <ul className="flex flex-col gap-2.5">
           {subjects.map((subject) => {
             const checked = !hiddenSubjects.has(subject);

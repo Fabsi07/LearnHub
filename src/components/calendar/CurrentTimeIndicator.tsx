@@ -52,20 +52,31 @@ export function CurrentTimeIndicator({
     >
       {index > 0 && (
         <span
-          className="absolute left-0 top-0 border-t border-dashed border-brand-red/45"
-          style={{ width: `${startPercent}%` }}
+          className="absolute left-0 top-0 border-t border-dashed border-violet-800/45"
+          style={{
+            width: `${startPercent}%`,
+          }}
         />
       )}
       <span
-        className="absolute top-0 h-px bg-brand-red"
+        className="absolute top-0 h-1 -translate-y-1/2 rounded-full bg-white/90"
         style={{
           left: `${startPercent}%`,
           width: `${widthPercent}%`,
         }}
       />
       <span
-        className="absolute top-0 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-brand-red shadow-sm"
-        style={{ left: `${startPercent}%` }}
+        className="absolute top-0 h-0.5 -translate-y-1/2 rounded-full bg-violet-800"
+        style={{
+          left: `${startPercent}%`,
+          width: `${widthPercent}%`,
+        }}
+      />
+      <span
+        className="absolute top-0 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-violet-800 shadow-sm"
+        style={{
+          left: `${startPercent}%`,
+        }}
       />
     </div>
   );
