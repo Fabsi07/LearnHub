@@ -131,9 +131,9 @@ function isWeekend(d: Date): boolean {
   return wd === 0 || wd === 6;
 }
 
-/** Externe Hochschul-Termine (DHBW/ICS) – read-only und nicht selbst angelegt. */
+/** Externe Hochschul-Termine (DHBW/ICS) – erkennbar an `source: "dhbw"`. */
 function isHochschulEvent(e: CalEvent): boolean {
-  return e.source === "dhbw" || e.readOnly === true;
+  return e.source === "dhbw";
 }
 
 /** Zahl der zeitgebundenen Blocker, die in `day` hineinreichen (Tages-Auslastung). */
