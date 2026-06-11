@@ -211,6 +211,7 @@ export function CalendarPageContent() {
         }).catch(() => {
           /* Update gescheitert, UI-State bleibt */
         });
+      });
   }
 
   return (
