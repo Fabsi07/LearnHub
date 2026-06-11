@@ -1,6 +1,6 @@
 "use client";
 
-import { CalendarDays, MapPin } from "lucide-react";
+import { CalendarDays, MapPin, Star } from "lucide-react";
 import { CalEvent } from "./events";
 import { MONTHS, WEEKDAYS, isSameDay } from "./utils";
 
@@ -103,7 +103,11 @@ export function ListView({ events, currentDate, onEventClick }: ListViewProps) {
                   type="button"
                   onClick={() => onEventClick?.(ev)}
                   onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onEventClick?.(ev); } }}
-                  className="flex w-full items-start gap-3 p-3 rounded-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-colors text-left cursor-pointer"
+                  className={`flex w-full items-start gap-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors text-left cursor-pointer ${
+                    ev.important
+                      ? "border-amber-300 bg-amber-50/40"
+                      : "border-gray-200 hover:border-gray-300"
+                  }`}
                 >
                 <span
                   className={`mt-1 w-1 self-stretch rounded-full ${ev.color}`}
@@ -111,8 +115,14 @@ export function ListView({ events, currentDate, onEventClick }: ListViewProps) {
                 />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between gap-3">
-                    <p className="font-medium text-gray-900 truncate">
-                      {ev.title}
+                    <p className="flex min-w-0 items-center gap-1.5 font-medium text-gray-900">
+                      {ev.important && (
+                        <Star
+                          className="h-3.5 w-3.5 shrink-0 text-amber-500"
+                          fill="currentColor"
+                        />
+                      )}
+                      <span className="truncate">{ev.title}</span>
                     </p>
                     <span className="text-xs text-gray-500 whitespace-nowrap">
                       {formatTimeRange(ev)}

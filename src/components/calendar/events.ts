@@ -2,7 +2,6 @@
 
 export type EventSource = "local" | "dhbw";
 
-export type EventType = "Lernsession" | "Klausur" | "Deadline" | "Pause";
 export type RepeatRule = "none" | "daily" | "weekly";
 
 export type CalEvent = {
@@ -15,32 +14,49 @@ export type CalEvent = {
   readOnly?: boolean;
   location?: string;
   allDay?: boolean;
-  /** Bekannte Werte: EventType-Konstanten; freie Eingabe ebenfalls erlaubt. */
   type?: string;
   subject?: string;
   notes?: string;
   tasks?: string;
   repeat?: RepeatRule;
+  important?: boolean;
   /** Verknüpfter Lernplan (gesetzt bei generierten Lerneinheiten). */
   studyPlanId?: string;
 };
 
-// Gemeinsame Stammdaten für Sidebar + Event-Modal
-export const SUBJECTS: { name: string; color: string }[] = [
-  { name: "Mathematik", color: "bg-brand-red" },
-  { name: "Englisch", color: "bg-blue-500" },
-  { name: "Geschichte", color: "bg-amber-500" },
-  { name: "Biologie", color: "bg-emerald-500" },
-  { name: "Informatik", color: "bg-purple-500" },
-  { name: "Spanisch", color: "bg-orange-400" },
-];
+export const TYPE_COLOR_OPTIONS = [
+  { name: "Rot", className: "bg-brand-red" },
+  { name: "Blau", className: "bg-blue-500" },
+  { name: "Gelb", className: "bg-amber-500" },
+  { name: "Grün", className: "bg-emerald-500" },
+  { name: "Violett", className: "bg-purple-500" },
+  { name: "Orange", className: "bg-orange-400" },
+  { name: "Türkis", className: "bg-cyan-500" },
+  { name: "Pink", className: "bg-pink-500" },
+] as const;
 
-export const EVENT_TYPES: { name: EventType; color: string }[] = [
-  { name: "Lernsession", color: "bg-blue-500" },
-  { name: "Klausur", color: "bg-brand-red" },
-  { name: "Deadline", color: "bg-amber-500" },
-  { name: "Pause", color: "bg-emerald-500" },
-];
+export function getLabelColor(label: string): string {
+  let hash = 0;
+  for (const char of label.trim().toLocaleLowerCase("de-DE")) {
+    hash = (hash * 31 + char.charCodeAt(0)) | 0;
+  }
+  return TYPE_COLOR_OPTIONS[Math.abs(hash) % TYPE_COLOR_OPTIONS.length].className;
+}
+
+export function getEventColor(type?: string, typeColor?: string): string {
+  const selectedColor = typeColor?.trim();
+  if (
+    selectedColor &&
+    TYPE_COLOR_OPTIONS.some((option) => option.className === selectedColor)
+  ) {
+    return selectedColor;
+  }
+  return getLabelColor(type?.trim() || "event");
+}
+
+export function isImportantType(type: string): boolean {
+  return /(klausur|prüfung|pruefung|abgabe|deadline)/i.test(type.trim());
+}
 
 // Layout-Konstanten (müssen mit den Views übereinstimmen)
 export const DAY_START_HOUR = 7;
@@ -48,6 +64,40 @@ export const DAY_END_HOUR = 24; // exclusive Ende → 17 Stunden sichtbar (7–2
 export const HOUR_HEIGHT = 64; // px (= h-16)
 export const SNAP_MIN = 15; // Snap-Raster in Minuten
 export const MIN_EVENT_MIN = 30; // Mindestdauer eines Termins in Minuten
+
+export function isAllowedTimedRange(start: Date, end: Date): boolean {
+  if (
+    Number.isNaN(start.getTime()) ||
+    Number.isNaN(end.getTime()) ||
+    end.getTime() <= start.getTime()
+  ) {
+    return false;
+  }
+
+  const earliestStart = new Date(start);
+  earliestStart.setHours(DAY_START_HOUR, 0, 0, 0);
+  const dayEnd = new Date(start);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+  dayEnd.setHours(0, 0, 0, 0);
+
+  return start.getTime() >= earliestStart.getTime() && end.getTime() <= dayEnd.getTime();
+}
+
+export function endOneHourLaterWithinDay(start: Date): Date {
+  const oneHourLater = new Date(start.getTime() + 60 * 60 * 1000);
+  const dayEnd = new Date(start);
+  dayEnd.setDate(dayEnd.getDate() + 1);
+  dayEnd.setHours(0, 0, 0, 0);
+  return oneHourLater.getTime() <= dayEnd.getTime() ? oneHourLater : dayEnd;
+}
+
+export function getAllDayRange(date: Date): { start: Date; end: Date } {
+  const start = new Date(date);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setDate(end.getDate() + 1);
+  return { start, end };
+}
 
 
 /** True, wenn ein Event ganz oder teilweise an diesem Tag liegt. */

@@ -1,22 +1,23 @@
-"use client";
-
-import { useState } from "react";
 import { Plus, Filter, Lightbulb } from "lucide-react";
-import { SUBJECTS, EVENT_TYPES } from "./events";
+import { getEventColor } from "./events";
 
 interface CalendarSidebarProps {
   onNewEvent?: () => void;
+  subjects: string[];
+  eventTypes: string[];
+  typeColors: Record<string, string>;
+  hiddenSubjects: Set<string>;
+  onToggleSubject: (subject: string) => void;
 }
 
-export function CalendarSidebar({ onNewEvent }: CalendarSidebarProps) {
-  const [checked, setChecked] = useState<Record<string, boolean>>(
-    Object.fromEntries(SUBJECTS.map((s) => [s.name, true]))
-  );
-
-  function toggle(name: string) {
-    setChecked((prev) => ({ ...prev, [name]: !prev[name] }));
-  }
-
+export function CalendarSidebar({
+  onNewEvent,
+  subjects,
+  eventTypes,
+  typeColors,
+  hiddenSubjects,
+  onToggleSubject,
+}: CalendarSidebarProps) {
   return (
     <aside
       className="flex flex-col gap-4 h-full py-6 pr-6 pl-2 overflow-y-auto"
@@ -47,50 +48,55 @@ export function CalendarSidebar({ onNewEvent }: CalendarSidebarProps) {
           </span>
         </div>
         <ul className="flex flex-col gap-2.5">
-          {SUBJECTS.map((s) => (
-            <li key={s.name}>
-              <label className="flex items-center gap-2.5 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={checked[s.name]}
-                  onChange={() => toggle(s.name)}
-                  className="sr-only"
-                />
-                {/* Custom Checkbox */}
-                <span
-                  className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
-                    checked[s.name]
-                      ? "bg-white border-white"
-                      : "bg-transparent border-white/40"
-                  }`}
-                >
-                  {checked[s.name] && (
-                    <svg
-                      viewBox="0 0 10 8"
-                      className="w-2.5 h-2"
-                      fill="none"
-                      stroke="#5f6a70"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <polyline points="1 4 3.5 7 9 1" />
-                    </svg>
-                  )}
-                </span>
-                {/* Farbiger Punkt */}
-                <span className={`flex-shrink-0 w-2.5 h-2.5 rounded-full ${s.color}`} />
-                {/* Fachname */}
-                <span
-                  className={`text-sm transition-opacity ${
-                    checked[s.name] ? "text-white" : "text-white/40"
-                  }`}
-                >
-                  {s.name}
-                </span>
-              </label>
+          {subjects.map((subject) => {
+            const checked = !hiddenSubjects.has(subject);
+            return (
+              <li key={subject}>
+                <label className="flex items-center gap-2.5 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => onToggleSubject(subject)}
+                    className="sr-only"
+                  />
+                  {/* Custom Checkbox */}
+                  <span
+                    className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                      checked
+                        ? "bg-white border-white"
+                        : "bg-transparent border-white/40"
+                    }`}
+                  >
+                    {checked && (
+                      <svg
+                        viewBox="0 0 10 8"
+                        className="w-2.5 h-2"
+                        fill="none"
+                        stroke="#5f6a70"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="1 4 3.5 7 9 1" />
+                      </svg>
+                    )}
+                  </span>
+                  <span
+                    className={`text-sm transition-opacity ${
+                      checked ? "text-white" : "text-white/40"
+                    }`}
+                  >
+                    {subject}
+                  </span>
+                </label>
+              </li>
+            );
+          })}
+          {subjects.length === 0 && (
+            <li className="text-xs leading-relaxed text-white/60">
+              Fächer erscheinen hier, sobald du Events anlegst.
             </li>
-          ))}
+          )}
         </ul>
       </section>
 
@@ -106,12 +112,22 @@ export function CalendarSidebar({ onNewEvent }: CalendarSidebarProps) {
           Event-Typen
         </span>
         <ul className="flex flex-col gap-2.5">
-          {EVENT_TYPES.map((t) => (
-            <li key={t.name} className="flex items-center gap-2.5">
-              <span className={`flex-shrink-0 w-2.5 h-2.5 rounded-full ${t.color}`} />
-              <span className="text-sm text-white/85">{t.name}</span>
+          {eventTypes.map((eventType) => (
+            <li key={eventType} className="flex items-center gap-2.5">
+              <span
+                className={`flex-shrink-0 w-2.5 h-2.5 rounded-full ${getEventColor(
+                  eventType,
+                  typeColors[eventType],
+                )}`}
+              />
+              <span className="text-sm text-white/85">{eventType}</span>
             </li>
           ))}
+          {eventTypes.length === 0 && (
+            <li className="text-xs leading-relaxed text-white/60">
+              Typen erscheinen hier, sobald du Events anlegst.
+            </li>
+          )}
         </ul>
       </section>
 

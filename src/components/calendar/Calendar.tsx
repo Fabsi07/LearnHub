@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronLeft, ChevronRight, RefreshCw } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  RefreshCw,
+  Search,
+  X,
+} from "lucide-react";
 import { MonthView } from "./MonthView";
 import { WeekView } from "./WeekView";
 import { DayView } from "./DayView";
@@ -26,6 +32,10 @@ interface CalendarProps {
   externalLoading: boolean;
   externalError: string | null;
   refreshExternal: (force?: boolean) => void;
+  hiddenSubjects: Set<string>;
+  typeOptions: string[];
+  typeColors: Record<string, string>;
+  subjectOptions: string[];
 }
 
 export function Calendar({
@@ -36,10 +46,15 @@ export function Calendar({
   externalLoading,
   externalError,
   refreshExternal,
+  hiddenSubjects,
+  typeOptions,
+  typeColors,
+  subjectOptions,
 }: CalendarProps) {
   const [view, setView] = useState<View>("week");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalEvent | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Sichtbarer Zeitraum je nach View
   function getViewRange(): { start: Date; end: Date } {
@@ -75,8 +90,27 @@ export function Calendar({
 
   const range = getViewRange();
   const expandedLocal = expandRecurring(localEvents, range.start, range.end);
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase("de-DE");
   const visibleEvents: CalEvent[] = [...expandedLocal, ...externalEvents].filter(
-    (ev) => ev.end.getTime() >= range.start.getTime() && ev.start.getTime() <= range.end.getTime(),
+    (ev) => {
+      const searchableText = [
+        ev.title,
+        ev.type,
+        ev.subject,
+        ev.location,
+        ev.notes,
+        ev.tasks,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLocaleLowerCase("de-DE");
+      return (
+        ev.end.getTime() >= range.start.getTime() &&
+        ev.start.getTime() <= range.end.getTime() &&
+        (ev.source !== "local" || !ev.subject || !hiddenSubjects.has(ev.subject)) &&
+        (!normalizedQuery || searchableText.includes(normalizedQuery))
+      );
+    },
   );
 
   function handleEventChange(next: CalEvent) {
@@ -86,7 +120,21 @@ export function Calendar({
 
   function handleEventSave(updated: CalEvent) {
     if (updated.readOnly) return;
-    onLocalEventsChange(localEvents.map((e) => (e.id === updated.id ? updated : e)));
+    const previous = localEvents.find((event) => event.id === updated.id);
+    onLocalEventsChange(
+      localEvents.map((event) => {
+        if (event.id === updated.id) return updated;
+        if (
+          previous &&
+          previous.type === updated.type &&
+          previous.color !== updated.color &&
+          event.type === updated.type
+        ) {
+          return { ...event, color: updated.color };
+        }
+        return event;
+      }),
+    );
   }
 
   function handleEventDelete(id: string) {
@@ -154,6 +202,27 @@ export function Calendar({
 
         {/* View Toggle */}
         <div className="flex items-center gap-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Events suchen"
+              aria-label="Kalender durchsuchen"
+              className="w-52 rounded-xl border border-gray-200 bg-gray-50 py-2 pl-9 pr-8 text-sm text-gray-800 outline-none transition-colors placeholder:text-gray-400 focus:border-brand-red focus:bg-white focus:ring-2 focus:ring-brand-red/20"
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                onClick={() => setSearchQuery("")}
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-700"
+                aria-label="Suche löschen"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
           <button
             onClick={() => refreshExternal(true)}
             disabled={externalLoading}
@@ -226,6 +295,9 @@ export function Calendar({
         onSave={handleEventSave}
         onDelete={handleEventDelete}
         blockedEvents={externalEvents.filter((e) => e.source === "dhbw")}
+        typeOptions={typeOptions}
+        typeColors={typeColors}
+        subjectOptions={subjectOptions}
       />
     </div>
   );

@@ -12,6 +12,8 @@ import {
 } from "./events";
 import { EventBlock } from "./EventBlock";
 import { AllDayBar } from "./AllDayBar";
+import { AllDayBackground } from "./AllDayBackground";
+import { CurrentTimeIndicator } from "./CurrentTimeIndicator";
 import { useDragCreate } from "./useDragCreate";
 
 interface DayViewProps {
@@ -55,10 +57,15 @@ export function DayView({ currentDate, events, onEventChange, onRequestCreate, o
       </div>
 
       {/* All-Day-Leiste */}
-      <AllDayBar days={[currentDate]} events={events} />
+      <AllDayBar
+        days={[currentDate]}
+        events={events}
+        onEventClick={onEventClick}
+      />
 
       {/* Body: Zeit-Spalte + Tages-Spalte */}
-      <div className="grid grid-cols-[64px_1fr]">
+      <div className="relative grid grid-cols-[64px_1fr]">
+        <CurrentTimeIndicator day={currentDate} />
         {/* Zeit-Spalte */}
         <div className="border-r border-gray-200" style={{ height: totalHeight }}>
           {HOURS.map((hour) => (
@@ -85,6 +92,7 @@ export function DayView({ currentDate, events, onEventChange, onRequestCreate, o
               style={{ height: HOUR_HEIGHT }}
             />
           ))}
+          <AllDayBackground day={currentDate} events={events} />
           {preview && isSameDay(preview.day, currentDate) && (
             <div
               className="absolute left-1 right-1 rounded-md bg-brand-red/20 border-2 border-brand-red pointer-events-none flex items-center justify-center text-[11px] font-semibold text-brand-red"

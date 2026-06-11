@@ -1,31 +1,32 @@
+import { EventType as DbEventType } from "@prisma/client";
 import { NextResponse } from "next/server";
+import {
+  getEventColor,
+  isAllowedTimedRange,
+  type RepeatRule,
+} from "@/components/calendar/events";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import { EventType as DbEventType } from "@prisma/client";
-import type { EventType as CalEventType, RepeatRule } from "@/components/calendar/events";
 
-const TYPE_TO_DB: Record<CalEventType, DbEventType> = {
+const TYPE_TO_DB: Record<string, DbEventType> = {
   Lernsession: "LERNEINHEIT",
   Klausur: "VORLESUNG",
   Deadline: "ZIELTERMIN",
   Pause: "SONSTIGES",
 };
 
-const TYPE_FROM_DB: Record<DbEventType, CalEventType> = {
+const TYPE_FROM_DB: Record<DbEventType, string> = {
   LERNEINHEIT: "Lernsession",
   VORLESUNG: "Klausur",
   ZIELTERMIN: "Deadline",
   SONSTIGES: "Pause",
 };
 
-const TYPE_COLOR: Record<CalEventType, string> = {
-  Lernsession: "bg-blue-500",
-  Klausur: "bg-brand-red",
-  Deadline: "bg-amber-500",
-  Pause: "bg-emerald-500",
-};
+function eventTypeLabel(type: DbEventType, typeLabel: string | null): string {
+  return typeLabel?.trim() || TYPE_FROM_DB[type];
+}
 
-/** GET /api/calendar/events — alle lokalen Events aus der DB */
+/** GET /api/calendar/events - alle lokalen Events aus der DB */
 export async function GET() {
   const session = await getSession();
   if (!session) {
@@ -37,30 +38,31 @@ export async function GET() {
     orderBy: { startsAt: "asc" },
   });
 
-  const events = rows.map((e) => {
-    const calType = TYPE_FROM_DB[e.type];
+  const events = rows.map((event) => {
+    const type = eventTypeLabel(event.type, event.typeLabel);
     return {
-      id: e.id,
-      title: e.title,
-      start: e.startsAt.toISOString(),
-      end: e.endsAt.toISOString(),
-      allDay: e.allDay,
-      type: calType,
-      color: TYPE_COLOR[calType],
+      id: event.id,
+      title: event.title,
+      start: event.startsAt.toISOString(),
+      end: event.endsAt.toISOString(),
+      allDay: event.allDay,
+      type,
+      color: getEventColor(type, event.typeColor ?? undefined),
       source: "local" as const,
-      location: e.location ?? undefined,
-      notes: e.notes ?? undefined,
-      tasks: e.tasks ?? undefined,
-      subject: e.subject ?? undefined,
-      repeat: (e.repeat as RepeatRule | null) ?? "none",
-      studyPlanId: e.studyPlanId ?? undefined,
+      location: event.location ?? undefined,
+      notes: event.notes ?? undefined,
+      tasks: event.tasks ?? undefined,
+      subject: event.subject ?? undefined,
+      important: event.important,
+      repeat: (event.repeat as RepeatRule | null) ?? "none",
+      studyPlanId: event.studyPlanId ?? undefined,
     };
   });
 
   return NextResponse.json({ events });
 }
 
-/** POST /api/calendar/events — neues lokales Event speichern */
+/** POST /api/calendar/events - neues lokales Event speichern */
 export async function POST(req: Request) {
   const session = await getSession();
   if (!session) {
@@ -80,27 +82,32 @@ export async function POST(req: Request) {
     end,
     allDay,
     type,
+    typeColor,
     location,
     notes,
     tasks,
     subject,
+    important,
     repeat,
     studyPlanId,
   } = (body ?? {}) as Record<string, unknown>;
+  const trimmedTitle = typeof title === "string" ? title.trim() : "";
+  const trimmedType = typeof type === "string" ? type.trim() : "";
+  const trimmedSubject = typeof subject === "string" ? subject.trim() : "";
+  const savedColor = getEventColor(
+    trimmedType,
+    typeof typeColor === "string" ? typeColor : undefined,
+  );
 
   if (
-    typeof title !== "string" ||
+    !trimmedTitle ||
     typeof start !== "string" ||
     typeof end !== "string" ||
-    typeof type !== "string"
+    !trimmedType ||
+    !trimmedSubject
   ) {
-    return NextResponse.json({ error: "Pflichtfelder fehlen" }, { status: 400 });
+    return NextResponse.json({ error: "Pflichtfelder fehlen." }, { status: 400 });
   }
-
-  // Bekannte Typen werden auf den passenden DB-Enum gemappt;
-  // unbekannte Freitext-Typen landen als SONSTIGES.
-  const dbType: DbEventType =
-    (TYPE_TO_DB as Record<string, DbEventType>)[type] ?? "SONSTIGES";
 
   const startsAt = new Date(start);
   const endsAt = new Date(end);
@@ -109,7 +116,13 @@ export async function POST(req: Request) {
     Number.isNaN(endsAt.getTime()) ||
     endsAt.getTime() <= startsAt.getTime()
   ) {
-    return NextResponse.json({ error: "Ungültiger Zeitraum" }, { status: 400 });
+    return NextResponse.json({ error: "Ungültiger Zeitraum." }, { status: 400 });
+  }
+  if (allDay !== true && !isAllowedTimedRange(startsAt, endsAt)) {
+    return NextResponse.json(
+      { error: "Termine müssen zwischen 07:00 und 00:00 Uhr liegen." },
+      { status: 400 },
+    );
   }
 
   const repeatRule: RepeatRule =
@@ -130,15 +143,18 @@ export async function POST(req: Request) {
 
   const row = await prisma.calendarEvent.create({
     data: {
-      title: title.trim(),
+      title: trimmedTitle,
       startsAt,
       endsAt,
       allDay: allDay === true,
-      type: dbType,
+      type: TYPE_TO_DB[trimmedType] ?? "SONSTIGES",
+      typeLabel: trimmedType,
+      typeColor: savedColor,
       location: typeof location === "string" ? location : null,
       notes: typeof notes === "string" ? notes.trim() || null : null,
       tasks: typeof tasks === "string" ? tasks.trim() || null : null,
-      subject: typeof subject === "string" ? subject : null,
+      subject: trimmedSubject,
+      important: important === true,
       repeat: repeatRule,
       source: "LOCAL",
       ownerId: session.userId,
@@ -146,8 +162,7 @@ export async function POST(req: Request) {
     },
   });
 
-  const calType = TYPE_FROM_DB[row.type];
-
+  const savedType = eventTypeLabel(row.type, row.typeLabel);
   return NextResponse.json({
     event: {
       id: row.id,
@@ -155,13 +170,14 @@ export async function POST(req: Request) {
       start: row.startsAt.toISOString(),
       end: row.endsAt.toISOString(),
       allDay: row.allDay,
-      type: calType,
-      color: TYPE_COLOR[calType],
+      type: savedType,
+      color: getEventColor(savedType, row.typeColor ?? undefined),
       source: "local" as const,
       location: row.location ?? undefined,
       notes: row.notes ?? undefined,
       tasks: row.tasks ?? undefined,
       subject: row.subject ?? undefined,
+      important: row.important,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
       studyPlanId: row.studyPlanId ?? undefined,
     },

@@ -1,0 +1,1 @@
+ALTER TABLE "CalendarEvent" ADD COLUMN "important" BOOLEAN NOT NULL DEFAULT false;

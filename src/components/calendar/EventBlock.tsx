@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { Star } from "lucide-react";
 import {
   CalEvent,
   DAY_START_HOUR,
@@ -245,7 +246,9 @@ export function EventBlock({
         isDragging
           ? "shadow-lg opacity-95 z-20"
           : "transition-[top,height,left,width] duration-150 ease-out"
-      } ${isReadOnly ? "ring-1 ring-white/30 opacity-95" : ""}`}
+      } ${isReadOnly ? "ring-1 ring-white/30 opacity-95" : ""} ${
+        event.important ? "ring-2 ring-amber-300 ring-offset-1" : ""
+      }`}
       style={{
         top: renderTop,
         height: renderHeight,
@@ -263,7 +266,12 @@ export function EventBlock({
           isReadOnly ? "cursor-pointer" : "cursor-grab active:cursor-grabbing"
         }`}
       >
-        <div className="font-semibold leading-tight truncate">{event.title}</div>
+        <div className="flex items-center gap-1 font-semibold leading-tight">
+          {event.important && (
+            <Star className="h-3 w-3 shrink-0" fill="currentColor" />
+          )}
+          <span className="truncate">{event.title}</span>
+        </div>
         <div className="opacity-90 leading-tight truncate">
           {formatTime(event.start)} – {formatTime(event.end)}
           {event.location ? ` · ${event.location}` : ""}

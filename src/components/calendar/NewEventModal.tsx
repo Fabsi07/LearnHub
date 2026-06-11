@@ -1,14 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X } from "lucide-react";
+import { CalendarDays, Star, X } from "lucide-react";
 import {
   CalEvent,
-  EVENT_TYPES,
   RepeatRule,
-  SUBJECTS,
+  DAY_START_HOUR,
+  TYPE_COLOR_OPTIONS,
+  endOneHourLaterWithinDay,
+  getAllDayRange,
+  getEventColor,
+  isImportantType,
+  isAllowedTimedRange,
   overlapsAnyDhbwEvent,
 } from "./events";
+import { DateTimePicker } from "./DateTimePicker";
+import { EditableCombobox } from "./EditableCombobox";
+import { TypeColorPicker } from "./TypeColorPicker";
 
 interface NewEventModalProps {
   open: boolean;
@@ -16,6 +24,9 @@ interface NewEventModalProps {
   onCreate: (event: CalEvent) => void;
   defaultStart?: Date;
   defaultEnd?: Date;
+  typeOptions: string[];
+  typeColors: Record<string, string>;
+  subjectOptions: string[];
   /** DHBW-Events, in die kein eigener Termin gelegt werden darf. */
   blockedEvents?: CalEvent[];
 }
@@ -31,6 +42,9 @@ function roundedHour(d: Date, addHours = 0): Date {
   const out = new Date(d);
   out.setMinutes(0, 0, 0);
   out.setHours(out.getHours() + addHours);
+  if (out.getHours() < DAY_START_HOUR) {
+    out.setHours(DAY_START_HOUR, 0, 0, 0);
+  }
   return out;
 }
 
@@ -40,22 +54,29 @@ export function NewEventModal({
   onCreate,
   defaultStart,
   defaultEnd,
+  typeOptions,
+  typeColors,
+  subjectOptions,
   blockedEvents = [],
 }: NewEventModalProps) {
   const initialStart = defaultStart ?? roundedHour(new Date(), 1);
   const initialEnd =
     defaultEnd ??
     (() => {
-      const e = new Date(initialStart);
-      e.setHours(e.getHours() + 1);
-      return e;
+      return endOneHourLaterWithinDay(initialStart);
     })();
 
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<string>("Lernsession");
-  const [subject, setSubject] = useState<string>(SUBJECTS[0].name);
+  const [type, setType] = useState("");
+  const [typeColor, setTypeColor] = useState<string>(
+    TYPE_COLOR_OPTIONS[0].className,
+  );
+  const [subject, setSubject] = useState("");
   const [start, setStart] = useState<string>(toLocalInputValue(initialStart));
   const [end, setEnd] = useState<string>(toLocalInputValue(initialEnd));
+  const [allDay, setAllDay] = useState(false);
+  const [important, setImportant] = useState(false);
+  const [activePicker, setActivePicker] = useState<"start" | "end" | null>(null);
   const [repeat, setRepeat] = useState<RepeatRule>("none");
   const [notes, setNotes] = useState("");
   const [tasks, setTasks] = useState("");
@@ -68,15 +89,17 @@ export function NewEventModal({
       const e =
         defaultEnd ??
         (() => {
-          const x = new Date(s);
-          x.setHours(x.getHours() + 1);
-          return x;
+          return endOneHourLaterWithinDay(s);
         })();
       setTitle("");
-      setType("Lernsession");
-      setSubject(SUBJECTS[0].name);
+      setType("");
+      setTypeColor(TYPE_COLOR_OPTIONS[0].className);
+      setSubject("");
       setStart(toLocalInputValue(s));
       setEnd(toLocalInputValue(e));
+      setAllDay(false);
+      setImportant(false);
+      setActivePicker(null);
       setRepeat("none");
       setNotes("");
       setTasks("");
@@ -98,39 +121,97 @@ export function NewEventModal({
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) return;
+    const trimmedType = type.trim();
+    const trimmedSubject = subject.trim();
+    if (!title.trim() || !trimmedType || !trimmedSubject) return;
     const startDate = new Date(start);
     const endDate = new Date(end);
     if (Number.isNaN(startDate.getTime()) || Number.isNaN(endDate.getTime())) return;
     if (endDate.getTime() <= startDate.getTime()) return;
 
+    if (!allDay && !isAllowedTimedRange(startDate, endDate)) {
+      setConflictError(
+        "Termine müssen zwischen 07:00 und 00:00 Uhr liegen. Wähle „Ganztägig“ für Termine ohne Uhrzeit.",
+      );
+      return;
+    }
+
     // DHBW-Konfliktprüfung
-    if (overlapsAnyDhbwEvent(startDate, endDate, blockedEvents)) {
+    if (!allDay && overlapsAnyDhbwEvent(startDate, endDate, blockedEvents)) {
       setConflictError(
         "Dieser Zeitraum überschneidet sich mit einer DHBW-Vorlesung. Bitte wähle einen anderen Zeitraum.",
       );
       return;
     }
 
-    const typeColor =
-      EVENT_TYPES.find((t) => t.name === type)?.color ??
-      SUBJECTS.find((s) => s.name === subject)?.color ??
-      "bg-brand-red";
-
     onCreate({
       id: `local-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       title: title.trim(),
       start: startDate,
       end: endDate,
-      color: typeColor,
+      color: getEventColor(trimmedType, typeColor),
       source: "local",
-      type,
-      subject,
+      allDay,
+      important,
+      type: trimmedType,
+      subject: trimmedSubject,
       notes: notes.trim() || undefined,
       tasks: tasks.trim() || undefined,
       repeat,
     });
     onClose();
+  }
+
+  function handleStartChange(nextStart: string) {
+    setStart(nextStart);
+    setConflictError(null);
+    const startDate = new Date(nextStart);
+    const endDate = new Date(end);
+    if (
+      !Number.isNaN(startDate.getTime()) &&
+      !Number.isNaN(endDate.getTime()) &&
+      !isAllowedTimedRange(startDate, endDate)
+    ) {
+      setEnd(toLocalInputValue(endOneHourLaterWithinDay(startDate)));
+    }
+  }
+
+  function handleTypeChange(nextType: string) {
+    setType(nextType);
+    if (isImportantType(nextType)) {
+      setImportant(true);
+    }
+    const existingType = Object.keys(typeColors).find(
+      (name) =>
+        name.toLocaleLowerCase("de-DE") ===
+        nextType.trim().toLocaleLowerCase("de-DE"),
+    );
+    if (existingType) {
+      setTypeColor(typeColors[existingType]);
+    }
+  }
+
+  function handleAllDayChange(nextAllDay: boolean) {
+    setAllDay(nextAllDay);
+    setActivePicker(null);
+    setConflictError(null);
+    const selectedDate = new Date(start);
+    if (nextAllDay) {
+      const range = getAllDayRange(selectedDate);
+      setStart(toLocalInputValue(range.start));
+      setEnd(toLocalInputValue(range.end));
+      return;
+    }
+
+    selectedDate.setHours(DAY_START_HOUR, 0, 0, 0);
+    setStart(toLocalInputValue(selectedDate));
+    setEnd(toLocalInputValue(endOneHourLaterWithinDay(selectedDate)));
+  }
+
+  function handleAllDayDateChange(nextStart: string) {
+    const range = getAllDayRange(new Date(nextStart));
+    setStart(toLocalInputValue(range.start));
+    setEnd(toLocalInputValue(range.end));
   }
 
   return (
@@ -142,7 +223,7 @@ export function NewEventModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="new-event-title"
-        className="w-full max-w-md rounded-2xl bg-white shadow-xl border border-gray-200"
+        className="max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border border-gray-200 bg-white shadow-xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -162,7 +243,7 @@ export function NewEventModal({
         <form onSubmit={handleSubmit} className="px-5 py-4 flex flex-col gap-4">
           <div className="flex flex-col gap-1">
             <label htmlFor="ev-title" className="text-xs font-semibold text-gray-700">
-              Titel
+              Titel <span className="text-brand-red">*</span>
             </label>
             <input
               id="ev-title"
@@ -172,79 +253,114 @@ export function NewEventModal({
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="z. B. Klausurvorbereitung Analysis"
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"
+              className={`rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red ${
+                title.trim()
+                  ? "border-gray-300 bg-white"
+                  : "border-gray-300 bg-gray-100 text-gray-500"
+              }`}
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="ev-type" className="text-xs font-semibold text-gray-700">
-                Typ
-              </label>
-              <input
-                id="ev-type"
-                type="text"
-                list="ev-type-list"
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                placeholder="z. B. Sport, Lernsession …"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red bg-white"
-              />
-              <datalist id="ev-type-list">
-                {EVENT_TYPES.map((t) => (
-                  <option key={t.name} value={t.name} />
-                ))}
-              </datalist>
-            </div>
-
-            <div className="flex flex-col gap-1">
-              <label htmlFor="ev-subject" className="text-xs font-semibold text-gray-700">
-                Fach
-              </label>
-              <input
-                id="ev-subject"
-                type="text"
-                list="ev-subject-list"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="z. B. Sport, Mathematik …"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red bg-white"
-              />
-              <datalist id="ev-subject-list">
-                {SUBJECTS.map((s) => (
-                  <option key={s.name} value={s.name} />
-                ))}
-              </datalist>
-            </div>
+            <EditableCombobox
+              id="ev-type"
+              label="Typ"
+              value={type}
+              options={typeOptions}
+              onChange={handleTypeChange}
+              placeholder="Typ eingeben"
+            />
+            <EditableCombobox
+              id="ev-subject"
+              label="Fach"
+              value={subject}
+              options={subjectOptions}
+              onChange={setSubject}
+              placeholder="Fach eingeben"
+            />
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="ev-start" className="text-xs font-semibold text-gray-700">
-                Beginn
-              </label>
-              <input
-                id="ev-start"
-                type="datetime-local"
-                required
-                value={start}
-                onChange={(e) => { setStart(e.target.value); setConflictError(null); }}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"
+          <TypeColorPicker value={typeColor} onChange={setTypeColor} />
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={allDay}
+            onClick={() => handleAllDayChange(!allDay)}
+            className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-colors ${
+              allDay
+                ? "border-brand-red bg-red-50 text-brand-red"
+                : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              <CalendarDays className="h-4 w-4" />
+              Ganztägig
+            </span>
+            <span
+              className={`relative h-5 w-9 rounded-full transition-colors ${
+                allDay ? "bg-brand-red" : "bg-gray-300"
+              }`}
+            >
+              <span
+                className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                  allDay ? "translate-x-[18px]" : "translate-x-0.5"
+                }`}
               />
-            </div>
-            <div className="flex flex-col gap-1">
-              <label htmlFor="ev-end" className="text-xs font-semibold text-gray-700">
-                Ende
-              </label>
-              <input
+            </span>
+          </button>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={important}
+            onClick={() => setImportant((current) => !current)}
+            className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-colors ${
+              important
+                ? "border-amber-400 bg-amber-50 text-amber-700"
+                : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              <Star
+                className="h-4 w-4"
+                fill={important ? "currentColor" : "none"}
+              />
+              Wichtiger Termin
+            </span>
+            <span className="text-xs font-medium">
+              {important ? "Markiert" : "Optional"}
+            </span>
+          </button>
+
+          <div className={allDay ? "" : "grid grid-cols-2 gap-3"}>
+            <DateTimePicker
+              id="ev-start"
+              label={allDay ? "Datum" : "Beginn"}
+              value={start}
+              open={activePicker === "start"}
+              dateOnly={allDay}
+              stage={allDay ? undefined : "start"}
+              onOpenChange={(nextOpen) => setActivePicker(nextOpen ? "start" : null)}
+              onChange={allDay ? handleAllDayDateChange : handleStartChange}
+              onComplete={allDay ? undefined : () => setActivePicker("end")}
+            />
+            {!allDay && (
+              <DateTimePicker
                 id="ev-end"
-                type="datetime-local"
-                required
+                label="Ende"
                 value={end}
-                onChange={(e) => { setEnd(e.target.value); setConflictError(null); }}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red"
+                open={activePicker === "end"}
+                align="right"
+                allowMidnight
+                stage="end"
+                onOpenChange={(nextOpen) => setActivePicker(nextOpen ? "end" : null)}
+                onChange={(nextEnd) => {
+                  setEnd(nextEnd);
+                  setConflictError(null);
+                }}
               />
-            </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-1">
