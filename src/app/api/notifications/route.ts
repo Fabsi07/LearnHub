@@ -19,7 +19,7 @@ export async function GET() {
   const now = new Date();
   const [, notifications] = await prisma.$transaction([
     prisma.notification.deleteMany({
-      where: { expiresAt: { lte: now } },
+      where: { ownerId: session.userId, expiresAt: { lte: now } },
     }),
     prisma.notification.findMany({
       where: {
