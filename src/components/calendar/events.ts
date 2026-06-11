@@ -20,6 +20,8 @@ export type CalEvent = {
   tasks?: string;
   repeat?: RepeatRule;
   important?: boolean;
+  /** Verknüpfter Lernplan (gesetzt bei generierten Lerneinheiten). */
+  studyPlanId?: string;
 };
 
 export const TYPE_COLOR_OPTIONS = [

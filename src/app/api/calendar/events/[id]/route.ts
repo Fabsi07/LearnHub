@@ -185,6 +185,7 @@ export async function PATCH(
       subject: row.subject ?? undefined,
       important: row.important,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
+      studyPlanId: row.studyPlanId ?? undefined,
     },
   });
 }
