@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, Plus } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface EditableComboboxProps {
   id: string;
@@ -64,7 +65,10 @@ export function EditableCombobox({
             setOpen(true);
           }}
           placeholder={placeholder}
-          className="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 pr-9 text-sm focus:border-brand-red focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-red/30"
+          className={cn(
+            "w-full rounded-lg border border-gray-300 px-3 py-2 pr-9 text-sm focus:border-brand-red focus:outline-none focus:ring-2 focus:ring-brand-red/30",
+            value.trim() ? "bg-white" : "bg-gray-100 text-gray-500",
+          )}
         />
         <button
           type="button"

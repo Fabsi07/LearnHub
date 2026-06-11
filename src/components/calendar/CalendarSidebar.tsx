@@ -122,10 +122,10 @@ export function CalendarSidebar({
                   />
                   {/* Custom Checkbox */}
                   <span
-                    className={`flex-shrink-0 w-4 h-4 rounded border-2 flex items-center justify-center transition-colors ${
+                    className={`flex h-4 w-4 flex-shrink-0 items-center justify-center rounded border-2 transition-colors group-hover:border-white/80 ${
                       checked
-                        ? "bg-white border-white"
-                        : "bg-transparent border-white/40"
+                        ? "border-white bg-[#ffffff] shadow-sm"
+                        : "border-white/45 bg-black/10"
                     }`}
                   >
                     {checked && (
@@ -133,8 +133,8 @@ export function CalendarSidebar({
                         viewBox="0 0 10 8"
                         className="w-2.5 h-2"
                         fill="none"
-                        stroke="#5f6a70"
-                        strokeWidth="2"
+                        stroke="#4b565c"
+                        strokeWidth="2.25"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       >

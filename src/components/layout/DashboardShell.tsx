@@ -12,36 +12,28 @@ interface DashboardShellProps {
 
 export function DashboardShell({ children, currentUser }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const sidebarWidth = 260;
 
-  const bg = "#e9e9e9";
-  const contentBg = "#efefef";
-
   return (
-    <div className="flex min-h-screen transition-colors duration-300" style={{ backgroundColor: bg }}>
+    <div className="flex min-h-screen bg-background text-foreground transition-colors duration-300">
       {/* Linke Sidebar – fixed */}
       <div
         className="fixed top-0 left-0 h-screen z-40 transition-all duration-300"
         style={{ width: sidebarOpen ? sidebarWidth : 0, overflow: "hidden" }}
       >
-        <Sidebar darkMode={darkMode} currentUser={currentUser} />
+        <Sidebar currentUser={currentUser} />
       </div>
 
       {/* Rechter Hauptbereich */}
       <div
-        className="flex flex-col flex-1 min-h-screen transition-all duration-300"
-        style={{ marginLeft: sidebarOpen ? sidebarWidth : 0, backgroundColor: contentBg }}
+        className="flex min-h-screen flex-1 flex-col bg-muted/40 transition-[margin,background-color] duration-300"
+        style={{ marginLeft: sidebarOpen ? sidebarWidth : 0 }}
       >
         <Topbar
           sidebarOpen={sidebarOpen}
           onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-          darkMode={darkMode}
-          onToggleDarkMode={() => setDarkMode(!darkMode)}
         />
-        <div className="flex-1">
-          {children}
-        </div>
+        <div className="flex-1">{children}</div>
       </div>
     </div>
   );
