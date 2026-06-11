@@ -90,9 +90,8 @@ export function CalendarSidebar({
         >
           <span className="flex items-center gap-2 text-sm font-medium text-white">
             <Star
-              className={`h-4 w-4 text-amber-300 ${
-                showImportantOnly ? "fill-current" : ""
-              }`}
+              className="h-4 w-4 text-amber-300"
+              fill={showImportantOnly ? "currentColor" : "none"}
             />
             Nur markierte Termine
           </span>
