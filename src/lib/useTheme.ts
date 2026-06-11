@@ -63,7 +63,12 @@ export function useTheme() {
       ? "light"
       : "dark";
 
-    window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+    } catch {
+      // Ignore persistence errors (e.g. storage disabled) and still apply the theme.
+    }
+
     applyTheme(nextTheme);
     setTheme(nextTheme);
   }, []);
