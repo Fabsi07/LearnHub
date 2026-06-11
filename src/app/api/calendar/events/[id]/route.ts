@@ -129,6 +129,7 @@ export async function PATCH(
       tasks: row.tasks ?? undefined,
       subject: row.subject ?? undefined,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
+      studyPlanId: row.studyPlanId ?? undefined,
     },
   });
 }

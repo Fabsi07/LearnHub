@@ -67,6 +67,19 @@ model StudyPlan {
   goalType    GoalType
   targetDate  DateTime
   ownerId     String
+
+  // Algorithmus-Eingaben (optional, nur gesetzt wenn ein Plan berechnet wurde).
+  // Siehe docs/lernplan-umsetzung.md §7.1 und docs/Algorithmus/Algorithmus_neue_Formel.md.
+  difficulty     Int? // Schwierigkeit der Klausur 1–5
+  priorKnowledge Int? // Vorwissen 1–5
+  pages          Int? // Anzahl Seiten / Folien
+  credits        Int? // ECTS-Punkte 1–10
+
+  // Algorithmus-Ergebnis (abgeleitet, fuer Anzeige ohne Neuberechnung).
+  totalHours  Float?  // berechnete Gesamtstunden
+  hoursPerDay Float?  // berechnete Stunden pro Tag
+  planType    String? // "normal" | "kritisch"
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
