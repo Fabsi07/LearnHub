@@ -27,6 +27,8 @@ export interface ScheduleOptions {
   deadline: Date;
   /** Erster planbarer Tag (Default: morgen). */
   startDate?: Date;
+  /** Für deterministische Planung (z. B. Tests/Preview). Default: aktuelle Zeit. */
+  now?: Date;
   /** Erlaubte Wochentage, 0 = So … 6 = Sa (Default: Mo–Sa, Entscheidung 8.1). */
   allowedWeekdays?: number[];
   /** Bevorzugte Startstunde der Einheiten (Default: 16). */
