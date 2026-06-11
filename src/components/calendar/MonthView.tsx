@@ -162,7 +162,7 @@ export function MonthView({
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4"
           role="presentation"
-          onMouseDown={(event) => {
+          onClick={(event) => {
             if (event.target === event.currentTarget) setExpandedDay(null);
           }}
         >
