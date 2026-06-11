@@ -1,14 +1,12 @@
 # Product Requirements Document — LearnHub
 
-| Feld                    | Inhalt                                                                                                                                                                  |
-| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Projekt**             | LearnHub — Lernmanagement-App für Studierende                                                                                                                           |
-| **Auftraggeber**        | Prof. Dr. Erik Behrends                                                                                                                                                 |
-| **Team**                | Lucas Sedelmayr (Projektleitung), Lennard Wiek (Design), Yannik Roeder (Design / Entwicklung), Finn Pfleghaar (Design / Entwicklung), Fabian Winterhalter (Entwicklung) |
-| **Datum**               | 2026-05-17                                                                                                                                                              |
-| **Version**             | 1.1 — abgestimmter Entwurf mit algorithmischer Lernplanung                                                                                                              |
-| **Status**              | Arbeitsgrundlage für Meilenstein 2                                                                                                                                      |
-| **Präsentationstermin** | 2026-05-21                                                                                                                                                              |
+| Feld             | Inhalt                                                                                                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Projekt**      | LearnHub — Lernmanagement-App für Studierende                                                                                                                           |
+| **Auftraggeber** | Prof. Dr. Erik Behrends                                                                                                                                                 |
+| **Team**         | Lucas Sedelmayr (Projektleitung), Lennard Wiek (Design), Yannik Roeder (Design / Entwicklung), Finn Pfleghaar (Design / Entwicklung), Fabian Winterhalter (Entwicklung) |
+| **Datum**        | 2026-05-17                                                                                                                                                              |
+| **Version**      | 1.1 — abgestimmter Entwurf mit algorithmischer Lernplanung                                                                                                              |
 
 ---
 
@@ -116,7 +114,7 @@ Beim Anlegen eines Lernplans kann der Nutzer wählen, ob er den Plan leer beginn
 - Tage bis zur Deadline
 - Volumen der Klausur (Stand jetzt in Seiten gemessen)
 - Schwierigkeit der Klausur
-- Vorwissen des User 
+- Vorwissen des User
 - ECTS Punkte von der Klausur
 
 (Genaue Formel ist in LearnHub/docs/Algorithmus hinterlegt)
