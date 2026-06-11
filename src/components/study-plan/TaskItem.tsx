@@ -41,8 +41,8 @@ export function TaskItem({ planId, task, onChanged, onEdit }: TaskItemProps) {
     }
     setBusy(true);
     try {
-      await fetch(`/api/study-plan/${planId}/tasks/${task.id}`, { method: "DELETE" });
-      onChanged();
+      const res = await fetch(`/api/study-plan/${planId}/tasks/${task.id}`, { method: "DELETE" });
+      if (res.ok) onChanged();
     } finally {
       setBusy(false);
     }
