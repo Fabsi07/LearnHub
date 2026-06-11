@@ -31,6 +31,7 @@ model User {
   studyPlans      StudyPlan[]
   calendarEvents  CalendarEvent[]
   calendarSources CalendarSource[]
+  notifications   Notification[]
 }
 
 model Session {
@@ -184,4 +185,34 @@ model CalendarSource {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+// =====================================================================
+// Benachrichtigungen
+// =====================================================================
+
+enum NotificationType {
+  ASSIGNMENT
+  EXAM
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  subject     String
+  course      String
+  dueDate     DateTime
+  description String
+  isUrgent    Boolean          @default(false)
+  isDone      Boolean          @default(false)
+  isArchived  Boolean          @default(false)
+  ownerId     String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  expiresAt   DateTime
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  @@index([ownerId])
+  @@index([expiresAt])
 }
