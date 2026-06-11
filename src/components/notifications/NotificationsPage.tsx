@@ -19,12 +19,14 @@ import { cn } from "@/lib/utils";
 const filters = ["Alle", "Offen", "Abgaben", "Klausuren", "Archiviert"] as const;
 type Filter = (typeof filters)[number];
 
+const DATE_FORMATTER = new Intl.DateTimeFormat("de-DE", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric",
+});
+
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("de-DE", {
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-  }).format(new Date(value));
+  return DATE_FORMATTER.format(new Date(value));
 }
 
 export function NotificationsPage() {
