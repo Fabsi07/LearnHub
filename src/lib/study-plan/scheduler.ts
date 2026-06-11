@@ -329,8 +329,8 @@ const hochschulBufferMin = Number.isFinite(options.hochschulBufferMin)
     const chunk = weekChunks.get(weekIndex)!;
     const quota = Math.min(perWeek, remaining, chunk.length * maxPerDay);
 
-    // Tage nach freier Zeit ordnen: Wochenenden und Tage ohne Hochschul-Termine
-    // zuerst, damit freie Tage aktiv mit bis zu zwei Einheiten gefüllt werden.
+// Tage nach freier Zeit ordnen: Wochenenden und Tage mit wenig zeitgebundenen
+// Terminen zuerst, damit freie Tage aktiv mit bis zu zwei Einheiten gefüllt werden.
     const pickOrder = [...chunk].sort((a, b) => {
       const weekendDelta = Number(isWeekend(b)) - Number(isWeekend(a));
       if (weekendDelta !== 0) return weekendDelta; // Wochenende zuerst
