@@ -11,8 +11,12 @@ function getSystemTheme(): Theme {
 }
 
 function getStoredTheme(): Theme | null {
-  const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
-  return storedTheme === "light" || storedTheme === "dark" ? storedTheme : null;
+  try {
+    const storedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return storedTheme === "light" || storedTheme === "dark" ? storedTheme : null;
+  } catch {
+    return null;
+  }
 }
 
 function applyTheme(theme: Theme) {
