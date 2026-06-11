@@ -21,6 +21,11 @@ export const MAX_SESSIONS_PER_DAY = 2;
 export const LATEST_END_HOUR = 21;
 /** Mindestpause zwischen zwei Einheiten am selben Tag (Minuten). */
 export const SESSION_GAP_MIN = 30;
+/**
+ * Puffer vor und nach Hochschul-Terminen (DHBW/ICS) in Minuten, in dem keine
+ * Lerneinheit liegen darf – Zeit zum Hin-/Heimfahren und Essen.
+ */
+export const HOCHSCHUL_BUFFER_MIN = 30;
 
 export interface ScheduleOptions {
   /** Klausur-/Zieldatum; am Tag selbst wird nicht mehr geplant. */
@@ -37,6 +42,8 @@ export interface ScheduleOptions {
   latestEndHour?: number;
   /** Maximale Einheiten pro Tag (Default: 2). */
   maxSessionsPerDay?: number;
+  /** Puffer vor/nach Hochschul-Terminen in Minuten (Default: 30). */
+  hochschulBufferMin?: number;
 }
 
 export interface ScheduledSession {
@@ -118,6 +125,28 @@ function addDays(d: Date, n: number): Date {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+function isWeekend(d: Date): boolean {
+  const wd = d.getDay();
+  return wd === 0 || wd === 6;
+}
+
+/** Externe Hochschul-Termine (DHBW/ICS) – erkennbar an `source: "dhbw"`. */
+function isHochschulEvent(e: CalEvent): boolean {
+  return e.source === "dhbw";
+}
+
+/** Zahl der zeitgebundenen Blocker, die in `day` hineinreichen (Tages-Auslastung). */
+function blockerLoad(
+  day: Date,
+  blockers: { start: Date; end: Date; allDay?: boolean }[],
+): number {
+  const dayStart = startOfDay(day).getTime();
+  const dayEnd = dayStart + DAY_MS;
+  return blockers.filter(
+    (b) => !b.allDay && b.start.getTime() < dayEnd && b.end.getTime() > dayStart,
+  ).length;
+}
 
 // ─── Slot-Suche ───────────────────────────────────────────────────────────────
 
@@ -206,6 +235,10 @@ export function scheduleStudyPlan(
   const preferredStartHour = options.preferredStartHour ?? PREFERRED_START_HOUR;
   const latestEndHour = options.latestEndHour ?? LATEST_END_HOUR;
   const maxPerDay = options.maxSessionsPerDay ?? MAX_SESSIONS_PER_DAY;
+  const hochschulBufferMin =
+    typeof options.hochschulBufferMin === "number" && Number.isFinite(options.hochschulBufferMin)
+      ? Math.max(0, options.hochschulBufferMin)
+      : HOCHSCHUL_BUFFER_MIN;
 
   let sessionsNeeded = Math.max(1, Math.ceil(result.totalHours / SLOT_HOURS));
   const originallyNeeded = sessionsNeeded;
@@ -250,7 +283,18 @@ export function scheduleStudyPlan(
   // durch die übrigen Tage der Woche ersetzt (Fallback-Reihenfolge). Reicht das
   // nicht, darf in einem zweiten Durchgang eine zweite Einheit auf bereits
   // belegte Tage gelegt werden (max. 2/Tag, mit Pause dazwischen).
-  const blockers = existingEvents.map((e) => ({ start: e.start, end: e.end, allDay: e.allDay }));
+  // Hochschul-Termine bekommen vor und nach dem Termin einen Puffer, in dem
+  // keine Lerneinheit liegen darf (Heimfahrt/Essen). Eigene/lokale Termine
+  // blockieren punktgenau.
+  const hochschulBufferMs = hochschulBufferMin * 60 * 1000;
+  const blockers = existingEvents.map((e) => {
+    const buffered = !e.allDay && isHochschulEvent(e);
+    return {
+      start: buffered ? new Date(e.start.getTime() - hochschulBufferMs) : e.start,
+      end: buffered ? new Date(e.end.getTime() + hochschulBufferMs) : e.end,
+      allDay: e.allDay,
+    };
+  });
   const placed: { start: Date; end: Date }[] = [];
   const perDayCount = new Map<string, number>();
   let remaining = sessionsNeeded;
@@ -286,24 +330,18 @@ export function scheduleStudyPlan(
     const chunk = weekChunks.get(weekIndex)!;
     const quota = Math.min(perWeek, remaining, chunk.length * maxPerDay);
 
-    // Gleichmäßig verteilte Wunsch-Tage zuerst, danach die restlichen als Fallback
-    const dayQuota = Math.min(quota, chunk.length);
-    const pickOrder: Date[] = [];
-    if (dayQuota >= chunk.length) {
-      pickOrder.push(...chunk);
-    } else {
-      const wanted = new Set<number>();
-      for (let i = 0; i < dayQuota; i++) {
-        wanted.add(dayQuota === 1 ? 0 : Math.round((i * (chunk.length - 1)) / (dayQuota - 1)));
-      }
-      pickOrder.push(...[...wanted].sort((a, b) => a - b).map((i) => chunk[i]));
-      chunk.forEach((day, i) => {
-        if (!wanted.has(i)) pickOrder.push(day);
-      });
-    }
+// Tage nach freier Zeit ordnen: Wochenenden und Tage mit wenig zeitgebundenen
+// Terminen zuerst, damit freie Tage aktiv mit bis zu zwei Einheiten gefüllt werden.
+    const pickOrder = [...chunk].sort((a, b) => {
+      const weekendDelta = Number(isWeekend(b)) - Number(isWeekend(a));
+      if (weekendDelta !== 0) return weekendDelta; // Wochenende zuerst
+      const loadDelta = blockerLoad(a, blockers) - blockerLoad(b, blockers);
+      if (loadDelta !== 0) return loadDelta; // weniger belegt = mehr Zeit zuerst
+      return a.getTime() - b.getTime(); // sonst chronologisch
+    });
 
     let placedThisWeek = 0;
-    // Durchgang 1: höchstens eine Einheit pro Tag
+    // Durchgang 1: erst eine Einheit pro Tag verteilen (ruhige Grundverteilung)
     for (const day of pickOrder) {
       if (placedThisWeek >= quota || remaining <= 0) break;
       if ((perDayCount.get(day.toDateString()) ?? 0) >= 1) continue;
@@ -312,7 +350,7 @@ export function scheduleStudyPlan(
         remaining--;
       }
     }
-    // Durchgang 2: zweite Einheit auf bereits belegten Tagen (max. 2/Tag)
+    // Durchgang 2: zweite Einheit auf die freiesten Tage (Wochenende zuerst)
     for (const day of pickOrder) {
       if (placedThisWeek >= quota || remaining <= 0) break;
       if (tryPlace(day)) {
