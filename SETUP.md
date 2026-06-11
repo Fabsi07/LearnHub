@@ -108,6 +108,8 @@ npm install
 
 **Was passiert:** Alle Bibliotheken aus `package.json` werden in den Ordner `node_modules/` geladen. Dauert beim ersten Mal 1-2 Minuten. Identisch auf allen Systemen.
 
+> **Shortcut fuer Eilige:** Die Schritte 3-5 (`.env` anlegen, DB starten, Prisma) gibt's auch als ein einzelner Befehl: `npm run setup`. Schritt 6 (`npm run dev`) startest du danach selbst. Die ausfuehrliche Anleitung unten bleibt hilfreich, falls beim Skript etwas nicht klappt.
+
 ### Schritt 3: Umgebungsvariablen vorbereiten
 
 **Was passiert:** Eine Vorlage wird in eine echte Konfigurationsdatei kopiert. In `.env` steht z. B. die Verbindungs-URL zur Datenbank. Die Datei ist absichtlich in `.gitignore` und landet nicht in GitHub.
