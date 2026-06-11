@@ -23,12 +23,12 @@ export function TaskItem({ planId, task, onChanged, onEdit }: TaskItemProps) {
   async function toggleCompleted(checked: boolean) {
     setBusy(true);
     try {
-      await fetch(`/api/study-plan/${planId}/tasks/${task.id}`, {
+      const res = await fetch(`/api/study-plan/${planId}/tasks/${task.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ completed: checked }),
       });
-      onChanged();
+      if (res.ok) onChanged();
     } finally {
       setBusy(false);
     }
