@@ -26,6 +26,7 @@ interface CalendarProps {
   externalLoading: boolean;
   externalError: string | null;
   refreshExternal: (force?: boolean) => void;
+  showExternalEvents: boolean;
   hiddenSubjects: Set<string>;
   showImportantOnly: boolean;
   searchQuery: string;
@@ -42,6 +43,7 @@ export function Calendar({
   externalLoading,
   externalError,
   refreshExternal,
+  showExternalEvents,
   hiddenSubjects,
   showImportantOnly,
   searchQuery,
@@ -88,28 +90,29 @@ export function Calendar({
   const range = getViewRange();
   const expandedLocal = expandRecurring(localEvents, range.start, range.end);
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase("de-DE");
-  const visibleEvents: CalEvent[] = [...expandedLocal, ...externalEvents].filter(
-    (ev) => {
-      const searchableText = [
-        ev.title,
-        ev.type,
-        ev.subject,
-        ev.location,
-        ev.notes,
-        ev.tasks,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLocaleLowerCase("de-DE");
-      return (
-        ev.end.getTime() >= range.start.getTime() &&
-        ev.start.getTime() <= range.end.getTime() &&
-        (ev.source !== "local" || !ev.subject || !hiddenSubjects.has(ev.subject)) &&
-        (!showImportantOnly || ev.important) &&
-        (!normalizedQuery || searchableText.includes(normalizedQuery))
-      );
-    },
-  );
+  const visibleEvents: CalEvent[] = [
+    ...expandedLocal,
+    ...(showExternalEvents ? externalEvents : []),
+  ].filter((ev) => {
+    const searchableText = [
+      ev.title,
+      ev.type,
+      ev.subject,
+      ev.location,
+      ev.notes,
+      ev.tasks,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLocaleLowerCase("de-DE");
+    return (
+      ev.end.getTime() >= range.start.getTime() &&
+      ev.start.getTime() <= range.end.getTime() &&
+      (ev.source !== "local" || !ev.subject || !hiddenSubjects.has(ev.subject)) &&
+      (!showImportantOnly || ev.important) &&
+      (!normalizedQuery || searchableText.includes(normalizedQuery))
+    );
+  });
 
   function handleEventChange(next: CalEvent) {
     if (next.readOnly) return;
@@ -245,6 +248,7 @@ export function Calendar({
           <WeekView
             currentDate={currentDate}
             events={visibleEvents}
+            blockedEvents={externalEvents.filter((e) => e.source === "dhbw")}
             onEventChange={handleEventChange}
             onRequestCreate={onRequestCreate}
             onEventClick={setSelectedEvent}
@@ -253,6 +257,7 @@ export function Calendar({
           <DayView
             currentDate={currentDate}
             events={visibleEvents}
+            blockedEvents={externalEvents.filter((e) => e.source === "dhbw")}
             onEventChange={handleEventChange}
             onRequestCreate={onRequestCreate}
             onEventClick={setSelectedEvent}

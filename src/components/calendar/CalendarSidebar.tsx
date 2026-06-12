@@ -1,4 +1,12 @@
-import { Plus, Filter, Lightbulb, Search, Star, X } from "lucide-react";
+import {
+  CalendarDays,
+  Plus,
+  Filter,
+  Lightbulb,
+  Search,
+  Star,
+  X,
+} from "lucide-react";
 import { getEventColor } from "./events";
 
 interface CalendarSidebarProps {
@@ -10,6 +18,8 @@ interface CalendarSidebarProps {
   typeColors: Record<string, string>;
   hiddenSubjects: Set<string>;
   onToggleSubject: (subject: string) => void;
+  showExternalEvents: boolean;
+  onToggleExternalEvents: () => void;
   showImportantOnly: boolean;
   onToggleImportantOnly: () => void;
 }
@@ -23,6 +33,8 @@ export function CalendarSidebar({
   typeColors,
   hiddenSubjects,
   onToggleSubject,
+  showExternalEvents,
+  onToggleExternalEvents,
   showImportantOnly,
   onToggleImportantOnly,
 }: CalendarSidebarProps) {
@@ -77,6 +89,33 @@ export function CalendarSidebar({
             Fächer-Filter
           </span>
         </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={showExternalEvents}
+          onClick={onToggleExternalEvents}
+          className={`mb-3 flex w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors ${
+            showExternalEvents
+              ? "border-blue-300/80 bg-blue-300/20"
+              : "border-blue-200/25 bg-black/10 hover:bg-blue-300/10"
+          }`}
+        >
+          <span className="flex items-center gap-2 text-sm font-medium text-white">
+            <CalendarDays className="h-4 w-4 text-blue-200" />
+            DHBW-Stundenplan
+          </span>
+          <span
+            className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${
+              showExternalEvents ? "bg-blue-400" : "bg-white/25"
+            }`}
+          >
+            <span
+              className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                showExternalEvents ? "translate-x-[18px]" : "translate-x-0.5"
+              }`}
+            />
+          </span>
+        </button>
         <button
           type="button"
           role="switch"
