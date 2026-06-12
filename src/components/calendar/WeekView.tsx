@@ -20,6 +20,7 @@ import { useDragCreate } from "./useDragCreate";
 interface WeekViewProps {
   currentDate: Date;
   events: CalEvent[];
+  blockedEvents?: CalEvent[];
   onEventChange: (next: CalEvent) => void;
   onRequestCreate?: (defaults: { start: Date; end: Date }) => void;
   onEventClick?: (event: CalEvent) => void;
@@ -30,12 +31,12 @@ const HOURS = Array.from(
   (_, i) => i + DAY_START_HOUR
 );
 
-export function WeekView({ currentDate, events, onEventChange, onRequestCreate, onEventClick }: WeekViewProps) {
+export function WeekView({ currentDate, events, blockedEvents, onEventChange, onRequestCreate, onEventClick }: WeekViewProps) {
   const days = getWeekDays(currentDate);
   const today = new Date();
   const todayIndex = days.findIndex((day) => isSameDay(day, today));
   const totalHeight = HOURS.length * HOUR_HEIGHT;
-  const dhbwEvents = events.filter((e) => e.source === "dhbw");
+  const dhbwEvents = (blockedEvents ?? events).filter((e) => e.source === "dhbw");
   const { onColumnMouseDown, preview } = useDragCreate(onRequestCreate, dhbwEvents);
 
   // Spaltenbreite messen, damit EventBlock weiß, wie viele px = 1 Tag

@@ -19,6 +19,7 @@ import { useDragCreate } from "./useDragCreate";
 interface DayViewProps {
   currentDate: Date;
   events: CalEvent[];
+  blockedEvents?: CalEvent[];
   onEventChange: (next: CalEvent) => void;
   onRequestCreate?: (defaults: { start: Date; end: Date }) => void;
   onEventClick?: (event: CalEvent) => void;
@@ -29,12 +30,12 @@ const HOURS = Array.from(
   (_, i) => i + DAY_START_HOUR
 );
 
-export function DayView({ currentDate, events, onEventChange, onRequestCreate, onEventClick }: DayViewProps) {
+export function DayView({ currentDate, events, blockedEvents, onEventChange, onRequestCreate, onEventClick }: DayViewProps) {
   const today = new Date();
   const isToday = isSameDay(currentDate, today);
   const totalHeight = HOURS.length * HOUR_HEIGHT;
   const dayEvents = events.filter((e) => !e.allDay && eventOnDay(e, currentDate));
-  const dhbwEvents = events.filter((e) => e.source === "dhbw");
+  const dhbwEvents = (blockedEvents ?? events).filter((e) => e.source === "dhbw");
   const { onColumnMouseDown, preview } = useDragCreate(onRequestCreate, dhbwEvents);
 
   return (
