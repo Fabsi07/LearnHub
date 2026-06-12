@@ -248,6 +248,7 @@ export function Calendar({
           <WeekView
             currentDate={currentDate}
             events={visibleEvents}
+            blockedEvents={externalEvents.filter((e) => e.source === "dhbw")}
             onEventChange={handleEventChange}
             onRequestCreate={onRequestCreate}
             onEventClick={setSelectedEvent}
@@ -256,6 +257,7 @@ export function Calendar({
           <DayView
             currentDate={currentDate}
             events={visibleEvents}
+            blockedEvents={externalEvents.filter((e) => e.source === "dhbw")}
             onEventChange={handleEventChange}
             onRequestCreate={onRequestCreate}
             onEventClick={setSelectedEvent}
