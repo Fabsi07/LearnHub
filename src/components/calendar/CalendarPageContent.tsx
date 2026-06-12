@@ -28,6 +28,7 @@ export function CalendarPageContent() {
     () => new Set(),
   );
   const [showImportantOnly, setShowImportantOnly] = useState(false);
+  const [showExternalEvents, setShowExternalEvents] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [modal, setModal] = useState<ModalState>({ open: false });
   const localEventsRef = useRef(localEvents);
@@ -228,6 +229,7 @@ export function CalendarPageContent() {
           externalLoading={externalLoading}
           externalError={externalError}
           refreshExternal={refreshExternal}
+          showExternalEvents={showExternalEvents}
           hiddenSubjects={hiddenSubjects}
           showImportantOnly={showImportantOnly}
           searchQuery={searchQuery}
@@ -247,6 +249,10 @@ export function CalendarPageContent() {
         typeColors={typeColors}
         hiddenSubjects={hiddenSubjects}
         onToggleSubject={toggleSubject}
+        showExternalEvents={showExternalEvents}
+        onToggleExternalEvents={() =>
+          setShowExternalEvents((current) => !current)
+        }
         showImportantOnly={showImportantOnly}
         onToggleImportantOnly={() =>
           setShowImportantOnly((current) => !current)
