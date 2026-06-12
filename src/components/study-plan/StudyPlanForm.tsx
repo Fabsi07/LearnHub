@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Calculator, X } from "lucide-react";
+import { EditableCombobox } from "@/components/calendar/EditableCombobox";
 import { GOAL_TYPE_META, fromDateInputValue, toDateInputValue } from "./planMeta";
 import type { StudyPlanDTO } from "@/lib/study-plan/types";
 import { GOAL_TYPES } from "@/lib/study-plan/types";
@@ -32,6 +33,42 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
   const [credits, setCredits] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [subjectOptions, setSubjectOptions] = useState<string[]>([]);
+
+  // Fächer-Vorschläge aus dem Kalender laden (eigene Fächer + DHBW-Veranstaltungen).
+  // Freitext bleibt weiterhin möglich – die Liste ist nur eine Auswahlhilfe.
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const [localRes, externalRes] = await Promise.all([
+          fetch("/api/calendar/events"),
+          fetch("/api/calendar/external"),
+        ]);
+        const localData = localRes.ok
+          ? ((await localRes.json()) as { events?: { subject?: string }[] })
+          : { events: [] };
+        const externalData = externalRes.ok
+          ? ((await externalRes.json()) as { events?: { title?: string }[] })
+          : { events: [] };
+        if (cancelled) return;
+        const subjects = new Set<string>();
+        for (const e of localData.events ?? []) {
+          if (typeof e.subject === "string" && e.subject.trim()) subjects.add(e.subject.trim());
+        }
+        for (const e of externalData.events ?? []) {
+          if (typeof e.title === "string" && e.title.trim()) subjects.add(e.title.trim());
+        }
+        setSubjectOptions([...subjects].sort((a, b) => a.localeCompare(b, "de")));
+      } catch {
+        // Kalender nicht erreichbar → keine Vorschläge, Freitext bleibt möglich.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [open]);
 
   // Felder beim Öffnen befüllen (Bearbeiten) bzw. zurücksetzen (Anlegen)
   useEffect(() => {
@@ -157,21 +194,14 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <label htmlFor="sp-subject" className="text-xs font-semibold text-gray-700">
-                Veranstaltung / Fach
-              </label>
-              <input
-                id="sp-subject"
-                type="text"
-                required
-                maxLength={100}
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="z. B. Mathematik 2"
-                className={inputClass}
-              />
-            </div>
+            <EditableCombobox
+              id="sp-subject"
+              label="Veranstaltung / Fach"
+              value={subject}
+              options={subjectOptions}
+              onChange={setSubject}
+              placeholder="z. B. Mathematik 2"
+            />
             <div className="flex flex-col gap-1">
               <label htmlFor="sp-goal-type" className="text-xs font-semibold text-gray-700">
                 Zieltyp

@@ -36,6 +36,7 @@ export async function GET() {
   const rows = await prisma.calendarEvent.findMany({
     where: { source: "LOCAL", ownerId: session.userId },
     orderBy: { startsAt: "asc" },
+    include: { task: { select: { completed: true } } },
   });
 
   const events = rows.map((event) => {
@@ -56,6 +57,8 @@ export async function GET() {
       important: event.important,
       repeat: (event.repeat as RepeatRule | null) ?? "none",
       studyPlanId: event.studyPlanId ?? undefined,
+      taskId: event.taskId ?? undefined,
+      taskCompleted: event.task ? event.task.completed : undefined,
     };
   });
 
@@ -90,6 +93,7 @@ export async function POST(req: Request) {
     important,
     repeat,
     studyPlanId,
+    taskId,
   } = (body ?? {}) as Record<string, unknown>;
   const trimmedTitle = typeof title === "string" ? title.trim() : "";
   const trimmedType = typeof type === "string" ? type.trim() : "";
@@ -141,6 +145,26 @@ export async function POST(req: Request) {
     planId = plan.id;
   }
 
+  // Optionale Task-Verknüpfung (1:1): Aufgabe muss dem User gehören und darf
+  // noch nicht mit einem anderen Termin verknüpft sein.
+  let linkedTask: { id: string; completed: boolean } | null = null;
+  if (typeof taskId === "string" && taskId) {
+    const task = await prisma.task.findFirst({
+      where: { id: taskId, studyPlan: { ownerId: session.userId } },
+      select: { id: true, completed: true, calendarEvent: { select: { id: true } } },
+    });
+    if (!task) {
+      return NextResponse.json({ error: "Aufgabe nicht gefunden." }, { status: 404 });
+    }
+    if (task.calendarEvent) {
+      return NextResponse.json(
+        { error: "Aufgabe ist bereits mit einem Termin verknüpft." },
+        { status: 409 },
+      );
+    }
+    linkedTask = { id: task.id, completed: task.completed };
+  }
+
   const row = await prisma.calendarEvent.create({
     data: {
       title: trimmedTitle,
@@ -159,6 +183,7 @@ export async function POST(req: Request) {
       source: "LOCAL",
       ownerId: session.userId,
       studyPlanId: planId,
+      taskId: linkedTask?.id ?? null,
     },
   });
 
@@ -180,6 +205,8 @@ export async function POST(req: Request) {
       important: row.important,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
       studyPlanId: row.studyPlanId ?? undefined,
+      taskId: row.taskId ?? undefined,
+      taskCompleted: linkedTask ? linkedTask.completed : undefined,
     },
   });
 }

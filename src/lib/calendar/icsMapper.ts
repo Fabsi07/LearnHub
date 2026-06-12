@@ -1,4 +1,4 @@
-import type { CalEvent } from "@/components/calendar/events";
+import { isImportantType, type CalEvent } from "@/components/calendar/events";
 
 export type IcsComponent = {
   type?: string;
@@ -36,16 +36,22 @@ export function mapIcsToCalEvents(
     // sonst werden Vorlesungen versehentlich in die All-Day-Leiste verschoben.
     const allDay = c.datetype === "date";
 
+    const title = (c.summary ?? "").trim() || "(ohne Titel)";
+    // Klausuren/Prüfungen im Stundenplan hervorheben (gleiche Heuristik wie
+    // bei lokalen Terminen, siehe isImportantType).
+    const isExam = isImportantType(title);
+
     events.push({
       id: c.uid ?? key,
-      title: (c.summary ?? "").trim() || "(ohne Titel)",
+      title,
       start,
       end,
-      color,
+      color: isExam ? "bg-brand-red" : color,
       source,
       readOnly: true,
       location: c.location?.trim() || undefined,
       allDay,
+      important: isExam || undefined,
     });
   }
 

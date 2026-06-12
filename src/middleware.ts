@@ -54,8 +54,9 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // API-Routen einschließen damit die 401-Logik greift.
-    // _next-Interna und statische Assets ausschließen.
-    "/((?!_next|favicon.ico|icons|images).*)",
+    // API-Routen einschließen, damit die 401-Logik greift. Next.js-Interna
+    // und alle statischen Dateien aus public/ (erkennbar an der Dateiendung)
+    // ausschließen, unabhängig davon, in welchem Unterordner sie liegen.
+    "/((?!_next|favicon.ico|.*\\.[^/]+$).*)",
   ],
 };

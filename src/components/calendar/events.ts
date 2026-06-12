@@ -22,7 +22,16 @@ export type CalEvent = {
   important?: boolean;
   /** Verknüpfter Lernplan (gesetzt bei generierten Lerneinheiten). */
   studyPlanId?: string;
+  /** Verknüpfte Lernplan-Aufgabe (1:1, gesetzt bei generierten Lerneinheiten). */
+  taskId?: string;
+  /** Erledigt-Status der verknüpften Aufgabe (abhakbar im Kalender). */
+  taskCompleted?: boolean;
 };
+
+/** True für Lerneinheiten aus einem Lernplan (abhakbar, Pausenregeln). */
+export function isLernsessionEvent(ev: CalEvent): boolean {
+  return !!ev.studyPlanId || ev.type?.trim().toLocaleLowerCase("de-DE") === "lernsession";
+}
 
 export const TYPE_COLOR_OPTIONS = [
   { name: "Rot", className: "bg-brand-red" },

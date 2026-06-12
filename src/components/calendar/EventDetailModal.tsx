@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   CalendarDays,
+  CircleCheckBig,
   MapPin,
   Pencil,
   Star,
@@ -30,6 +31,8 @@ interface EventDetailModalProps {
   onClose: () => void;
   onSave: (updated: CalEvent) => void;
   onDelete: (id: string) => void;
+  /** Abhaken einer Lernsession (Events mit verknüpfter Lernplan-Aufgabe). */
+  onToggleTaskCompleted?: (event: CalEvent, completed: boolean) => void;
   blockedEvents?: CalEvent[];
   typeOptions: string[];
   typeColors: Record<string, string>;
@@ -61,6 +64,7 @@ export function EventDetailModal({
   onClose,
   onSave,
   onDelete,
+  onToggleTaskCompleted,
   blockedEvents = [],
   typeOptions,
   typeColors,
@@ -305,7 +309,38 @@ export function EventDetailModal({
                   Wichtig
                 </span>
               )}
+              {event.taskCompleted && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700">
+                  <CircleCheckBig className="h-3 w-3" />
+                  Erledigt
+                </span>
+              )}
             </div>
+
+            {/* Lernsession abhaken (Events mit verknüpfter Lernplan-Aufgabe) */}
+            {event.taskId && event.studyPlanId && onToggleTaskCompleted && (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={!!event.taskCompleted}
+                onClick={() => onToggleTaskCompleted(event, !event.taskCompleted)}
+                className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                  event.taskCompleted
+                    ? "border-green-300 bg-green-50 text-green-700"
+                    : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                <span className="flex items-center gap-2 text-sm font-semibold">
+                  <CircleCheckBig className="h-4 w-4" />
+                  {event.taskCompleted
+                    ? "Lernsession erledigt"
+                    : "Lernsession abhaken"}
+                </span>
+                <span className="text-xs font-medium">
+                  {event.taskCompleted ? "Als offen markieren" : "Als erledigt markieren"}
+                </span>
+              </button>
+            )}
 
             {/* Zeit */}
             <div className="rounded-xl bg-gray-50 px-4 py-3 flex flex-col gap-1">

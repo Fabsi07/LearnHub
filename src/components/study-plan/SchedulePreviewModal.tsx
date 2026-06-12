@@ -1,15 +1,16 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CalendarCheck, CalendarPlus, CheckCircle, X } from "lucide-react";
 import type { CalEvent, RepeatRule } from "@/components/calendar/events";
 import { calculateStudyPlan } from "@/lib/calculations/studyPlanAlgorithm";
 import {
+  analyzeWorkload,
   scheduleStudyPlan,
   SLOT_HOURS,
   type ScheduleResult,
 } from "@/lib/study-plan/scheduler";
-import type { StudyPlanDetailDTO } from "@/lib/study-plan/types";
+import type { StudyPlanDetailDTO, TaskDTO } from "@/lib/study-plan/types";
 import { formatDate } from "./planMeta";
 
 interface SchedulePreviewModalProps {
@@ -42,10 +43,12 @@ export function SchedulePreviewModal({
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<ScheduleResult | null>(null);
+  const [criticalNotes, setCriticalNotes] = useState<string[]>([]);
   const [existingPlanEvents, setExistingPlanEvents] = useState(0);
   const [saving, setSaving] = useState(false);
   const [savedCount, setSavedCount] = useState<number | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const savingRef = useRef(false);
 
   const canCalculate =
     plan.difficulty != null &&
@@ -59,7 +62,7 @@ export function SchedulePreviewModal({
     setLoading(true);
     setLoadError(null);
     setSchedule(null);
-    setSavedCount(null);
+    setCriticalNotes([]);
     setSaveError(null);
 
     if (!canCalculate) {
@@ -96,12 +99,15 @@ export function SchedulePreviewModal({
           credits: plan.credits as number,
         });
 
-        setSchedule(
-          scheduleStudyPlan(
-            result,
-            { deadline: new Date(plan.targetDate) },
-            [...localEvents, ...externalEvents],
-          ),
+        const scheduled = scheduleStudyPlan(
+          result,
+          { deadline: new Date(plan.targetDate) },
+          [...localEvents, ...externalEvents],
+        );
+        setSchedule(scheduled);
+        // Kritische Anmerkungen: zu viel Lernen pro Tag / ein Fach zu oft pro Woche
+        setCriticalNotes(
+          analyzeWorkload(scheduled.sessions, localEvents, plan.subject),
         );
       } catch {
         if (!cancelled) {
@@ -117,11 +123,22 @@ export function SchedulePreviewModal({
     };
   }, [open, plan, canCalculate]);
 
+  // Den Erfolgszustand erst beim Schließen zurücksetzen. Ein Refresh des
+  // Lernplans nach dem Speichern liefert ein neues plan-Objekt und darf die
+  // Erfolgsmeldung nicht wieder durch die Vorschau ersetzen.
+  useEffect(() => {
+    if (!open) {
+      setSavedCount(null);
+      setSaveError(null);
+      savingRef.current = false;
+    }
+  }, [open]);
+
   // ESC schließt Modal
   useEffect(() => {
     if (!open) return;
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape" && !savingRef.current) onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -147,12 +164,36 @@ export function SchedulePreviewModal({
   if (!open) return null;
 
   async function handleConfirm() {
-    if (!schedule || schedule.sessions.length === 0) return;
+    if (savingRef.current || !schedule || schedule.sessions.length === 0) return;
+    savingRef.current = true;
     setSaving(true);
     setSaveError(null);
     let created = 0;
     try {
       for (const s of schedule.sessions) {
+        // 1) Aufgabe im Lernplan anlegen – jede Lerneinheit ist abhakbar und
+        //    zählt in den Plan-Fortschritt.
+        const pad = (n: number) => n.toString().padStart(2, "0");
+        const dayLabel = `${pad(s.start.getDate())}.${pad(s.start.getMonth() + 1)}.`;
+        const taskRes = await fetch(`/api/study-plan/${plan.id}/tasks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: `Lernsession ${dayLabel}: ${s.shortPhase}`,
+            description: s.tasks.join("\n"),
+            dueDate: s.start.toISOString(),
+            estimatedMinutes: SLOT_HOURS * 60,
+            difficulty: plan.difficulty ?? 3,
+          }),
+        });
+        const taskData = (await taskRes.json().catch(() => null)) as
+          | { task?: TaskDTO }
+          | null;
+        if (!taskRes.ok || !taskData?.task) {
+          throw new Error(`Aufgabe für Termin ${created + 1} konnte nicht angelegt werden.`);
+        }
+
+        // 2) Kalendertermin anlegen und mit der Aufgabe verknüpfen.
         const res = await fetch("/api/calendar/events", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -167,6 +208,7 @@ export function SchedulePreviewModal({
             tasks: s.tasks.join("\n"),
             repeat: "none" satisfies RepeatRule,
             studyPlanId: plan.id,
+            taskId: taskData.task.id,
           }),
         });
         if (!res.ok) {
@@ -183,6 +225,7 @@ export function SchedulePreviewModal({
           : "Speichern fehlgeschlagen.",
       );
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
@@ -190,7 +233,9 @@ export function SchedulePreviewModal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
+      onClick={() => {
+        if (!savingRef.current) onClose();
+      }}
     >
       <div
         role="dialog"
@@ -210,7 +255,8 @@ export function SchedulePreviewModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+            disabled={saving}
+            className="p-1 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
             aria-label="Schließen"
           >
             <X className="w-4 h-4 text-gray-500" />
@@ -230,7 +276,8 @@ export function SchedulePreviewModal({
               </p>
               <p className="text-sm text-gray-500 max-w-sm">
                 Die Termine sind jetzt im Kalender sichtbar und können dort per Drag &amp;
-                Drop verschoben werden.
+                Drop verschoben werden. Jede Einheit ist außerdem als abhakbare Aufgabe
+                mit diesem Lernplan verknüpft.
               </p>
             </div>
           ) : !canCalculate ? (
@@ -292,6 +339,20 @@ export function SchedulePreviewModal({
                 >
                   <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
                   <span>{w}</span>
+                </div>
+              ))}
+
+              {/* Kritische Anmerkungen zum Workload (zu viel pro Tag / Fach zu oft) */}
+              {criticalNotes.map((note) => (
+                <div
+                  key={note}
+                  className="flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+                >
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                  <span>
+                    <span className="font-semibold">Kritische Anmerkung: </span>
+                    {note}
+                  </span>
                 </div>
               ))}
 
@@ -366,7 +427,8 @@ export function SchedulePreviewModal({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                  disabled={saving}
+                  className="px-4 py-2 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   Abbrechen
                 </button>
