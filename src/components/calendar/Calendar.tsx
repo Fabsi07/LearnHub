@@ -33,6 +33,8 @@ interface CalendarProps {
   typeOptions: string[];
   typeColors: Record<string, string>;
   subjectOptions: string[];
+  /** Abhaken einer Lernsession (Events mit verknüpfter Lernplan-Aufgabe). */
+  onToggleTaskCompleted?: (event: CalEvent, completed: boolean) => void;
 }
 
 export function Calendar({
@@ -50,6 +52,7 @@ export function Calendar({
   typeOptions,
   typeColors,
   subjectOptions,
+  onToggleTaskCompleted,
 }: CalendarProps) {
   const [view, setView] = useState<View>("week");
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -276,6 +279,15 @@ export function Calendar({
         onClose={() => setSelectedEvent(null)}
         onSave={handleEventSave}
         onDelete={handleEventDelete}
+        onToggleTaskCompleted={
+          onToggleTaskCompleted
+            ? (ev, completed) => {
+                onToggleTaskCompleted(ev, completed);
+                // Modal zeigt den neuen Status sofort an
+                setSelectedEvent({ ...ev, taskCompleted: completed });
+              }
+            : undefined
+        }
         blockedEvents={externalEvents.filter((e) => e.source === "dhbw")}
         typeOptions={typeOptions}
         typeColors={typeColors}

@@ -150,6 +150,29 @@ export function CalendarPageContent() {
     }
   }
 
+  async function handleToggleTaskCompleted(ev: CalEvent, completed: boolean) {
+    if (!ev.taskId || !ev.studyPlanId) return;
+
+    // Optimistic: Status sofort im UI umschalten
+    setLocalEvents((prev) =>
+      prev.map((e) => (e.id === ev.id ? { ...e, taskCompleted: completed } : e)),
+    );
+
+    try {
+      const res = await fetch(`/api/study-plan/${ev.studyPlanId}/tasks/${ev.taskId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      // Fehlgeschlagen → Status zurückdrehen
+      setLocalEvents((prev) =>
+        prev.map((e) => (e.id === ev.id ? { ...e, taskCompleted: !completed } : e)),
+      );
+    }
+  }
+
   async function handleEventsChange(newEvents: CalEvent[]) {
     const prev = localEventsRef.current;
 
@@ -236,6 +259,9 @@ export function CalendarPageContent() {
           typeOptions={typeOptions}
           typeColors={typeColors}
           subjectOptions={subjectOptions}
+          onToggleTaskCompleted={(ev, completed) =>
+            void handleToggleTaskCompleted(ev, completed)
+          }
         />
       </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Star } from "lucide-react";
+import { CircleCheckBig, Star } from "lucide-react";
 import {
   CalEvent,
   DAY_START_HOUR,
@@ -248,7 +248,7 @@ export function EventBlock({
           : "transition-[top,height,left,width] duration-150 ease-out"
       } ${isReadOnly ? "ring-1 ring-white/30 opacity-95" : ""} ${
         event.important ? "ring-2 ring-amber-300 ring-offset-1" : ""
-      }`}
+      } ${event.taskCompleted ? "opacity-60" : ""}`}
       style={{
         top: renderTop,
         height: renderHeight,
@@ -270,7 +270,12 @@ export function EventBlock({
           {event.important && (
             <Star className="h-3 w-3 shrink-0" fill="currentColor" />
           )}
-          <span className="truncate">{event.title}</span>
+          {event.taskCompleted && (
+            <CircleCheckBig className="h-3 w-3 shrink-0" />
+          )}
+          <span className={`truncate ${event.taskCompleted ? "line-through" : ""}`}>
+            {event.title}
+          </span>
         </div>
         <div className="opacity-90 leading-tight truncate">
           {formatTime(event.start)} – {formatTime(event.end)}

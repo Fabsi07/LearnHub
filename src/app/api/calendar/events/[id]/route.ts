@@ -149,7 +149,10 @@ export async function PATCH(
     return NextResponse.json({ error: "Event nicht gefunden." }, { status: 404 });
   }
 
-  const row = await prisma.calendarEvent.findUnique({ where: { id } });
+  const row = await prisma.calendarEvent.findUnique({
+    where: { id },
+    include: { task: { select: { completed: true } } },
+  });
   if (!row) {
     return NextResponse.json({ error: "Event nicht gefunden." }, { status: 404 });
   }
@@ -186,6 +189,8 @@ export async function PATCH(
       important: row.important,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
       studyPlanId: row.studyPlanId ?? undefined,
+      taskId: row.taskId ?? undefined,
+      taskCompleted: row.task ? row.task.completed : undefined,
     },
   });
 }
