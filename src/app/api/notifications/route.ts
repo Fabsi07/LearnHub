@@ -33,7 +33,7 @@ async function createMissedSessionNotifications(userId: string, now: Date) {
   if (missed.length === 0) return;
 
   const existing = await prisma.notification.findMany({
-    where: { ownerId: userId, subject: MISSED_SESSION_SUBJECT },
+    where: { ownerId: userId, subject: MISSED_SESSION_SUBJECT, expiresAt: { gt: now } },
     select: { course: true, dueDate: true },
   });
   const seen = new Set(existing.map((n) => `${n.course}|${n.dueDate.getTime()}`));
