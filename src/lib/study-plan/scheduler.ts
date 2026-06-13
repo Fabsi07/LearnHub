@@ -518,15 +518,15 @@ export function analyzeWorkload(
 
   // 1) Zu viel Lernen an einem Tag – zu einer Meldung zusammengefasst,
   //    damit die Vorschau nicht mit Hinweisen geflutet wird.
-  const hoursPerDay = new Map<string, number>();
+  const hoursPerDay = new Map<number, number>();
   for (const b of blocks) {
-    const key = startOfDay(b.start).toISOString();
+    const key = startOfDay(b.start).getTime();
     const hours = (b.end.getTime() - b.start.getTime()) / 3_600_000;
     hoursPerDay.set(key, (hoursPerDay.get(key) ?? 0) + hours);
   }
   const overloadedDays = [...hoursPerDay.entries()]
     .filter(([, hours]) => hours > MAX_RECOMMENDED_HOURS_PER_DAY)
-    .sort(([a], [b]) => a.localeCompare(b));
+    .sort(([a], [b]) => a - b);
   if (overloadedDays.length === 1) {
     const [key, hours] = overloadedDays[0];
     notes.push(
