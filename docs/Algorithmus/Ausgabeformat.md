@@ -210,7 +210,7 @@ Beispiel:
         "2 typische Klausuraufgaben lösen"
       ],
       "review": "Fehler aus den Aufgaben notieren",
-      "note": "Im kritischen Plan werden maximal 2 Stunden pro Tag angezeigt. Weniger wichtige Themen können entfallen."
+      "note": "Im kritischen Plan werden maximal zwei 2-Stunden-Einheiten desselben Fachs pro Tag geplant. Weniger wichtige Themen können entfallen."
     }
   ],
   "warnings": [
@@ -229,4 +229,7 @@ Bei einem normalen Lernplan liegt der Fokus auf Verständnis, Vertiefung, Anwend
 
 Bei einem kritischen Lernplan liegt der Fokus auf Priorisierung, Kernstoff, typischen Aufgaben und kurzer Wiederholung.
 
-Wenn ein kritischer Lernplan erstellt wird, darf die App trotzdem maximal 2 Stunden Lernzeit pro Tag anzeigen, damit der Nutzer nicht überfordert wird. Zusätzlich wird eine Warnung ausgegeben.
+Wenn ein kritischer Lernplan erstellt wird, plant die App maximal zwei 2-Stunden-Einheiten desselben
+Fachs pro Tag. An freien Tagen dürfen insgesamt bis zu drei Einheiten stattfinden, sofern sie sich
+auf mindestens zwei Fächer verteilen. Bei drei Tagen hintereinander mit jeweils zwei Einheiten
+desselben Fachs wird zusätzlich eine kritische Pausenempfehlung ausgegeben.

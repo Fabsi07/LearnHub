@@ -95,7 +95,13 @@ Tagesplanung
 
 Auch wenn rechnerisch mehr nötig wäre:
 
-Maximal 2 Stunden pro Tag anzeigen
+Maximal zwei 2-Stunden-Einheiten desselben Fachs pro Tag planen.
+
+An freien Tagen sind insgesamt bis zu drei 2-Stunden-Einheiten möglich, wenn die dritte Einheit
+zu einem anderen Fach gehört.
+
+Wenn an drei Tagen hintereinander jeweils zwei Einheiten desselben Fachs liegen, wird eine
+kritische Warnung mit der Empfehlung für einen Fach- oder Pausentag angezeigt.
 
 Der User soll nicht überfordert werden.
 
