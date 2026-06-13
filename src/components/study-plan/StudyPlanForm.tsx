@@ -199,7 +199,7 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
               label="Veranstaltung / Fach"
               value={subject}
               options={subjectOptions}
-              onChange={setSubject}
+              onChange={(v) => setSubject(v.slice(0, 100))}
               placeholder="z. B. Mathematik 2"
             />
             <div className="flex flex-col gap-1">
