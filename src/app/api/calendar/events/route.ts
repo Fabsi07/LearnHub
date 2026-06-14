@@ -1,4 +1,4 @@
-import { EventType as DbEventType } from "@prisma/client";
+import { EventType as DbEventType, GoalType } from "@prisma/client";
 import { NextResponse } from "next/server";
 import {
   getEventColor,
@@ -7,6 +7,15 @@ import {
 } from "@/components/calendar/events";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
+
+// Beschriftung des Zieltermins je Lernplan-Zieltyp (z. B. "Klausur: Mathe 2").
+const GOAL_LABEL: Record<GoalType, string> = {
+  KLAUSUR: "Klausur",
+  ABGABE: "Abgabe",
+  PRAESENTATION: "Präsentation",
+  SELBSTLERNZIEL: "Lernziel",
+  SONSTIGES: "Zieltermin",
+};
 
 const TYPE_TO_DB: Record<string, DbEventType> = {
   Lernsession: "LERNEINHEIT",
@@ -62,7 +71,43 @@ export async function GET() {
     };
   });
 
-  return NextResponse.json({ events });
+  // Zieldaten der Lernplaene als abgeleitete, read-only Zieltermine ergaenzen.
+  // Quelle bleibt StudyPlan.targetDate (kein doppeltes Speichern) – aendert sich
+  // das Zieldatum, zieht der Kalender automatisch mit. Nicht editierbar, da
+  // abgeleitet (siehe CLAUDE.md: read-only Events duerfen nicht editierbar sein).
+  const plans = await prisma.studyPlan.findMany({
+    where: { ownerId: session.userId },
+    select: { id: true, subject: true, goalType: true, targetDate: true },
+  });
+
+  const deadlineEvents = plans.map((plan) => {
+    // Ganztaegiger Zieltermin: Ende exklusiv auf den Folgetag, damit
+    // eventOverlapsDay() (verlangt end > dayStart) den Termin am Zieltag in
+    // Monats-, Wochen- und Tagesansicht anzeigt.
+    const dayStart = new Date(plan.targetDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+    return {
+      id: `plan-deadline-${plan.id}`,
+      title: `${GOAL_LABEL[plan.goalType]}: ${plan.subject}`,
+      start: dayStart.toISOString(),
+      end: dayEnd.toISOString(),
+      allDay: true,
+      type: "Deadline",
+      color: getEventColor("Deadline", "bg-brand-red"),
+      source: "local" as const,
+      // Fach mitgeben, damit der Fachfilter greift und das Fach in der
+      // Detailansicht erscheint.
+      subject: plan.subject,
+      important: true,
+      readOnly: true,
+      repeat: "none" as const,
+      studyPlanId: plan.id,
+    };
+  });
+
+  return NextResponse.json({ events: [...events, ...deadlineEvents] });
 }
 
 /** POST /api/calendar/events - neues lokales Event speichern */
