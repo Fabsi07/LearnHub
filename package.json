@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint .",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "setup": "node scripts/setup.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
