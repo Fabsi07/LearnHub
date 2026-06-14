@@ -21,6 +21,8 @@ export const MAX_SESSIONS_PER_WEEK = 5;
 export const PREFERRED_START_HOUR = 16;
 /** Maximal zwei Einheiten am selben Tag (normaler Uni-Tag). */
 export const MAX_SESSIONS_PER_DAY = 2;
+/** Maximal zwei Einheiten desselben Fachs/Lernplans pro Tag. */
+export const MAX_SESSIONS_PER_SUBJECT_PER_DAY = 2;
 /**
  * An "freien" Tagen sind bis zu 3 Einheiten (= 6 h) möglich: am Wochenende
  * sowie an Wochentagen mit höchstens einem Hochschul-Block (Uni frei/fast frei).
@@ -32,6 +34,8 @@ export const LIGHT_UNI_DAY_MAX_BLOCKS = 1;
 export const MAX_RECOMMENDED_HOURS_PER_DAY = 6;
 /** Ab so vielen Einheiten desselben Fachs pro Woche gibt es eine kritische Anmerkung. */
 export const MAX_SUBJECT_SESSIONS_PER_WEEK = 5;
+/** Ab so vielen Doppel-Lerntagen in Folge gibt es eine kritische Anmerkung. */
+export const CONSECUTIVE_DOUBLE_SESSION_DAYS = 3;
 /** Bevorzugter Beginn an freien Tagen (Wochenende / keine Hochschul-Termine). */
 export const FREE_DAY_START_HOUR = 10;
 /** Keine Einheit endet nach 21:00 Uhr – auch unter der Woche schlaffreundlich. */
@@ -57,8 +61,12 @@ export interface ScheduleOptions {
   preferredStartHour?: number;
   /** Späteste Endzeit einer Einheit in Stunden (Default: 21). */
   latestEndHour?: number;
-  /** Maximale Einheiten pro Tag (Default: 2). */
+  /** Globales Tageslimit; überschreibt bei Angabe auch das Limit freier Tage. */
   maxSessionsPerDay?: number;
+  /** Fach des aktuell geplanten Lernplans, um bestehende Einheiten mitzuzählen. */
+  subject?: string;
+  /** Maximale Einheiten dieses Fachs pro Tag (Default: 2). */
+  maxSessionsPerSubjectPerDay?: number;
   /** Puffer vor/nach Hochschul-Terminen in Minuten (Default: 30). */
   hochschulBufferMin?: number;
 }
@@ -142,6 +150,14 @@ function addDays(d: Date, n: number): Date {
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+function normalizeSubject(subject: string): string {
+  return subject.trim().toLocaleLowerCase("de-DE");
+}
+
+function isNextCalendarDay(previous: Date, current: Date): boolean {
+  return addDays(startOfDay(previous), 1).getTime() === startOfDay(current).getTime();
+}
 
 function isWeekend(d: Date): boolean {
   const wd = d.getDay();
@@ -252,6 +268,9 @@ export function scheduleStudyPlan(
   const preferredStartHour = options.preferredStartHour ?? PREFERRED_START_HOUR;
   const latestEndHour = options.latestEndHour ?? LATEST_END_HOUR;
   const maxPerDay = options.maxSessionsPerDay ?? MAX_SESSIONS_PER_DAY;
+  const maxPerSubjectDay =
+    options.maxSessionsPerSubjectPerDay ?? MAX_SESSIONS_PER_SUBJECT_PER_DAY;
+  const scheduledSubject = normalizeSubject(options.subject ?? "");
   // Hochschul-Blöcke pro Tag (für Tageslimit + frühere Startzeit an freien Tagen)
   const uniBlockCountCache = new Map<string, number>();
   const uniBlockCount = (day: Date): number => {
@@ -283,8 +302,28 @@ export function scheduleStudyPlan(
     }
     return count;
   };
+  const existingSubjectSessionCountCache = new Map<string, number>();
+  const existingSubjectSessionCount = (day: Date): number => {
+    if (!scheduledSubject) return 0;
+    const key = day.toDateString();
+    let count = existingSubjectSessionCountCache.get(key);
+    if (count === undefined) {
+      count = existingEvents.filter(
+        (e) =>
+          !e.allDay &&
+          isLernsessionEvent(e) &&
+          eventOverlapsDay(e, day) &&
+          normalizeSubject(e.subject ?? "") === scheduledSubject,
+      ).length;
+      existingSubjectSessionCountCache.set(key, count);
+    }
+    return count;
+  };
   const availableDayCapacity = (day: Date): number =>
-    Math.max(0, dayCap(day) - existingSessionCount(day));
+    Math.min(
+      Math.max(0, dayCap(day) - existingSessionCount(day)),
+      Math.max(0, maxPerSubjectDay - existingSubjectSessionCount(day)),
+    );
   const hochschulBufferMin =
     typeof options.hochschulBufferMin === "number" && Number.isFinite(options.hochschulBufferMin)
       ? Math.max(0, options.hochschulBufferMin)
@@ -335,8 +374,8 @@ export function scheduleStudyPlan(
 
   // Pro Woche `perWeek` Tage möglichst gleichmäßig wählen; volle Tage werden
   // durch die übrigen Tage der Woche ersetzt (Fallback-Reihenfolge). Reicht das
-  // nicht, darf in einem zweiten Durchgang eine zweite Einheit auf bereits
-  // belegte Tage gelegt werden (max. 2/Tag, mit Pause dazwischen).
+  // nicht, darf in einem zweiten Durchgang eine zweite Einheit desselben Fachs
+  // auf bereits belegte Tage gelegt werden (max. 2/Fach/Tag, mit Pause dazwischen).
   // Hochschul-Termine bekommen vor und nach dem Termin einen Puffer, in dem
   // keine Lerneinheit liegen darf (Heimfahrt/Essen). Eigene/lokale Termine
   // blockieren punktgenau.
@@ -427,7 +466,9 @@ export function scheduleStudyPlan(
       }
     }
     // Durchgang 2+: weitere Einheiten auf die freiesten Tage (Wochenende
-    // zuerst), bis zum jeweiligen Tageslimit (Wochenende bis zu 3 × 2 h = 6 h).
+    // zuerst), bis zum Fachlimit. Das globale Tageslimit lässt an freien Tagen
+    // weiterhin bis zu 3 × 2 h zu, die dritte Einheit muss aber aus einem
+    // anderen Fach stammen.
     let progressed = true;
     while (progressed && placedThisWeek < quota && remaining > 0) {
       progressed = false;
@@ -475,7 +516,7 @@ export function scheduleStudyPlan(
     usedInPhase++;
   }
 
-  // Hinweis aus dem Konzept: kritischer Plan zeigt trotzdem max. 2 h/Tag
+  // Kritische Pläne werden zusätzlich durch Wochen- und Tageskapazitäten gedeckelt.
   if (result.planType === "kritisch" && originallyNeeded > sessionsNeeded) {
     warnings.push(
       "Der berechnete Lernaufwand ist höher als die empfohlene maximale Wochenlernzeit.",
@@ -493,6 +534,7 @@ export function scheduleStudyPlan(
  *
  *  - mehr als MAX_RECOMMENDED_HOURS_PER_DAY Stunden Lernen an einem Tag
  *  - dasselbe Fach MAX_SUBJECT_SESSIONS_PER_WEEK-mal oder öfter in einer Woche
+ *  - drei Tage in Folge jeweils zwei Einheiten desselben Fachs
  *
  * Der Lernplan ist eine Basis, kein Pflichtprogramm – die Anmerkungen sollen
  * beim Organisieren helfen, nicht blockieren.
@@ -548,14 +590,13 @@ export function analyzeWorkload(
   }
 
   // 2) Ein Fach zu oft in derselben Woche
-  const normalizedSubject = (s: string) => s.trim().toLocaleLowerCase("de-DE");
   const perWeekSubject = new Map<string, { monday: Date; subject: string; count: number }>();
   for (const b of blocks) {
     if (!b.subject.trim()) continue;
     const monday = startOfDay(b.start);
     const wd = monday.getDay();
     monday.setDate(monday.getDate() - (wd === 0 ? 6 : wd - 1));
-    const key = `${monday.toISOString()}|${normalizedSubject(b.subject)}`;
+    const key = `${monday.toISOString()}|${normalizeSubject(b.subject)}`;
     const entry = perWeekSubject.get(key) ?? { monday, subject: b.subject.trim(), count: 0 };
     entry.count++;
     perWeekSubject.set(key, entry);
@@ -567,7 +608,7 @@ export function analyzeWorkload(
   // Pro Fach nur eine Meldung (statt eine pro Fach × Woche)
   const bySubject = new Map<string, { subject: string; weeks: { monday: Date; count: number }[] }>();
   for (const e of overloadedWeeks) {
-    const key = normalizedSubject(e.subject);
+    const key = normalizeSubject(e.subject);
     const entry = bySubject.get(key) ?? { subject: e.subject, weeks: [] };
     entry.weeks.push({ monday: e.monday, count: e.count });
     bySubject.set(key, entry);
@@ -591,6 +632,45 @@ export function analyzeWorkload(
         `„${s.subject}“ steht in ${s.weeks.length} Wochen (ab ${shown}${rest > 0 ? ` und ${rest} weiteren` : ""}) ` +
           `bis zu ${maxCount}-mal pro Woche auf dem Plan. ${tail}`,
       );
+    }
+  }
+
+  // 3) Drei Tage hintereinander jeweils zwei oder mehr Einheiten desselben Fachs.
+  const perDaySubject = new Map<
+    string,
+    { subject: string; days: Map<number, number> }
+  >();
+  for (const block of blocks) {
+    if (!block.subject.trim()) continue;
+    const subjectKey = normalizeSubject(block.subject);
+    const entry = perDaySubject.get(subjectKey) ?? {
+      subject: block.subject.trim(),
+      days: new Map<number, number>(),
+    };
+    const dayKey = startOfDay(block.start).getTime();
+    entry.days.set(dayKey, (entry.days.get(dayKey) ?? 0) + 1);
+    perDaySubject.set(subjectKey, entry);
+  }
+
+  for (const entry of perDaySubject.values()) {
+    const doubleDays = [...entry.days.entries()]
+      .filter(([, count]) => count >= MAX_SESSIONS_PER_SUBJECT_PER_DAY)
+      .map(([day]) => new Date(day))
+      .sort((a, b) => a.getTime() - b.getTime());
+    let run: Date[] = [];
+    for (const day of doubleDays) {
+      const previous = run.at(-1);
+      run = previous && isNextCalendarDay(previous, day) ? [...run, day] : [day];
+      if (run.length < CONSECUTIVE_DOUBLE_SESSION_DAYS) continue;
+
+      const first = run[0];
+      const last = run.at(-1)!;
+      notes.push(
+        `„${entry.subject}“ ist vom ${fmtDay(first)} bis ${fmtDay(last)} an ${run.length} Tagen hintereinander ` +
+          `mit jeweils mindestens zwei Lerneinheiten geplant. Gönne dir zwischendurch einen Pausentag von diesem Fach ` +
+          `oder wechsle den Schwerpunkt, damit die Belastung nicht zu einseitig wird.`,
+      );
+      break;
     }
   }
 

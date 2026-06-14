@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { AlertTriangle, CheckCircle, Calculator, CalendarPlus, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  MAX_SESSIONS_PER_SUBJECT_PER_DAY,
+  SLOT_HOURS,
+} from "@/lib/study-plan/scheduler";
 import type { StudyPlanDTO } from "@/lib/study-plan/types";
 
 interface AlgorithmResultWidgetProps {
@@ -27,6 +31,7 @@ export function AlgorithmResultWidget({
     plan.pages != null &&
     plan.credits != null;
   const isKritisch = plan.planType === "kritisch";
+  const maxSubjectHoursPerDay = MAX_SESSIONS_PER_SUBJECT_PER_DAY * SLOT_HOURS;
   async function recalculate() {
     setBusy(true);
     try {
@@ -103,16 +108,19 @@ export function AlgorithmResultWidget({
             </div>
             <div className="flex flex-col items-center justify-center rounded-xl bg-gray-50 border border-gray-200 p-3 text-center">
               <span className="text-xl font-bold text-gray-900">
-                {isKritisch ? "2" : plan.hoursPerDay} h
+                {isKritisch ? `max. ${maxSubjectHoursPerDay}` : plan.hoursPerDay} h
               </span>
-              <span className="text-xs text-gray-500 mt-0.5">pro Tag geplant</span>
+              <span className="text-xs text-gray-500 mt-0.5">
+                {isKritisch ? "dieses Fach pro Tag" : "pro Tag geplant"}
+              </span>
             </div>
           </div>
 
           {isKritisch && (
             <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
-              Rechnerisch wären {plan.hoursPerDay} h pro Tag nötig. Angezeigt werden maximal
-              2 h pro Tag – priorisiere die wichtigsten Inhalte.
+              Rechnerisch wären {plan.hoursPerDay} h pro Tag nötig. Automatisch geplant werden
+              maximal zwei 2-Stunden-Einheiten dieses Fachs pro Tag – priorisiere die wichtigsten
+              Inhalte und plane Pausen ein.
             </p>
           )}
 

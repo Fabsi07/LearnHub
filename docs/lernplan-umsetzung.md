@@ -35,11 +35,13 @@ werden die Einheiten als **Kalender-Termine** (Typ „Lernsession") gespeichert 
 ### Wichtige bereits definierte Regeln (aus der Konzept-Doku)
 
 - **Formel:** `Gesamtstunden = 25 × D × ((S + W + V + C) / 4)`
-- **Plantyp:** `Stunden/Tag ≤ 2` → *normal*, sonst *kritisch* (max. 2 h/Tag anzeigen + Warnung).
+- **Plantyp:** `Stunden/Tag ≤ 2` → *normal*, sonst *kritisch*. Im kritischen Plan werden maximal
+  zwei 2-h-Einheiten desselben Fachs pro Tag geplant; an freien Tagen bleiben insgesamt bis zu
+  drei Einheiten aus mindestens zwei Fächern möglich.
 - **Phasen normal:** Grundlagen 40 %, Vertiefung 35 %, Anwendung 15 %, Wiederholung 10 %.
 - **Phasen kritisch:** Priorisierung 10 %, Kernstoff 50 %, Aufgaben 30 %, Wiederholung 10 %.
 - **Scheduling-Constraints** ([study-plan-redesign.md §5](study-plan-redesign.md)):
-  - Ziel: **3–4 Lerneinheiten pro Woche**
+  - Orientierung: häufig **3–4 Lerneinheiten pro Woche**, bei geringem Aufwand auch 1–2
   - Maximum: **5 Lerneinheiten pro Woche**
   - Dauer: **2 h pro Einheit**
 
@@ -116,9 +118,9 @@ Datei: `src/lib/study-plan/scheduler.ts`
 ### Konstanten
 ```ts
 const SLOT_HOURS = 2;                // Dauer einer Lerneinheit
-const TARGET_SESSIONS_PER_WEEK = 4;  // Ziel 3–4
 const MAX_SESSIONS_PER_WEEK = 5;     // hartes Limit
-const MAX_SESSIONS_PER_DAY = 2;      // zweiter Block am selben Tag erlaubt
+const MAX_SESSIONS_PER_SUBJECT_PER_DAY = 2; // höchstens 4 h desselben Fachs
+const MAX_SESSIONS_PER_DAY_FREE = 3; // global höchstens 6 h an freien Tagen
 const LATEST_END_HOUR = 21;          // keine Einheit endet nach 21 Uhr (schlaffreundlich)
 const SESSION_GAP_MIN = 30;          // Mindestpause zwischen zwei Blöcken am selben Tag
 ```
@@ -129,7 +131,8 @@ const SESSION_GAP_MIN = 30;          // Mindestpause zwischen zwei Blöcken am s
    `weeks = max(1, ceil(daysUntilDeadline / 7))`, `capacity = weeks × MAX_SESSIONS_PER_WEEK`.
    Wenn `sessionsNeeded > capacity` → **Warnung „Überlastung"** und auf `capacity` deckeln
    (im kritischen Plan erwartbar – passt zur Konzept-Doku).
-3. **Einheiten pro Woche:** `perWeek = clamp(ceil(sessionsNeeded / weeks), TARGET..MAX)`.
+3. **Einheiten pro Woche:** `perWeek = min(MAX, max(1, ceil(sessionsNeeded / weeks)))`.
+   3–4 Einheiten sind ein Orientierungsbereich, aber kein künstliches Minimum.
 4. **Phasen → Einheiten:** Pro Phase `sessions_phase = round(phase.hours / totalHours × sessionsNeeded)`.
    Phasen werden **chronologisch** zugewiesen (erst Grundlagen-Einheiten, dann Vertiefung, …),
    damit die Lernlogik (verstehen → vertiefen → anwenden → wiederholen) erhalten bleibt.
@@ -256,8 +259,13 @@ Nach jeder Phase soll `npm run build` grün sein.
 ## 10. Definition von „schönes Ergebnis" (Akzeptanzkriterien)
 
 - Aus den Klausurdaten entstehen **konkrete, datierte 2-h-Lerneinheiten**, nicht nur Summen.
-- Die Einheiten respektieren **3–4 (max. 5) pro Woche** und kollidieren **nicht** mit DHBW-Vorlesungen
+- Die Einheiten werden aufwandsabhängig gleichmäßig verteilt und respektieren **max. 5 pro Woche**.
+  Häufig entstehen 3–4 Einheiten, bei geringem Aufwand sind auch 1–2 korrekt. Sie kollidieren **nicht** mit DHBW-Vorlesungen
   oder bereits geplanten Lernsessions.
+- Pro Fach werden maximal **2 × 2 h pro Tag** geplant; an freien Tagen sind fachübergreifend weiterhin
+  maximal **3 × 2 h** möglich.
+- Bei drei aufeinanderfolgenden Tagen mit jeweils zwei Einheiten desselben Fachs erscheint eine
+  kritische Empfehlung für einen Fach- oder Pausentag.
 - Die Phasen sind **chronologisch sinnvoll** verteilt (Grundlagen früh, Wiederholung spät).
 - Jede Einheit hat **konkrete Aufgaben** (im `tasks`-Feld des Termins sichtbar).
 - Mit **einem Klick** landen alle Einheiten im Kalender und sind dort normal bearbeitbar/löschbar.

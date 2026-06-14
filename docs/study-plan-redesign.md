@@ -159,11 +159,13 @@ Ein **Modal oder Slide-Over** öffnet sich bei „+ Neuer Lernplan" / „Bearbei
 
 | Constraint | Wert |
 |------------|------|
-| **Ziel-Häufigkeit** | 3–4 Lerneinheiten pro Woche je Thema |
+| **Orientierungsbereich** | häufig 3–4 Lerneinheiten pro Woche je Thema, abhängig vom berechneten Aufwand |
 | **Maximale Häufigkeit** | max. 5 Lerneinheiten pro Woche je Thema |
 | **Einheitsdauer** | 2 h pro Timeslot |
+| **Maximum je Fach und Tag** | max. 2 Lerneinheiten (= 4 h) |
+| **Globales Tagesmaximum** | an freien Tagen max. 3 Lerneinheiten (= 6 h), verteilt auf mindestens zwei Fächer |
 
-> Der Algorithmus verteilt die berechnete Gesamtstundenzahl so, dass pro Thema **bevorzugt 3–4 Lerneinheiten à 2 h pro Woche** eingeplant werden. Mehr als **5 Lerneinheiten pro Woche** sind nicht zulässig, um Überlastung zu vermeiden.
+> Der Algorithmus verteilt die berechnete Gesamtstundenzahl gleichmäßig über die verbleibenden Wochen. **3–4 Lerneinheiten sind ein Orientierungsbereich, kein Mindestwert**: Bei geringem Aufwand können auch 1–2 Einheiten pro Woche entstehen. Mehr als **5 Lerneinheiten pro Woche** sind nicht zulässig.
 
 ---
 

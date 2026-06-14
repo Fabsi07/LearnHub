@@ -101,7 +101,7 @@ export function SchedulePreviewModal({
 
         const scheduled = scheduleStudyPlan(
           result,
-          { deadline: new Date(plan.targetDate) },
+          { deadline: new Date(plan.targetDate), subject: plan.subject },
           [...localEvents, ...externalEvents],
         );
         setSchedule(scheduled);
