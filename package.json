@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "test": "node --test --experimental-strip-types tests/study-plan/taskValidation.test.mjs tests/study-plan/progress.test.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "setup": "node scripts/setup.mjs"
