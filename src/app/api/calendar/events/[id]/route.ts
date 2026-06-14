@@ -157,6 +157,15 @@ export async function PATCH(
     return NextResponse.json({ error: "Event nicht gefunden." }, { status: 404 });
   }
 
+  // Verschobene/umgeplante Lerneinheit: dueDate der verknuepften Aufgabe
+  // mitziehen, damit Kalender und Lernplan-Aufgabe konsistent bleiben.
+  if (startsAt && row.taskId) {
+    await prisma.task.update({
+      where: { id: row.taskId },
+      data: { dueDate: startsAt },
+    });
+  }
+
   const savedType = eventTypeLabel(row.type, row.typeLabel);
   if (savedColor) {
     const legacyDbType = TYPE_TO_DB[savedType];
