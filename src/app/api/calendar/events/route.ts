@@ -81,16 +81,25 @@ export async function GET() {
   });
 
   const deadlineEvents = plans.map((plan) => {
-    const iso = plan.targetDate.toISOString();
+    // Ganztaegiger Zieltermin: Ende exklusiv auf den Folgetag, damit
+    // eventOverlapsDay() (verlangt end > dayStart) den Termin am Zieltag in
+    // Monats-, Wochen- und Tagesansicht anzeigt.
+    const dayStart = new Date(plan.targetDate);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
     return {
       id: `plan-deadline-${plan.id}`,
       title: `${GOAL_LABEL[plan.goalType]}: ${plan.subject}`,
-      start: iso,
-      end: iso,
+      start: dayStart.toISOString(),
+      end: dayEnd.toISOString(),
       allDay: true,
       type: "Deadline",
       color: getEventColor("Deadline", "bg-brand-red"),
       source: "local" as const,
+      // Fach mitgeben, damit der Fachfilter greift und das Fach in der
+      // Detailansicht erscheint.
+      subject: plan.subject,
       important: true,
       readOnly: true,
       repeat: "none" as const,
