@@ -157,13 +157,18 @@ export async function PATCH(
     return NextResponse.json({ error: "Event nicht gefunden." }, { status: 404 });
   }
 
-  // Verschobene/umgeplante Lerneinheit: dueDate der verknuepften Aufgabe
-  // mitziehen, damit Kalender und Lernplan-Aufgabe konsistent bleiben.
-  if (startsAt && row.taskId) {
-    await prisma.task.update({
-      where: { id: row.taskId },
-      data: { dueDate: startsAt },
-    });
+  // Verschobene/umgeplante Lerneinheit: Faelligkeit (Startzeit) und Dauer der
+  // verknuepften Aufgabe mitziehen, damit Kalender und Lernplan-Aufgabe
+  // konsistent bleiben.
+  if (row.taskId && (startsAt || endsAt)) {
+    const taskData: { dueDate?: Date; estimatedMinutes?: number } = {};
+    if (startsAt) taskData.dueDate = startsAt;
+    if (startsAt && endsAt) {
+      taskData.estimatedMinutes = Math.round(
+        (endsAt.getTime() - startsAt.getTime()) / 60000,
+      );
+    }
+    await prisma.task.update({ where: { id: row.taskId }, data: taskData });
   }
 
   const savedType = eventTypeLabel(row.type, row.typeLabel);
