@@ -79,6 +79,8 @@ export function AlgorithmResultWidget({
           : data?.warnings?.[0] ?? "Keine offenen Aufgaben mussten verschoben werden.",
       );
       onReplanned?.();
+    } catch {
+      setActionMessage("Umplanung fehlgeschlagen.");
     } finally {
       setBusyAction(null);
     }
