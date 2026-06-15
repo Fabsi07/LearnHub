@@ -247,7 +247,7 @@ export function scheduleStudyPlan(
   const warnings: string[] = [];
   const now = options.now ?? new Date();
   const deadline = startOfDay(options.deadline);
-  // Startdatum: explizites startDate übernehmen; fehlt es, wird „heute" nur
+  // Startdatum: explizites startDate übernehmen; fehlt es, wird „heute“ nur
   // dann gewählt, wenn auf dem 30-Min-Raster noch mindestens ein 2-h-Slot ins
   // Tageszeitfenster passt – andernfalls auf morgen zurückfallen, um die
   // Kapazitäts- und Wochenberechnung nicht zu überschätzen.
