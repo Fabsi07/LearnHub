@@ -167,11 +167,18 @@ export function replanOpenTasks(input: ReplanTasksInput): ReplanTasksResult {
           changed: false,
         };
       }
+      const nextDueDate = new Date(replannedDate);
+      nextDueDate.setHours(
+        task.dueDate.getHours(),
+        task.dueDate.getMinutes(),
+        task.dueDate.getSeconds(),
+        task.dueDate.getMilliseconds(),
+      );
       return {
         id: task.id,
-        dueDate: new Date(replannedDate),
+        dueDate: nextDueDate,
         completed: false,
-        changed: replannedDate.getTime() !== task.dueDate.getTime(),
+        changed: nextDueDate.getTime() !== task.dueDate.getTime(),
       };
     }),
     warnings: [],
