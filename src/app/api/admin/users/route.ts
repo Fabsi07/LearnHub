@@ -18,14 +18,20 @@ const createUserSchema = z.object({
   role: z.enum(["USER", "ADMIN"]).default("USER"),
 });
 
-function forbidden() {
-  return NextResponse.json({ error: "Keine Admin-Berechtigung." }, { status: 403 });
+function unauthorized(status: "unauthenticated" | "forbidden") {
+  return NextResponse.json(
+    {
+      error:
+        status === "unauthenticated" ? "Nicht angemeldet." : "Keine Admin-Berechtigung.",
+    },
+    { status: status === "unauthenticated" ? 401 : 403 },
+  );
 }
 
 export async function GET() {
   const auth = await getAdminAuth();
   if (auth.status !== "ok") {
-    return forbidden();
+    return unauthorized(auth.status);
   }
 
   return NextResponse.json(await getAdminUsersPayload());
@@ -34,7 +40,7 @@ export async function GET() {
 export async function POST(request: Request) {
   const auth = await getAdminAuth();
   if (auth.status !== "ok") {
-    return forbidden();
+    return unauthorized(auth.status);
   }
 
   let body: unknown;
