@@ -13,21 +13,26 @@ const updateUserSchema = z.object({
   role: z.enum(["USER", "ADMIN"]),
 });
 
-function forbidden() {
-  return NextResponse.json({ error: "Keine Admin-Berechtigung." }, { status: 403 });
+function unauthorized(status: "unauthenticated" | "forbidden") {
+  return NextResponse.json(
+    {
+      error:
+        status === "unauthenticated" ? "Nicht angemeldet." : "Keine Admin-Berechtigung.",
+    },
+    { status: status === "unauthenticated" ? 401 : 403 },
+  );
 }
 
 export async function PATCH(
   request: Request,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: { id: string } },
 ) {
   const auth = await getAdminAuth();
   if (auth.status !== "ok") {
-    return forbidden();
+    return unauthorized(auth.status);
   }
 
-  const { id } = await params;
-
+  const { id } = params;
   let body: unknown;
   try {
     body = await request.json();
