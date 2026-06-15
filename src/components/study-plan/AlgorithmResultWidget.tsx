@@ -13,6 +13,7 @@ interface AlgorithmResultWidgetProps {
   plan: StudyPlanDTO;
   /** Nach erfolgreicher Neuberechnung aufgerufen (Caller lädt neu). */
   onRecalculated: () => void;
+  onReplanned?: () => void;
   /** Öffnet die Kalender-Planung (Vorschau-Modal). */
   onSchedule?: () => void;
 }
@@ -20,9 +21,11 @@ interface AlgorithmResultWidgetProps {
 export function AlgorithmResultWidget({
   plan,
   onRecalculated,
+  onReplanned,
   onSchedule,
 }: AlgorithmResultWidgetProps) {
-  const [busy, setBusy] = useState(false);
+  const [busyAction, setBusyAction] = useState<"calculate" | "replan" | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
 
   const hasResult = plan.totalHours != null && plan.planType != null;
   const hasInputs =
@@ -33,7 +36,8 @@ export function AlgorithmResultWidget({
   const isKritisch = plan.planType === "kritisch";
   const maxSubjectHoursPerDay = MAX_SESSIONS_PER_SUBJECT_PER_DAY * SLOT_HOURS;
   async function recalculate() {
-    setBusy(true);
+    setBusyAction("calculate");
+    setActionMessage(null);
     try {
       // PATCH ohne Änderungen → Server rechnet mit gespeicherten Eingaben
       // und dem aktuellen Datum neu (Tage bis Deadline ändern sich täglich).
@@ -42,9 +46,41 @@ export function AlgorithmResultWidget({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
       });
-      if (res.ok) onRecalculated();
+      if (res.ok) {
+        onRecalculated();
+      } else {
+        const data = (await res.json().catch(() => null)) as { error?: string } | null;
+        setActionMessage(data?.error ?? "Neuberechnung fehlgeschlagen.");
+      }
     } finally {
-      setBusy(false);
+      setBusyAction(null);
+    }
+  }
+
+  async function replan() {
+    setBusyAction("replan");
+    setActionMessage(null);
+    try {
+      const res = await fetch(`/api/study-plan/${plan.id}/replan`, {
+        method: "POST",
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { error?: string; updatedTaskCount?: number; warnings?: string[] }
+        | null;
+      if (!res.ok) {
+        setActionMessage(data?.error ?? "Umplanung fehlgeschlagen.");
+        return;
+      }
+
+      const count = data?.updatedTaskCount ?? 0;
+      setActionMessage(
+        count > 0
+          ? `${count} offene Aufgaben wurden neu verteilt.`
+          : data?.warnings?.[0] ?? "Keine offenen Aufgaben mussten verschoben werden.",
+      );
+      onReplanned?.();
+    } finally {
+      setBusyAction(null);
     }
   }
 
@@ -58,10 +94,15 @@ export function AlgorithmResultWidget({
           <button
             type="button"
             onClick={() => void recalculate()}
-            disabled={busy}
+            disabled={busyAction !== null}
             className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 transition-colors disabled:opacity-50"
           >
-            <RefreshCw className={cn("w-3.5 h-3.5", busy && "animate-spin")} />
+            <RefreshCw
+              className={cn(
+                "w-3.5 h-3.5",
+                busyAction === "calculate" && "animate-spin",
+              )}
+            />
             Neu berechnen
           </button>
         )}
@@ -134,6 +175,29 @@ export function AlgorithmResultWidget({
               <CalendarPlus className="w-4 h-4" />
               In Kalender eintragen
             </button>
+          )}
+
+          {onReplanned && (
+            <button
+              type="button"
+              onClick={() => void replan()}
+              disabled={busyAction !== null}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 disabled:opacity-50"
+            >
+              <RefreshCw
+                className={cn(
+                  "w-4 h-4",
+                  busyAction === "replan" && "animate-spin",
+                )}
+              />
+              Offene Aufgaben neu verteilen
+            </button>
+          )}
+
+          {actionMessage && (
+            <p className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600">
+              {actionMessage}
+            </p>
           )}
         </>
       ) : (

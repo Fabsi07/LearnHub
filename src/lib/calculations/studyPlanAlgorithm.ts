@@ -8,6 +8,8 @@ export type PlanType = "normal" | "kritisch";
 export const CRITICAL_STUDY_HOURS_PER_DAY = 2;
 
 export interface AlgorithmInput {
+  /** Bezugsdatum der Berechnung; macht die Funktion deterministisch. */
+  referenceDate: Date;
   /** Datum der Klausur */
   deadlineDate: Date;
   /** Schwierigkeit der Klausur: 1 (leicht) – 5 (schwer) */
@@ -50,6 +52,19 @@ export interface Phase {
   description: string;
 }
 
+export class AlgorithmInputError extends Error {
+  readonly field: keyof AlgorithmInput;
+
+  constructor(
+    field: keyof AlgorithmInput,
+    message: string,
+  ) {
+    super(message);
+    this.name = "AlgorithmInputError";
+    this.field = field;
+  }
+}
+
 // ─── Faktoren ────────────────────────────────────────────────────────────────
 
 function getDeadlineFactor(daysUntilDeadline: number): number {
@@ -78,9 +93,57 @@ function getVolumeFactor(pages: number): number {
 }
 
 function getCreditFactor(credits: number): number {
-  const value = Number.isFinite(credits) ? credits : 1;
-  const clamped = Math.min(Math.max(value, 1), 10);
-  return clamped * 0.2;
+  return credits * 0.2;
+}
+
+function assertValidDate(
+  value: Date,
+  field: "referenceDate" | "deadlineDate",
+): void {
+  if (!(value instanceof Date) || !Number.isFinite(value.getTime())) {
+    throw new AlgorithmInputError(field, `${field} muss ein gültiges Datum sein.`);
+  }
+}
+
+function assertIntegerInRange(
+  value: number,
+  field: "difficulty" | "priorKnowledge" | "credits",
+  min: number,
+  max: number,
+): void {
+  if (!Number.isInteger(value) || value < min || value > max) {
+    throw new AlgorithmInputError(
+      field,
+      `${field} muss eine ganze Zahl zwischen ${min} und ${max} sein.`,
+    );
+  }
+}
+
+function calendarDayNumber(value: Date): number {
+  return Date.UTC(value.getFullYear(), value.getMonth(), value.getDate());
+}
+
+function validateInput(input: AlgorithmInput): void {
+  if (!input || typeof input !== "object") {
+    throw new AlgorithmInputError("deadlineDate", "Algorithmus-Eingaben fehlen.");
+  }
+
+  assertValidDate(input.referenceDate, "referenceDate");
+  assertValidDate(input.deadlineDate, "deadlineDate");
+  assertIntegerInRange(input.difficulty, "difficulty", 1, 5);
+  assertIntegerInRange(input.priorKnowledge, "priorKnowledge", 1, 5);
+  assertIntegerInRange(input.credits, "credits", 1, 10);
+
+  if (!Number.isInteger(input.pages) || input.pages <= 0) {
+    throw new AlgorithmInputError("pages", "pages muss eine positive ganze Zahl sein.");
+  }
+
+  if (calendarDayNumber(input.deadlineDate) <= calendarDayNumber(input.referenceDate)) {
+    throw new AlgorithmInputError(
+      "deadlineDate",
+      "deadlineDate muss nach referenceDate liegen.",
+    );
+  }
 }
 
 // ─── Phasen ──────────────────────────────────────────────────────────────────
@@ -146,14 +209,11 @@ function buildKritischPhases(totalHours: number): Phase[] {
 // ─── Hauptfunktion ────────────────────────────────────────────────────────────
 
 export function calculateStudyPlan(input: AlgorithmInput): AlgorithmResult {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const deadline = new Date(input.deadlineDate);
-  deadline.setHours(0, 0, 0, 0);
+  validateInput(input);
 
-  const diffMs = deadline.getTime() - today.getTime();
-  const diffDays = Number.isFinite(diffMs) ? diffMs / (1000 * 60 * 60 * 24) : 0;
-  const daysUntilDeadline = Math.max(1, Math.ceil(diffDays));
+  const diffMs =
+    calendarDayNumber(input.deadlineDate) - calendarDayNumber(input.referenceDate);
+  const daysUntilDeadline = diffMs / (1000 * 60 * 60 * 24);
 
   const D = getDeadlineFactor(daysUntilDeadline);
   const S = getDifficultyFactor(input.difficulty);

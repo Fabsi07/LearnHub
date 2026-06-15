@@ -154,6 +154,7 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
         <AlgorithmResultWidget
           plan={plan}
           onRecalculated={() => void refresh()}
+          onReplanned={() => void refresh()}
           onSchedule={() => setScheduleOpen(true)}
         />
       </div>

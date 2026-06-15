@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import { calculateStudyPlan } from "@/lib/calculations/studyPlanAlgorithm";
+import {
+  AlgorithmInputError,
+  calculateStudyPlan,
+} from "@/lib/calculations/studyPlanAlgorithm";
 import {
   isValidGoalType,
   serializeStudyPlan,
@@ -100,13 +103,22 @@ export async function PATCH(
 
   // Ergebnis neu berechnen, wenn alle Eingaben vorhanden sind – sonst zurücksetzen.
   if (diff && know && pgs && crd) {
-    const r = calculateStudyPlan({
-      deadlineDate: target,
-      difficulty: diff as 1 | 2 | 3 | 4 | 5,
-      priorKnowledge: know as 1 | 2 | 3 | 4 | 5,
-      pages: pgs,
-      credits: crd,
-    });
+    let r: ReturnType<typeof calculateStudyPlan>;
+    try {
+      r = calculateStudyPlan({
+        referenceDate: new Date(),
+        deadlineDate: target,
+        difficulty: diff as 1 | 2 | 3 | 4 | 5,
+        priorKnowledge: know as 1 | 2 | 3 | 4 | 5,
+        pages: pgs,
+        credits: crd,
+      });
+    } catch (error) {
+      if (error instanceof AlgorithmInputError) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      throw error;
+    }
     data.totalHours = r.totalHours;
     data.hoursPerDay = r.hoursPerDay;
     data.planType = r.planType;
