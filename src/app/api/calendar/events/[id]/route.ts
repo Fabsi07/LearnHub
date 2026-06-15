@@ -162,12 +162,15 @@ export async function PATCH(
   // konsistent bleiben.
   if (row.taskId && (startsAt || endsAt)) {
     const taskData: { dueDate?: Date; estimatedMinutes?: number } = {};
-    if (startsAt) taskData.dueDate = startsAt;
-    if (startsAt && endsAt) {
-      taskData.estimatedMinutes = Math.round(
-        (endsAt.getTime() - startsAt.getTime()) / 60000,
-      );
-    }
+
+    // Fälligkeit nur mitziehen, wenn die Startzeit im Request geändert wurde.
+    if (startsAt) taskData.dueDate = row.startsAt;
+
+    // Dauer aktualisieren, sobald Start oder Ende geändert wurde.
+    taskData.estimatedMinutes = Math.round(
+      (row.endsAt.getTime() - row.startsAt.getTime()) / 60000,
+    );
+
     await prisma.task.update({ where: { id: row.taskId }, data: taskData });
   }
 
