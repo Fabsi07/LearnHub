@@ -39,7 +39,10 @@ export async function POST(request: Request) {
   const normalizedEmail = email.toLowerCase();
   const adminCredentials = getAdminCredentials();
 
-  if (normalizedEmail === adminCredentials.email) {
+  if (
+    normalizedEmail === adminCredentials.email &&
+    password === adminCredentials.password
+  ) {
     await ensureFixedAdminAccount();
   }
 
