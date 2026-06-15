@@ -147,26 +147,33 @@ export async function PATCH(
       data,
     });
 
-    const fetched = await tx.calendarEvent.findUnique({
-      where: { id },
-      include: { task: { select: { completed: true } } },
-    });
+    const fetched =
+      updated.count === 0
+        ? null
+        : await tx.calendarEvent.findFirst({
+            where: { id, ownerId: session.userId, source: "LOCAL" },
+            include: { task: { select: { completed: true } } },
+          });
 
-    // Verschobene/umgeplante Lerneinheit: Faelligkeit (Startzeit) und Dauer der
-    // verknuepften Aufgabe mitziehen, damit Kalender und Lernplan-Aufgabe
+    // Verschobene/umgeplante Lerneinheit: Fälligkeit (Startzeit) und Dauer der
+    // verknüpften Aufgabe mitziehen, damit Kalender und Lernplan-Aufgabe
     // konsistent bleiben.
-    if (fetched?.taskId && (startsAt || endsAt)) {
+    if (updated.count > 0 && fetched?.taskId && (startsAt || endsAt)) {
       const taskData: { dueDate?: Date; estimatedMinutes?: number } = {};
 
       // Fälligkeit nur mitziehen, wenn die Startzeit im Request geändert wurde.
       if (startsAt) taskData.dueDate = fetched.startsAt;
 
       // Dauer aktualisieren, sobald Start oder Ende geändert wurde.
-      taskData.estimatedMinutes = Math.round(
+      const minutes = Math.round(
         (fetched.endsAt.getTime() - fetched.startsAt.getTime()) / 60000,
       );
+      taskData.estimatedMinutes = Math.max(1, minutes);
 
-      await tx.task.update({ where: { id: fetched.taskId }, data: taskData });
+      await tx.task.updateMany({
+        where: { id: fetched.taskId, studyPlan: { ownerId: session.userId } },
+        data: taskData,
+      });
     }
 
     return { count: updated.count, row: fetched };
