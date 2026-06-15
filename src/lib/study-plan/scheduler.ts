@@ -5,13 +5,19 @@
 // Plan (docs/Algorithmus/Ausgabeformat.md: "Die Ausgabe soll deterministisch
 // sein"). Logik und Konstanten: docs/lernplan-umsetzung.md §6.
 
-import type { CalEvent } from "@/components/calendar/events";
-import {
-  DAY_START_HOUR,
-  eventOverlapsDay,
-  isLernsessionEvent,
-} from "@/components/calendar/events";
 import type { AlgorithmResult } from "@/lib/calculations/studyPlanAlgorithm";
+
+const DAY_START_HOUR = 7;
+
+export interface SchedulingEvent {
+  start: Date;
+  end: Date;
+  source?: "local" | "dhbw";
+  allDay?: boolean;
+  type?: string;
+  subject?: string;
+  studyPlanId?: string;
+}
 
 /** Dauer einer Lerneinheit in Stunden. */
 export const SLOT_HOURS = 2;
@@ -54,7 +60,7 @@ export interface ScheduleOptions {
   /** Erster planbarer Tag (Default: heute, falls noch ein 2-h-Slot passt, sonst morgen). */
   startDate?: Date;
   /** Für deterministische Planung (z. B. Tests/Preview). Default: aktuelle Zeit. */
-  now?: Date;
+  now: Date;
   /** Erlaubte Wochentage, 0 = So … 6 = Sa (Default: Mo–So, alle Tage). */
   allowedWeekdays?: number[];
   /** Bevorzugte Startstunde der Einheiten (Default: 16). */
@@ -165,8 +171,21 @@ function isWeekend(d: Date): boolean {
 }
 
 /** Externe Hochschul-Termine (DHBW/ICS) – erkennbar an `source: "dhbw"`. */
-function isHochschulEvent(e: CalEvent): boolean {
+function isHochschulEvent(e: SchedulingEvent): boolean {
   return e.source === "dhbw";
+}
+
+function isLernsessionEvent(event: SchedulingEvent): boolean {
+  return (
+    !!event.studyPlanId ||
+    event.type?.trim().toLocaleLowerCase("de-DE") === "lernsession"
+  );
+}
+
+function eventOverlapsDay(event: SchedulingEvent, day: Date): boolean {
+  const dayStart = startOfDay(day).getTime();
+  const dayEnd = addDays(startOfDay(day), 1).getTime();
+  return event.start.getTime() < dayEnd && event.end.getTime() > dayStart;
 }
 
 /** Zahl der zeitgebundenen Blocker, die in `day` hineinreichen (Tages-Auslastung). */
@@ -258,10 +277,32 @@ function distributeByPercentage(percentages: number[], total: number): number[] 
 export function scheduleStudyPlan(
   result: AlgorithmResult,
   options: ScheduleOptions,
-  existingEvents: CalEvent[],
+  existingEvents: readonly SchedulingEvent[],
 ): ScheduleResult {
   const warnings: string[] = [];
-  const now = options.now ?? new Date();
+  const now = new Date(options.now);
+  if (!Number.isFinite(now.getTime())) {
+    throw new TypeError("options.now muss ein gültiges Datum sein.");
+  }
+  if (!Number.isFinite(options.deadline.getTime())) {
+    throw new TypeError("options.deadline muss ein gültiges Datum sein.");
+  }
+  if (!Number.isFinite(result.totalHours) || result.totalHours <= 0) {
+    throw new TypeError("result.totalHours muss größer als 0 sein.");
+  }
+  if (!Array.isArray(result.phases) || result.phases.length === 0) {
+    throw new TypeError("result.phases darf nicht leer sein.");
+  }
+  if (
+    existingEvents.some(
+      (event) =>
+        !Number.isFinite(event.start.getTime()) ||
+        !Number.isFinite(event.end.getTime()) ||
+        event.end.getTime() <= event.start.getTime(),
+    )
+  ) {
+    throw new TypeError("existingEvents enthält einen ungültigen Termin.");
+  }
   const deadline = startOfDay(options.deadline);
   const latestEndHour = options.latestEndHour ?? LATEST_END_HOUR;
   // Startdatum: explizites startDate übernehmen; fehlt es, wird „heute“ nur
@@ -524,7 +565,7 @@ export function scheduleStudyPlan(
       end: slot.end,
       phaseName: phase.name,
       shortPhase: short,
-      tasks: PHASE_TASKS[short] ?? FALLBACK_TASKS,
+      tasks: [...(PHASE_TASKS[short] ?? FALLBACK_TASKS)],
     });
     usedInPhase++;
   }
@@ -554,7 +595,7 @@ export function scheduleStudyPlan(
  */
 export function analyzeWorkload(
   planned: { start: Date; end: Date }[],
-  existingEvents: CalEvent[],
+  existingEvents: readonly SchedulingEvent[],
   subject: string,
 ): string[] {
   const notes: string[] = [];

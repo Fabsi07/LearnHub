@@ -91,7 +91,9 @@ export function SchedulePreviewModal({
           localEvents.filter((e) => e.studyPlanId === plan.id).length,
         );
 
+        const referenceDate = new Date();
         const result = calculateStudyPlan({
+          referenceDate,
           deadlineDate: new Date(plan.targetDate),
           difficulty: plan.difficulty as 1 | 2 | 3 | 4 | 5,
           priorKnowledge: plan.priorKnowledge as 1 | 2 | 3 | 4 | 5,
@@ -101,7 +103,11 @@ export function SchedulePreviewModal({
 
         const scheduled = scheduleStudyPlan(
           result,
-          { deadline: new Date(plan.targetDate), subject: plan.subject },
+          {
+            deadline: new Date(plan.targetDate),
+            now: referenceDate,
+            subject: plan.subject,
+          },
           [...localEvents, ...externalEvents],
         );
         setSchedule(scheduled);
@@ -109,9 +115,13 @@ export function SchedulePreviewModal({
         setCriticalNotes(
           analyzeWorkload(scheduled.sessions, localEvents, plan.subject),
         );
-      } catch {
+      } catch (error) {
         if (!cancelled) {
-          setLoadError("Bestehende Termine konnten nicht geladen werden.");
+          setLoadError(
+            error instanceof Error
+              ? error.message
+              : "Bestehende Termine konnten nicht geladen werden.",
+          );
         }
       } finally {
         if (!cancelled) setLoading(false);
