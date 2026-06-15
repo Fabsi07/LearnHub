@@ -247,21 +247,23 @@ export function scheduleStudyPlan(
   const warnings: string[] = [];
   const now = options.now ?? new Date();
   const deadline = startOfDay(options.deadline);
+  const latestEndHour = options.latestEndHour ?? LATEST_END_HOUR;
   // Startdatum: explizites startDate übernehmen; fehlt es, wird „heute“ nur
   // dann gewählt, wenn auf dem 30-Min-Raster noch mindestens ein 2-h-Slot ins
   // Tageszeitfenster passt – andernfalls auf morgen zurückfallen, um die
   // Kapazitäts- und Wochenberechnung nicht zu überschätzen.
   const firstDay = (() => {
     if (options.startDate !== undefined) return startOfDay(options.startDate);
-    const effectiveLatestEnd = (options.latestEndHour ?? LATEST_END_HOUR) * 60;
-    const nowMinutes = now.getHours() * 60 + now.getMinutes();
-    const nextGridStart = Math.ceil(nowMinutes / 30) * 30;
-    if (nextGridStart + SLOT_HOURS * 60 <= effectiveLatestEnd) return startOfDay(now);
+    const nowSinceDayStartMs =
+      (((now.getHours() * 60 + now.getMinutes()) * 60 + now.getSeconds()) * 1000 +
+        now.getMilliseconds());
+    const nextGridStartMs = Math.ceil(nowSinceDayStartMs / (30 * 60 * 1000)) * (30 * 60 * 1000);
+    const effectiveLatestEndMs = latestEndHour * 60 * 60 * 1000;
+    if (nextGridStartMs + SLOT_HOURS * 60 * 60 * 1000 <= effectiveLatestEndMs) return startOfDay(now);
     return startOfDay(addDays(now, 1));
   })();
   const allowedWeekdays = options.allowedWeekdays ?? [0, 1, 2, 3, 4, 5, 6]; // Mo–So
   const preferredStartHour = options.preferredStartHour ?? PREFERRED_START_HOUR;
-  const latestEndHour = options.latestEndHour ?? LATEST_END_HOUR;
   const maxPerDay = options.maxSessionsPerDay ?? MAX_SESSIONS_PER_DAY;
   // Hochschul-Blöcke pro Tag (für Tageslimit + frühere Startzeit an freien Tagen)
   const uniBlockCountCache = new Map<string, number>();
