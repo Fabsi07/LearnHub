@@ -51,27 +51,8 @@ export async function ensureFixedAdminAccount() {
     });
   }
 
-  const hasConfiguredPassword = await verifyPassword(
-    credentials.password,
-    existing.passwordHash,
-  );
-  const data: { passwordHash?: string; role?: UserRole } = {};
-
-  if (!hasConfiguredPassword) {
-    data.passwordHash = await hashPassword(credentials.password);
-  }
-  if (existing.role !== "ADMIN") {
-    data.role = "ADMIN";
-  }
-
-  if (Object.keys(data).length > 0) {
-    await prisma.user.update({
-      where: { id: existing.id },
-      data,
-      select: { id: true },
-    });
-  }
-
+  // If the fixed admin already exists, don't mutate password/role based on an unauthenticated request.
+  // Account changes should happen via authenticated admin flows.
   return { id: existing.id };
 }
 
