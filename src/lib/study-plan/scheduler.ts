@@ -247,9 +247,9 @@ export function scheduleStudyPlan(
   const warnings: string[] = [];
   const now = options.now ?? new Date();
   const deadline = startOfDay(options.deadline);
-  // Auch der heutige Tag ist planbar: findFreeSlot filtert ueber notBefore=now
+  // Auch der heutige Tag ist planbar: findFreeSlot filtert über notBefore=now
   // ohnehin bereits vergangene Uhrzeiten heraus, sodass z. B. am Vormittag noch
-  // ein Slot fuer den Nachmittag belegt werden kann.
+  // ein Slot für den Nachmittag belegt werden kann.
   const firstDay = startOfDay(options.startDate ?? now);
   const allowedWeekdays = options.allowedWeekdays ?? [0, 1, 2, 3, 4, 5, 6]; // Mo–So
   const preferredStartHour = options.preferredStartHour ?? PREFERRED_START_HOUR;
