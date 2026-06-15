@@ -84,7 +84,7 @@ export async function DELETE(
 ) {
   const auth = await getAdminAuth();
   if (auth.status !== "ok") {
-    return forbidden();
+    return unauthorized(auth.status);
   }
 
   const { id } = await params;
