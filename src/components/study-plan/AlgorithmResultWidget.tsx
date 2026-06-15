@@ -52,6 +52,8 @@ export function AlgorithmResultWidget({
         const data = (await res.json().catch(() => null)) as { error?: string } | null;
         setActionMessage(data?.error ?? "Neuberechnung fehlgeschlagen.");
       }
+    } catch {
+      setActionMessage("Neuberechnung fehlgeschlagen.");
     } finally {
       setBusyAction(null);
     }
