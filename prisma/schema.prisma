@@ -162,7 +162,10 @@ model CalendarEvent {
   // Bei Task-Löschung bleibt der Kalendereintrag erhalten und verliert nur
   // die Verknüpfung (PRD §8.1).
   task      Task?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  studyPlan StudyPlan? @relation(fields: [studyPlanId], references: [id], onDelete: SetNull)
+  // Beim Löschen eines Lernplans werden die generierten Lerneinheiten im
+  // Kalender mitgelöscht – sonst bleiben verwaiste Termine ohne Plan-Bezug
+  // zurück (analog zu Task.studyPlan, das ebenfalls per Cascade am Plan hängt).
+  studyPlan StudyPlan? @relation(fields: [studyPlanId], references: [id], onDelete: Cascade)
 
   @@index([ownerId])
   @@index([startsAt])
