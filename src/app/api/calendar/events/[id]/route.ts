@@ -141,37 +141,42 @@ export async function PATCH(
     return NextResponse.json({ error: "Keine Änderungen übergeben." }, { status: 400 });
   }
 
-  const updated = await prisma.calendarEvent.updateMany({
-    where: { id, ownerId: session.userId, source: "LOCAL" },
-    data,
+  const { count, row } = await prisma.$transaction(async (tx) => {
+    const updated = await tx.calendarEvent.updateMany({
+      where: { id, ownerId: session.userId, source: "LOCAL" },
+      data,
+    });
+
+    const fetched = await tx.calendarEvent.findUnique({
+      where: { id },
+      include: { task: { select: { completed: true } } },
+    });
+
+    // Verschobene/umgeplante Lerneinheit: Faelligkeit (Startzeit) und Dauer der
+    // verknuepften Aufgabe mitziehen, damit Kalender und Lernplan-Aufgabe
+    // konsistent bleiben.
+    if (fetched?.taskId && (startsAt || endsAt)) {
+      const taskData: { dueDate?: Date; estimatedMinutes?: number } = {};
+
+      // Fälligkeit nur mitziehen, wenn die Startzeit im Request geändert wurde.
+      if (startsAt) taskData.dueDate = fetched.startsAt;
+
+      // Dauer aktualisieren, sobald Start oder Ende geändert wurde.
+      taskData.estimatedMinutes = Math.round(
+        (fetched.endsAt.getTime() - fetched.startsAt.getTime()) / 60000,
+      );
+
+      await tx.task.update({ where: { id: fetched.taskId }, data: taskData });
+    }
+
+    return { count: updated.count, row: fetched };
   });
-  if (updated.count === 0) {
+
+  if (count === 0) {
     return NextResponse.json({ error: "Event nicht gefunden." }, { status: 404 });
   }
-
-  const row = await prisma.calendarEvent.findUnique({
-    where: { id },
-    include: { task: { select: { completed: true } } },
-  });
   if (!row) {
     return NextResponse.json({ error: "Event nicht gefunden." }, { status: 404 });
-  }
-
-  // Verschobene/umgeplante Lerneinheit: Faelligkeit (Startzeit) und Dauer der
-  // verknuepften Aufgabe mitziehen, damit Kalender und Lernplan-Aufgabe
-  // konsistent bleiben.
-  if (row.taskId && (startsAt || endsAt)) {
-    const taskData: { dueDate?: Date; estimatedMinutes?: number } = {};
-
-    // Fälligkeit nur mitziehen, wenn die Startzeit im Request geändert wurde.
-    if (startsAt) taskData.dueDate = row.startsAt;
-
-    // Dauer aktualisieren, sobald Start oder Ende geändert wurde.
-    taskData.estimatedMinutes = Math.round(
-      (row.endsAt.getTime() - row.startsAt.getTime()) / 60000,
-    );
-
-    await prisma.task.update({ where: { id: row.taskId }, data: taskData });
   }
 
   const savedType = eventTypeLabel(row.type, row.typeLabel);
