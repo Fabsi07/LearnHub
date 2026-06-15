@@ -51,11 +51,11 @@ export const HOCHSCHUL_BUFFER_MIN = 30;
 export interface ScheduleOptions {
   /** Klausur-/Zieldatum; am Tag selbst wird nicht mehr geplant. */
   deadline: Date;
-  /** Erster planbarer Tag (Default: morgen). */
+  /** Erster planbarer Tag (Default: heute, falls noch ein 2-h-Slot passt, sonst morgen). */
   startDate?: Date;
   /** Für deterministische Planung (z. B. Tests/Preview). Default: aktuelle Zeit. */
   now?: Date;
-  /** Erlaubte Wochentage, 0 = So … 6 = Sa (Default: Mo–Sa, Entscheidung 8.1). */
+  /** Erlaubte Wochentage, 0 = So … 6 = Sa (Default: Mo–So, alle Tage). */
   allowedWeekdays?: number[];
   /** Bevorzugte Startstunde der Einheiten (Default: 16). */
   preferredStartHour?: number;
@@ -263,10 +263,23 @@ export function scheduleStudyPlan(
   const warnings: string[] = [];
   const now = options.now ?? new Date();
   const deadline = startOfDay(options.deadline);
-  const firstDay = startOfDay(options.startDate ?? addDays(now, 1));
-  const allowedWeekdays = options.allowedWeekdays ?? [1, 2, 3, 4, 5, 6]; // Mo–Sa
-  const preferredStartHour = options.preferredStartHour ?? PREFERRED_START_HOUR;
   const latestEndHour = options.latestEndHour ?? LATEST_END_HOUR;
+  // Startdatum: explizites startDate übernehmen; fehlt es, wird „heute“ nur
+  // dann gewählt, wenn auf dem 30-Min-Raster noch mindestens ein 2-h-Slot ins
+  // Tageszeitfenster passt – andernfalls auf morgen zurückfallen, um die
+  // Kapazitäts- und Wochenberechnung nicht zu überschätzen.
+  const firstDay = (() => {
+    if (options.startDate !== undefined) return startOfDay(options.startDate);
+    const nowSinceDayStartMs =
+      (((now.getHours() * 60 + now.getMinutes()) * 60 + now.getSeconds()) * 1000 +
+        now.getMilliseconds());
+    const nextGridStartMs = Math.ceil(nowSinceDayStartMs / (30 * 60 * 1000)) * (30 * 60 * 1000);
+    const effectiveLatestEndMs = latestEndHour * 60 * 60 * 1000;
+    if (nextGridStartMs + SLOT_HOURS * 60 * 60 * 1000 <= effectiveLatestEndMs) return startOfDay(now);
+    return startOfDay(addDays(now, 1));
+  })();
+  const allowedWeekdays = options.allowedWeekdays ?? [0, 1, 2, 3, 4, 5, 6]; // Mo–So
+  const preferredStartHour = options.preferredStartHour ?? PREFERRED_START_HOUR;
   const maxPerDay = options.maxSessionsPerDay ?? MAX_SESSIONS_PER_DAY;
   const maxPerSubjectDay =
     options.maxSessionsPerSubjectPerDay ?? MAX_SESSIONS_PER_SUBJECT_PER_DAY;
