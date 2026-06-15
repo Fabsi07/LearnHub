@@ -76,7 +76,7 @@ Anschliessend ist die App unter [http://localhost:3000](http://localhost:3000) e
 
 ### Admin-Zugang
 
-Der feste Admin-Account wird beim ersten Login automatisch angelegt. Die Defaults stehen in `.env.example` und koennen lokal ueber `ADMIN_EMAIL`, `ADMIN_PASSWORD` und `ADMIN_DISPLAY_NAME` ueberschrieben werden.
+Der feste Admin-Account wird beim ersten Login automatisch angelegt. Die Defaults stehen in `.env.example` und koennen lokal ueber `ADMIN_EMAIL`, `ADMIN_PASSWORD` und `ADMIN_DISPLAY_NAME` ueberschrieben werden (wichtig: in produktiven Umgebungen muessen diese Werte gesetzt werden; die Defaults sind unsicher).
 
 | Feld | Default |
 | --- | --- |
