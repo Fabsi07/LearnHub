@@ -62,15 +62,11 @@ export async function POST(
       const existingTask = tasksById.get(replannedTask.id);
       if (!existingTask || existingTask.completed) continue;
 
-      await transaction.task.update({
-        where: { id: existingTask.id },
-        data: { dueDate: replannedTask.dueDate },
-      });
-
       if (existingTask.calendarEvent) {
         const duration =
           existingTask.calendarEvent.endsAt.getTime() -
           existingTask.calendarEvent.startsAt.getTime();
+
         const startsAt = new Date(replannedTask.dueDate);
         startsAt.setHours(
           existingTask.calendarEvent.startsAt.getHours(),
@@ -79,12 +75,22 @@ export async function POST(
           existingTask.calendarEvent.startsAt.getMilliseconds(),
         );
 
+        await transaction.task.update({
+          where: { id: existingTask.id },
+          data: { dueDate: startsAt },
+        });
+
         await transaction.calendarEvent.update({
           where: { id: existingTask.calendarEvent.id },
           data: {
             startsAt,
             endsAt: new Date(startsAt.getTime() + duration),
           },
+        });
+      } else {
+        await transaction.task.update({
+          where: { id: existingTask.id },
+          data: { dueDate: replannedTask.dueDate },
         });
       }
     }
