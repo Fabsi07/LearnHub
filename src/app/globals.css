@@ -150,4 +150,28 @@
   .dark .bg-white {
     background-color: var(--card);
   }
+
+  .admin-role-select {
+    color-scheme: light;
+    background-color: white;
+    color: oklch(0.145 0 0);
+  }
+
+  .admin-role-select-option,
+  .admin-role-select option {
+    background-color: white;
+    color: oklch(0.145 0 0);
+  }
+
+  .dark .admin-role-select {
+    color-scheme: dark;
+    background-color: oklch(0.24 0.006 250);
+    color: oklch(0.985 0 0);
+  }
+
+  .dark .admin-role-select-option,
+  .dark .admin-role-select option {
+    background-color: oklch(0.24 0.006 250);
+    color: oklch(0.985 0 0);
+  }
 }

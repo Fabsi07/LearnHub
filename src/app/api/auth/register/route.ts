@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { isFixedAdminEmail } from "@/lib/auth/admin";
 import { hashPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 
@@ -39,6 +40,13 @@ export async function POST(request: Request) {
   const { email, displayName, password, rememberMe } = parsed.data;
   const normalizedEmail = email.toLowerCase();
 
+  if (isFixedAdminEmail(normalizedEmail)) {
+    return NextResponse.json(
+      { error: "Diese E-Mail-Adresse ist fuer den Admin-Account reserviert." },
+      { status: 409 },
+    );
+  }
+
   const existing = await prisma.user.findUnique({
     where: { email: normalizedEmail },
   });
@@ -60,7 +68,7 @@ export async function POST(request: Request) {
       },
     });
 
-    await createSession(user.id, rememberMe);
+    await createSession(user.id, rememberMe, user.role);
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (err) {
