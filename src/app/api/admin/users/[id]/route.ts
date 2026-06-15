@@ -25,14 +25,14 @@ function unauthorized(status: "unauthenticated" | "forbidden") {
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const auth = await getAdminAuth();
   if (auth.status !== "ok") {
     return unauthorized(auth.status);
   }
 
-  const { id } = params;
+  const { id } = await params;
   let body: unknown;
   try {
     body = await request.json();
