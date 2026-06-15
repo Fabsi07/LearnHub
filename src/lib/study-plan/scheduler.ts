@@ -47,11 +47,11 @@ export const HOCHSCHUL_BUFFER_MIN = 30;
 export interface ScheduleOptions {
   /** Klausur-/Zieldatum; am Tag selbst wird nicht mehr geplant. */
   deadline: Date;
-  /** Erster planbarer Tag (Default: morgen). */
+  /** Erster planbarer Tag (Default: heute). */
   startDate?: Date;
   /** Für deterministische Planung (z. B. Tests/Preview). Default: aktuelle Zeit. */
   now?: Date;
-  /** Erlaubte Wochentage, 0 = So … 6 = Sa (Default: Mo–Sa, Entscheidung 8.1). */
+  /** Erlaubte Wochentage, 0 = So … 6 = Sa (Default: Mo–So, alle Tage). */
   allowedWeekdays?: number[];
   /** Bevorzugte Startstunde der Einheiten (Default: 16). */
   preferredStartHour?: number;
