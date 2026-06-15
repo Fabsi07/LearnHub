@@ -46,10 +46,7 @@ export function middleware(request: NextRequest) {
     if (isAdmin) {
       if (!hasSessionCookie) {
         if (pathname.startsWith("/api/")) {
-          return NextResponse.json(
-            { error: "Keine Admin-Berechtigung." },
-            { status: 403 },
-          );
+          return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
         }
 
         const loginUrl = new URL("/login", request.url);
