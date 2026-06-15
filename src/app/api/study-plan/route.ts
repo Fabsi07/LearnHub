@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 import { calculateStudyPlan } from "@/lib/calculations/studyPlanAlgorithm";
+import { calculateTaskProgress } from "@/lib/study-plan/progress";
 import {
   isValidGoalType,
   serializeStudyPlan,
@@ -29,7 +30,7 @@ export async function GET() {
   });
 
   const studyPlans: StudyPlanSummaryDTO[] = plans.map((p) => {
-    const completedTaskCount = p.tasks.filter((t) => t.completed).length;
+    const { completedTaskCount } = calculateTaskProgress(p.tasks);
     const next = p.tasks.find((t) => !t.completed) ?? null;
     return {
       ...serializeStudyPlan(p),

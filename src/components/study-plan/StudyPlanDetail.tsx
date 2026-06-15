@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { calculateTaskProgress } from "@/lib/study-plan/progress";
 import type { StudyPlanDetailDTO } from "@/lib/study-plan/types";
 import { GOAL_TYPE_META, formatDate, remainingLabel } from "./planMeta";
 import { AlgorithmResultWidget } from "./AlgorithmResultWidget";
@@ -75,9 +76,10 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
   const meta = GOAL_TYPE_META[plan.goalType];
   const GoalIcon = meta.icon;
   const remaining = remainingLabel(plan.targetDate);
-  const completedCount = plan.tasks.filter((t) => t.completed).length;
-  const progress =
-    plan.tasks.length > 0 ? Math.round((completedCount / plan.tasks.length) * 100) : 0;
+  const {
+    completedTaskCount: completedCount,
+    percentage: progress,
+  } = calculateTaskProgress(plan.tasks);
 
   return (
     <div className="flex flex-col h-full p-6 gap-5 overflow-auto">

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
-import { serializeTask, toIntInRange, toPositiveInt } from "@/lib/study-plan/types";
+import { serializeTask } from "@/lib/study-plan/types";
+import { validateTaskInput } from "@/lib/study-plan/taskValidation";
 
 /** Prüft, dass Lernplan + Aufgabe existieren und dem User gehören. */
 async function ownsTask(userId: string, planId: string, taskId: string) {
@@ -33,41 +34,16 @@ export async function PATCH(
   } catch {
     return NextResponse.json({ error: "Ungültiger Anfrage-Body." }, { status: 400 });
   }
-  const b = (body ?? {}) as Record<string, unknown>;
-
-  const data: Record<string, unknown> = {};
-
-  if (typeof b.title === "string" && b.title.trim()) data.title = b.title.trim();
-
-  if (b.description === null) data.description = null;
-  else if (typeof b.description === "string") data.description = b.description.trim() || null;
-
-  if ("estimatedMinutes" in b) {
-    const m = toPositiveInt(b.estimatedMinutes);
-    if (m) data.estimatedMinutes = m;
+  const validation = validateTaskInput(body, "patch");
+  if ("error" in validation) {
+    return NextResponse.json({ error: validation.error }, { status: 400 });
   }
 
-  if ("difficulty" in b) {
-    const d = toIntInRange(b.difficulty, 1, 5);
-    if (d) data.difficulty = d;
-  }
+  const data: Record<string, unknown> = { ...validation.data };
 
-  if (typeof b.dueDate === "string") {
-    const due = new Date(b.dueDate);
-    if (Number.isNaN(due.getTime())) {
-      return NextResponse.json({ error: "Ungültiges Fälligkeitsdatum." }, { status: 400 });
-    }
-    data.dueDate = due;
-  }
-
-  if (typeof b.completed === "boolean") {
-    data.completed = b.completed;
+  if (typeof validation.data.completed === "boolean") {
     // completedAt mitführen, damit der Erledigungszeitpunkt korrekt ist.
-    data.completedAt = b.completed ? new Date() : null;
-  }
-
-  if (Object.keys(data).length === 0) {
-    return NextResponse.json({ error: "Keine Änderungen übergeben." }, { status: 400 });
+    data.completedAt = validation.data.completed ? new Date() : null;
   }
 
   const updated = await prisma.task.update({ where: { id: taskId }, data });
