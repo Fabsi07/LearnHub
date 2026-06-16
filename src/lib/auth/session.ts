@@ -1,8 +1,10 @@
 import { randomBytes } from "crypto";
+import type { UserRole } from "@prisma/client";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import {
   SESSION_COOKIE,
+  SESSION_ROLE_COOKIE,
   SESSION_TTL_DEFAULT_SECONDS,
   SESSION_TTL_REMEMBER_SECONDS,
   sessionCookieOptions,
@@ -12,6 +14,7 @@ export interface CurrentUser {
   id: string;
   email: string;
   displayName: string;
+  role: UserRole;
   avatarUrl?: string | null;
 }
 
@@ -57,7 +60,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     where: { id: token },
     include: {
       user: {
-        select: { id: true, email: true, displayName: true, avatarUrl: true },
+        select: { id: true, email: true, displayName: true, role: true, avatarUrl: true },
       },
     },
   });
@@ -84,6 +87,7 @@ export async function destroyCurrentSession(): Promise<void> {
   }
 
   cookieStore.set(SESSION_COOKIE, "", sessionCookieOptions(0));
+  cookieStore.set(SESSION_ROLE_COOKIE, "", sessionCookieOptions(0));
 }
 
 /**
@@ -92,6 +96,7 @@ export async function destroyCurrentSession(): Promise<void> {
 export async function createSession(
   userId: string,
   rememberMe: boolean,
+  role: UserRole = "USER",
 ): Promise<void> {
   const token = generateSessionToken();
   const ttlSeconds = rememberMe
@@ -105,4 +110,5 @@ export async function createSession(
 
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE, token, sessionCookieOptions(ttlSeconds));
+  cookieStore.set(SESSION_ROLE_COOKIE, role, sessionCookieOptions(ttlSeconds));
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { ensureFixedAdminAccount, getAdminCredentials } from "@/lib/auth/admin";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSession } from "@/lib/auth/session";
 
@@ -36,10 +37,18 @@ export async function POST(request: Request) {
 
   const { email, password, rememberMe } = parsed.data;
   const normalizedEmail = email.toLowerCase();
+  const adminCredentials = getAdminCredentials();
+
+  if (
+    normalizedEmail === adminCredentials.email &&
+    password === adminCredentials.password
+  ) {
+    await ensureFixedAdminAccount();
+  }
 
   const user = await prisma.user.findUnique({
     where: { email: normalizedEmail },
-    select: { id: true, passwordHash: true },
+    select: { id: true, passwordHash: true, role: true },
   });
 
   // Immer bcrypt ausführen – auch bei unbekannter E-Mail (Dummy-Hash).
@@ -54,7 +63,7 @@ export async function POST(request: Request) {
     );
   }
 
-  await createSession(user.id, rememberMe);
+  await createSession(user.id, rememberMe, user.role);
 
-  return NextResponse.json({ ok: true }, { status: 200 });
+  return NextResponse.json({ ok: true, role: user.role }, { status: 200 });
 }

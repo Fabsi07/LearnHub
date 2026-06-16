@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE } from "@/lib/auth/cookie";
+import { SESSION_COOKIE, SESSION_ROLE_COOKIE } from "@/lib/auth/cookie";
 
 /**
  * Middleware für LearnHub — Auth-Schutz (C3).
@@ -15,6 +15,7 @@ import { SESSION_COOKIE } from "@/lib/auth/cookie";
  * Siehe docs/auth-concept.md §6.3.
  */
 const AUTH_ENABLED = true;
+const ADMIN_ROLE = "ADMIN";
 
 const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/api/auth"];
 
@@ -24,14 +25,47 @@ function isPublicPath(pathname: string) {
   );
 }
 
+function isAdminPath(pathname: string) {
+  return (
+    pathname === "/admin" ||
+    pathname.startsWith("/admin/") ||
+    pathname === "/api/admin" ||
+    pathname.startsWith("/api/admin/")
+  );
+}
+
 export function middleware(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   // Nur Cookie-Existenz prüfen – keine DB-Validierung (Edge-Runtime hat kein Prisma).
   // Echte Session-Gültigkeit wird in Server Components / Route Handlern via getSession() geprüft.
   const hasSessionCookie = request.cookies.has(SESSION_COOKIE);
   const isPublic = isPublicPath(pathname);
+  const isAdmin = isAdminPath(pathname);
 
   if (AUTH_ENABLED) {
+    if (isAdmin) {
+      if (!hasSessionCookie) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
+        }
+
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("redirect", `${pathname}${search}`);
+        return NextResponse.redirect(loginUrl);
+      }
+
+      if (request.cookies.get(SESSION_ROLE_COOKIE)?.value !== ADMIN_ROLE) {
+        if (pathname.startsWith("/api/")) {
+          return NextResponse.json(
+            { error: "Keine Admin-Berechtigung." },
+            { status: 403 },
+          );
+        }
+
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    }
+
     if (!hasSessionCookie && !isPublic) {
       // API-Routen: 401 JSON statt Redirect
       if (pathname.startsWith("/api/")) {

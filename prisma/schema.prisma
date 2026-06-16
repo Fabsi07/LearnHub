@@ -16,11 +16,17 @@ datasource db {
 // Auth (siehe docs/auth-concept.md §3)
 // =====================================================================
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
   displayName  String
   passwordHash String
+  role         UserRole @default(USER)
   avatarUrl    String?
   avatarData   Bytes?
   avatarMime   String?

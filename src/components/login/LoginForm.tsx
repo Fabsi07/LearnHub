@@ -37,11 +37,19 @@ export function LoginForm() {
         return;
       }
 
+      const data = (await res.json().catch(() => ({}))) as { role?: "USER" | "ADMIN" };
       const redirect = searchParams.get("redirect");
-      const target =
+      const safeRedirect =
         redirect && redirect.startsWith("/") && !redirect.startsWith("//")
           ? redirect
-          : "/dashboard";
+          : null;
+      const isAdmin = data.role === "ADMIN";
+      const target =
+        safeRedirect && (isAdmin || !safeRedirect.startsWith("/admin"))
+          ? safeRedirect
+          : isAdmin
+            ? "/admin"
+            : "/dashboard";
 
       router.push(target);
       router.refresh();

@@ -72,6 +72,16 @@ Anschliessend ist die App unter [http://localhost:3000](http://localhost:3000) e
 | DB-Logs anschauen | `docker compose logs -f db` |
 | Build pruefen | `npm run build` |
 | Linter | `npm run lint` |
+| TypeScript pruefen | `npm run typecheck` |
+
+### Admin-Zugang
+
+Der feste Admin-Account wird beim ersten Login automatisch angelegt. Die Defaults stehen in `.env.example` und koennen lokal ueber `ADMIN_EMAIL`, `ADMIN_PASSWORD` und `ADMIN_DISPLAY_NAME` ueberschrieben werden (wichtig: in produktiven Umgebungen muessen diese Werte gesetzt werden; die Defaults sind unsicher).
+
+| Feld | Default |
+| --- | --- |
+| E-Mail | `0000@learnhub.admin` |
+| Passwort | `0000admin` |
 
 ### Nach jedem `git pull`
 
