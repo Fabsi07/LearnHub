@@ -152,7 +152,10 @@ export async function PATCH(
         ? null
         : await tx.calendarEvent.findFirst({
             where: { id, ownerId: session.userId, source: "LOCAL" },
-            include: { task: { select: { completed: true } } },
+            include: {
+              task: { select: { completed: true } },
+              studyPlan: { select: { title: true } },
+            },
           });
 
     // Verschobene/umgeplante Lerneinheit: Fälligkeit (Startzeit) und Dauer der
@@ -218,6 +221,7 @@ export async function PATCH(
       important: row.important,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
       studyPlanId: row.studyPlanId ?? undefined,
+      studyPlanTitle: row.studyPlan?.title ?? undefined,
       taskId: row.taskId ?? undefined,
       taskCompleted: row.task ? row.task.completed : undefined,
     },

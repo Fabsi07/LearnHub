@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
+  ArrowRight,
+  BookOpen,
   CalendarDays,
   CircleCheckBig,
   MapPin,
@@ -316,6 +319,27 @@ export function EventDetailModal({
                 </span>
               )}
             </div>
+
+            {event.studyPlanId && (
+              <Link
+                href={`/study-plan/${event.studyPlanId}`}
+                onClick={onClose}
+                className="flex items-center justify-between gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 text-left transition-colors hover:border-blue-300 hover:bg-blue-100"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  <BookOpen className="h-4 w-4 shrink-0 text-blue-700" />
+                  <span className="min-w-0">
+                    <span className="block text-xs font-semibold uppercase tracking-wider text-blue-600">
+                      Lernplan
+                    </span>
+                    <span className="block truncate text-sm font-bold text-blue-900">
+                      {event.studyPlanTitle ?? "Zum Lernplan"}
+                    </span>
+                  </span>
+                </span>
+                <ArrowRight className="h-4 w-4 shrink-0 text-blue-700" />
+              </Link>
+            )}
 
             {/* Lernsession abhaken (Events mit verknüpfter Lernplan-Aufgabe) */}
             {event.taskId && event.studyPlanId && onToggleTaskCompleted && (

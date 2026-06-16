@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarDays, Clock, Gauge, Pencil, Trash2 } from "lucide-react";
+import {
+  CalendarCheck,
+  CalendarDays,
+  CalendarPlus,
+  Clock,
+  Gauge,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
-import type { TaskDTO } from "@/lib/study-plan/types";
+import type { TaskCalendarEventDTO, TaskDTO } from "@/lib/study-plan/types";
 import { daysUntil, formatDate, formatMinutes } from "./planMeta";
 
 interface TaskItemProps {
@@ -12,9 +20,30 @@ interface TaskItemProps {
   task: TaskDTO;
   onChanged: () => void;
   onEdit: (task: TaskDTO) => void;
+  onCreateSlot: (task: TaskDTO) => void;
 }
 
-export function TaskItem({ planId, task, onChanged, onEdit }: TaskItemProps) {
+function formatSlotRange(slot: TaskCalendarEventDTO): string {
+  const start = new Date(slot.startsAt);
+  const end = new Date(slot.endsAt);
+  const date = new Intl.DateTimeFormat("de-DE", {
+    day: "2-digit",
+    month: "2-digit",
+  }).format(start);
+  const time = new Intl.DateTimeFormat("de-DE", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  return `${date}, ${time.format(start)}-${time.format(end)}`;
+}
+
+export function TaskItem({
+  planId,
+  task,
+  onChanged,
+  onEdit,
+  onCreateSlot,
+}: TaskItemProps) {
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -95,6 +124,21 @@ export function TaskItem({ planId, task, onChanged, onEdit }: TaskItemProps) {
             <Gauge className="w-3.5 h-3.5" />
             Schwierigkeit {task.difficulty}/5
           </span>
+          {task.calendarEvent ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 font-medium text-green-700">
+              <CalendarCheck className="w-3.5 h-3.5" />
+              Lernslot {formatSlotRange(task.calendarEvent)}
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => onCreateSlot(task)}
+              className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 font-medium text-gray-600 transition-colors hover:border-brand-red hover:text-brand-red"
+            >
+              <CalendarPlus className="w-3.5 h-3.5" />
+              Lernslot
+            </button>
+          )}
         </div>
       </div>
 
