@@ -207,7 +207,7 @@ export function TaskLearningSlotModal({
             onClick={onClose}
             disabled={saving}
             className="rounded-lg p-1 hover:bg-gray-100 transition-colors disabled:opacity-50"
-            aria-label="Schliessen"
+            aria-label="Schließen"
           >
             <X className="h-4 w-4 text-gray-500" />
           </button>
