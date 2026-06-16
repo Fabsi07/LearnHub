@@ -133,7 +133,7 @@ export function TaskLearningSlotModal({
     }
 
     if (!isAllowedTimedRange(startDate, endDate)) {
-      setError("Lernslots muessen zwischen 07:00 und 00:00 Uhr liegen.");
+      setError("Lernslots müssen zwischen 07:00 und 00:00 Uhr liegen.");
       return;
     }
 
