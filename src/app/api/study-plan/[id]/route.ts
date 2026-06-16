@@ -28,7 +28,16 @@ export async function GET(
 
   const plan = await prisma.studyPlan.findFirst({
     where: { id, ownerId: session.userId },
-    include: { tasks: { orderBy: { dueDate: "asc" } } },
+    include: {
+      tasks: {
+        orderBy: { dueDate: "asc" },
+        include: {
+          calendarEvent: {
+            select: { id: true, title: true, startsAt: true, endsAt: true },
+          },
+        },
+      },
+    },
   });
 
   if (!plan) {

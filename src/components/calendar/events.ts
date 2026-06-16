@@ -22,6 +22,7 @@ export type CalEvent = {
   important?: boolean;
   /** Verknüpfter Lernplan (gesetzt bei generierten Lerneinheiten). */
   studyPlanId?: string;
+  studyPlanTitle?: string;
   /** Verknüpfte Lernplan-Aufgabe (1:1, gesetzt bei generierten Lerneinheiten). */
   taskId?: string;
   /** Erledigt-Status der verknüpften Aufgabe (abhakbar im Kalender). */

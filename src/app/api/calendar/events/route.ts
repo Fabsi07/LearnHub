@@ -45,7 +45,10 @@ export async function GET() {
   const rows = await prisma.calendarEvent.findMany({
     where: { source: "LOCAL", ownerId: session.userId },
     orderBy: { startsAt: "asc" },
-    include: { task: { select: { completed: true } } },
+    include: {
+      task: { select: { completed: true } },
+      studyPlan: { select: { title: true } },
+    },
   });
 
   const events = rows.map((event) => {
@@ -66,6 +69,7 @@ export async function GET() {
       important: event.important,
       repeat: (event.repeat as RepeatRule | null) ?? "none",
       studyPlanId: event.studyPlanId ?? undefined,
+      studyPlanTitle: event.studyPlan?.title ?? undefined,
       taskId: event.taskId ?? undefined,
       taskCompleted: event.task ? event.task.completed : undefined,
     };
@@ -77,7 +81,7 @@ export async function GET() {
   // abgeleitet (siehe CLAUDE.md: read-only Events duerfen nicht editierbar sein).
   const plans = await prisma.studyPlan.findMany({
     where: { ownerId: session.userId },
-    select: { id: true, subject: true, goalType: true, targetDate: true },
+    select: { id: true, title: true, subject: true, goalType: true, targetDate: true },
   });
 
   const deadlineEvents = plans.map((plan) => {
@@ -104,6 +108,7 @@ export async function GET() {
       readOnly: true,
       repeat: "none" as const,
       studyPlanId: plan.id,
+      studyPlanTitle: plan.title,
     };
   });
 
@@ -179,15 +184,17 @@ export async function POST(req: Request) {
 
   // Optionale Lernplan-Verknüpfung: nur akzeptieren, wenn der Plan dem User gehört.
   let planId: string | null = null;
+  let planTitle: string | null = null;
   if (typeof studyPlanId === "string" && studyPlanId) {
     const plan = await prisma.studyPlan.findFirst({
       where: { id: studyPlanId, ownerId: session.userId },
-      select: { id: true },
+      select: { id: true, title: true },
     });
     if (!plan) {
       return NextResponse.json({ error: "Lernplan nicht gefunden." }, { status: 404 });
     }
     planId = plan.id;
+    planTitle = plan.title;
   }
 
   // Optionale Task-Verknüpfung (1:1): Aufgabe muss dem User gehören und darf
@@ -196,7 +203,12 @@ export async function POST(req: Request) {
   if (typeof taskId === "string" && taskId) {
     const task = await prisma.task.findFirst({
       where: { id: taskId, studyPlan: { ownerId: session.userId } },
-      select: { id: true, completed: true, calendarEvent: { select: { id: true } } },
+      select: {
+        id: true,
+        completed: true,
+        studyPlan: { select: { id: true, title: true } },
+        calendarEvent: { select: { id: true } },
+      },
     });
     if (!task) {
       return NextResponse.json({ error: "Aufgabe nicht gefunden." }, { status: 404 });
@@ -207,6 +219,14 @@ export async function POST(req: Request) {
         { status: 409 },
       );
     }
+    if (planId && task.studyPlan.id !== planId) {
+      return NextResponse.json(
+        { error: "Aufgabe gehoert nicht zu diesem Lernplan." },
+        { status: 400 },
+      );
+    }
+    planId = planId ?? task.studyPlan.id;
+    planTitle = planTitle ?? task.studyPlan.title;
     linkedTask = { id: task.id, completed: task.completed };
   }
 
@@ -250,6 +270,7 @@ export async function POST(req: Request) {
       important: row.important,
       repeat: (row.repeat as RepeatRule | null) ?? "none",
       studyPlanId: row.studyPlanId ?? undefined,
+      studyPlanTitle: planTitle ?? undefined,
       taskId: row.taskId ?? undefined,
       taskCompleted: linkedTask ? linkedTask.completed : undefined,
     },

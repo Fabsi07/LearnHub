@@ -5,16 +5,19 @@ import { CircleCheckBig, Plus } from "lucide-react";
 import type { TaskDTO } from "@/lib/study-plan/types";
 import { TaskForm } from "./TaskForm";
 import { TaskItem } from "./TaskItem";
+import { TaskLearningSlotModal } from "./TaskLearningSlotModal";
 
 interface TaskListProps {
   planId: string;
+  subject: string;
   tasks: TaskDTO[];
   onChanged: () => void;
 }
 
-export function TaskList({ planId, tasks, onChanged }: TaskListProps) {
+export function TaskList({ planId, subject, tasks, onChanged }: TaskListProps) {
   const [formOpen, setFormOpen] = useState(false);
   const [editTask, setEditTask] = useState<TaskDTO | null>(null);
+  const [slotTask, setSlotTask] = useState<TaskDTO | null>(null);
 
   const open = tasks.filter((t) => !t.completed);
   const done = tasks.filter((t) => t.completed);
@@ -62,6 +65,7 @@ export function TaskList({ planId, tasks, onChanged }: TaskListProps) {
               task={task}
               onChanged={onChanged}
               onEdit={openEdit}
+              onCreateSlot={setSlotTask}
             />
           ))}
 
@@ -79,6 +83,7 @@ export function TaskList({ planId, tasks, onChanged }: TaskListProps) {
                   task={task}
                   onChanged={onChanged}
                   onEdit={openEdit}
+                  onCreateSlot={setSlotTask}
                 />
               ))}
             </>
@@ -92,6 +97,15 @@ export function TaskList({ planId, tasks, onChanged }: TaskListProps) {
         task={editTask}
         onClose={() => setFormOpen(false)}
         onSaved={onChanged}
+      />
+
+      <TaskLearningSlotModal
+        open={slotTask !== null}
+        planId={planId}
+        subject={subject}
+        task={slotTask}
+        onClose={() => setSlotTask(null)}
+        onCreated={onChanged}
       />
     </div>
   );

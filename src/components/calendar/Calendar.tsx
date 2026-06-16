@@ -101,6 +101,7 @@ export function Calendar({
       ev.title,
       ev.type,
       ev.subject,
+      ev.studyPlanTitle,
       ev.location,
       ev.notes,
       ev.tasks,

@@ -160,7 +160,12 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
       </div>
 
       {/* Aufgaben */}
-      <TaskList planId={plan.id} tasks={plan.tasks} onChanged={() => void refresh()} />
+      <TaskList
+        planId={plan.id}
+        subject={plan.subject}
+        tasks={plan.tasks}
+        onChanged={() => void refresh()}
+      />
 
       {/* Bearbeiten-Modal */}
       <StudyPlanForm

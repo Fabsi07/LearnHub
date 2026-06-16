@@ -1,7 +1,7 @@
 // Geteilte Typen, Serializer und Validierungs-Helfer für die Lernplan-Features.
 // Siehe docs/lernplan-umsetzung.md (Phase B).
 
-import type { GoalType, StudyPlan, Task } from "@prisma/client";
+import type { CalendarEvent, GoalType, StudyPlan, Task } from "@prisma/client";
 
 export const GOAL_TYPES: GoalType[] = [
   "KLAUSUR",
@@ -22,6 +22,14 @@ export interface TaskDTO {
   dueDate: string; // ISO
   completed: boolean;
   completedAt: string | null; // ISO
+  calendarEvent: TaskCalendarEventDTO | null;
+}
+
+export interface TaskCalendarEventDTO {
+  id: string;
+  title: string;
+  startsAt: string; // ISO
+  endsAt: string; // ISO
 }
 
 export interface StudyPlanDTO {
@@ -58,7 +66,11 @@ export interface StudyPlanDetailDTO extends StudyPlanDTO {
 
 // ─── Serializer ────────────────────────────────────────────────────────────────
 
-export function serializeTask(t: Task): TaskDTO {
+type SerializableTask = Task & {
+  calendarEvent?: Pick<CalendarEvent, "id" | "title" | "startsAt" | "endsAt"> | null;
+};
+
+export function serializeTask(t: SerializableTask): TaskDTO {
   return {
     id: t.id,
     title: t.title,
@@ -68,6 +80,14 @@ export function serializeTask(t: Task): TaskDTO {
     dueDate: t.dueDate.toISOString(),
     completed: t.completed,
     completedAt: t.completedAt ? t.completedAt.toISOString() : null,
+    calendarEvent: t.calendarEvent
+      ? {
+          id: t.calendarEvent.id,
+          title: t.calendarEvent.title,
+          startsAt: t.calendarEvent.startsAt.toISOString(),
+          endsAt: t.calendarEvent.endsAt.toISOString(),
+        }
+      : null,
   };
 }
 
