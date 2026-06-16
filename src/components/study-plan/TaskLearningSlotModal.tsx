@@ -128,7 +128,7 @@ export function TaskLearningSlotModal({
       Number.isNaN(endDate.getTime()) ||
       endDate.getTime() <= startDate.getTime()
     ) {
-      setError("Bitte waehle einen gueltigen Zeitraum.");
+      setError("Bitte wähle einen gültigen Zeitraum.");
       return;
     }
 
