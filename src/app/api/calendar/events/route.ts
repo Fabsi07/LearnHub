@@ -221,7 +221,7 @@ export async function POST(req: Request) {
     }
     if (planId && task.studyPlan.id !== planId) {
       return NextResponse.json(
-        { error: "Aufgabe gehoert nicht zu diesem Lernplan." },
+        { error: "Aufgabe gehört nicht zu diesem Lernplan." },
         { status: 400 },
       );
     }
