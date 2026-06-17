@@ -107,7 +107,7 @@ export async function checkMissedSessionNotifications(
       source: "LOCAL",
       type: "LERNEINHEIT",
       taskId: { not: null },
-      endsAt: { lt: now },
+      endsAt: { lt: now, gte: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) },
       task: { is: { completed: false } },
     },
     orderBy: { endsAt: "asc" },
