@@ -5,6 +5,7 @@ import {
   Calendar,
   BookOpen,
   MessageSquare,
+  MessageSquarePlus,
   Settings,
   ShieldCheck,
 } from "lucide-react";
@@ -14,7 +15,7 @@ import { LearnHubBrand } from "@/components/brand/LearnHubBrand";
 import type { CurrentUser } from "@/lib/auth/session";
 import { cn } from "@/lib/utils";
 
-function getNavItems(isAdmin: boolean) {
+function getNavItems(canOpenManagement: boolean) {
   return [
   {
     section: "Learning",
@@ -27,15 +28,16 @@ function getNavItems(isAdmin: boolean) {
   {
     section: "Access",
     items: [
+      { label: "Feedback", href: "/feedback", icon: MessageSquarePlus },
       { label: "Benachrichtigungen", href: "/notifications", icon: MessageSquare },
       { label: "Einstellungen", href: "/settings?tab=profile", icon: Settings },
     ],
   },
-  ...(isAdmin
+  ...(canOpenManagement
     ? [
         {
           section: "Admin",
-          items: [{ label: "Benutzer", href: "/admin", icon: ShieldCheck }],
+          items: [{ label: "Verwaltung", href: "/admin", icon: ShieldCheck }],
         },
       ]
     : []),
@@ -69,7 +71,7 @@ export function Sidebar({ currentUser }: SidebarProps) {
   const pathname = usePathname() ?? "";
   const displayName = currentUser?.displayName ?? "LearnHub";
   const email = currentUser?.email ?? "";
-  const navItems = getNavItems(currentUser?.role === "ADMIN");
+  const navItems = getNavItems(currentUser?.role === "ADMIN" || currentUser?.role === "DEV");
 
   return (
     <div className="flex h-full w-full flex-col border-r border-sidebar-border bg-sidebar px-5 py-6 text-sidebar-foreground transition-colors duration-300">

@@ -37,17 +37,19 @@ export function LoginForm() {
         return;
       }
 
-      const data = (await res.json().catch(() => ({}))) as { role?: "USER" | "ADMIN" };
+      const data = (await res.json().catch(() => ({}))) as {
+        role?: "USER" | "ADMIN" | "DEV";
+      };
       const redirect = searchParams.get("redirect");
       const safeRedirect =
         redirect && redirect.startsWith("/") && !redirect.startsWith("//")
           ? redirect
           : null;
-      const isAdmin = data.role === "ADMIN";
+      const canOpenManagement = data.role === "ADMIN" || data.role === "DEV";
       const target =
-        safeRedirect && (isAdmin || !safeRedirect.startsWith("/admin"))
+        safeRedirect && (canOpenManagement || !safeRedirect.startsWith("/admin"))
           ? safeRedirect
-          : isAdmin
+          : canOpenManagement
             ? "/admin"
             : "/dashboard";
 

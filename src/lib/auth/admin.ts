@@ -1,6 +1,6 @@
 import type { UserRole } from "@prisma/client";
 import { getCurrentUser, type CurrentUser } from "@/lib/auth/session";
-import { hashPassword, verifyPassword } from "@/lib/auth/password";
+import { hashPassword } from "@/lib/auth/password";
 import { prisma } from "@/lib/prisma";
 
 const DEFAULT_ADMIN_EMAIL = "0000@learnhub.admin";
@@ -17,6 +17,8 @@ export type AdminAuthResult =
   | { status: "ok"; user: CurrentUser }
   | { status: "unauthenticated" }
   | { status: "forbidden" };
+
+export type FeedbackManagerAuthResult = AdminAuthResult;
 
 export function getAdminCredentials(): AdminCredentials {
   return {
@@ -62,6 +64,21 @@ export async function getAdminAuth(): Promise<AdminAuthResult> {
     return { status: "unauthenticated" };
   }
   if (user.role !== "ADMIN") {
+    return { status: "forbidden" };
+  }
+  return { status: "ok", user };
+}
+
+export function canManageFeedbackRole(role: UserRole): boolean {
+  return role === "ADMIN" || role === "DEV";
+}
+
+export async function getFeedbackManagerAuth(): Promise<FeedbackManagerAuthResult> {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { status: "unauthenticated" };
+  }
+  if (!canManageFeedbackRole(user.role)) {
     return { status: "forbidden" };
   }
   return { status: "ok", user };

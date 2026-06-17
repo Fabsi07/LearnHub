@@ -19,6 +19,7 @@ datasource db {
 enum UserRole {
   USER
   ADMIN
+  DEV
 }
 
 model User {
@@ -38,6 +39,7 @@ model User {
   calendarEvents  CalendarEvent[]
   calendarSources CalendarSource[]
   notifications   Notification[]
+  feedbacks       Feedback[]
 }
 
 model Session {
@@ -224,4 +226,50 @@ model Notification {
 
   @@index([ownerId])
   @@index([expiresAt])
+}
+
+// =====================================================================
+// Feedback
+// =====================================================================
+
+enum FeedbackCategory {
+  BUG
+  IMPROVEMENT
+  FEATURE
+}
+
+enum FeedbackPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FeedbackStatus {
+  OPEN
+  IN_PROGRESS
+  DONE
+  REJECTED
+}
+
+model Feedback {
+  id                String           @id @default(cuid())
+  title             String
+  description       String
+  category          FeedbackCategory
+  submittedCategory FeedbackCategory
+  priority          FeedbackPriority @default(LOW)
+  status            FeedbackStatus   @default(OPEN)
+  authorId          String
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId])
+  @@index([category])
+  @@index([submittedCategory])
+  @@index([priority])
+  @@index([status])
+  @@index([createdAt])
 }
