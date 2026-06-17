@@ -39,6 +39,7 @@ model User {
   calendarEvents  CalendarEvent[]
   calendarSources CalendarSource[]
   notifications   Notification[]
+  notificationSettings NotificationSettings?
   feedbacks       Feedback[]
 }
 
@@ -205,6 +206,7 @@ model CalendarSource {
 enum NotificationType {
   ASSIGNMENT
   EXAM
+  MISSED_SESSION
 }
 
 model Notification {
@@ -217,6 +219,7 @@ model Notification {
   isUrgent    Boolean          @default(false)
   isDone      Boolean          @default(false)
   isArchived  Boolean          @default(false)
+  triggerKey  String?
   ownerId     String
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
@@ -224,8 +227,20 @@ model Notification {
 
   owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
+  @@unique([ownerId, triggerKey])
   @@index([ownerId])
   @@index([expiresAt])
+}
+
+model NotificationSettings {
+  id                                String   @id @default(cuid())
+  ownerId                           String   @unique
+  missedSessionRescheduleEnabled    Boolean  @default(true)
+  missedSessionReplanWarningEnabled Boolean  @default(true)
+  createdAt                         DateTime @default(now())
+  updatedAt                         DateTime @updatedAt
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 }
 
 // =====================================================================

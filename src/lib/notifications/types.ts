@@ -3,7 +3,7 @@ import type {
   NotificationType as DbNotificationType,
 } from "@prisma/client";
 
-export type NotificationType = "assignment" | "exam";
+export type NotificationType = "assignment" | "exam" | "missed-session";
 
 export interface NotificationDTO {
   id: string;
@@ -20,17 +20,29 @@ export interface NotificationDTO {
 }
 
 export function toDbNotificationType(type: NotificationType): DbNotificationType {
-  return type === "exam" ? "EXAM" : "ASSIGNMENT";
+  switch (type) {
+    case "exam":
+      return "EXAM";
+    case "missed-session":
+      return "MISSED_SESSION";
+    default:
+      return "ASSIGNMENT";
+  }
 }
 
 export function isNotificationType(value: unknown): value is NotificationType {
-  return value === "assignment" || value === "exam";
+  return value === "assignment" || value === "exam" || value === "missed-session";
 }
 
 export function serializeNotification(notification: DbNotification): NotificationDTO {
   return {
     id: notification.id,
-    type: notification.type === "EXAM" ? "exam" : "assignment",
+    type:
+      notification.type === "EXAM"
+        ? "exam"
+        : notification.type === "MISSED_SESSION"
+          ? "missed-session"
+          : "assignment",
     subject: notification.subject,
     course: notification.course,
     dueDate: notification.dueDate.toISOString(),

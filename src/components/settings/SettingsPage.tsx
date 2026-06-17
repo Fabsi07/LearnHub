@@ -46,6 +46,16 @@ const SELECT_CLASSES =
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp"];
 
+interface NotificationSettingsState {
+  missedSessionRescheduleEnabled: boolean;
+  missedSessionReplanWarningEnabled: boolean;
+}
+
+const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettingsState = {
+  missedSessionRescheduleEnabled: true,
+  missedSessionReplanWarningEnabled: true,
+};
+
 export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -341,10 +351,96 @@ function ProfileSettings({
 }
 
 function NotificationSettings() {
-  // S-5 Fix: Submit-Handler.
-  function handleNotificationSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const [settings, setSettings] = useState<NotificationSettingsState>(
+    DEFAULT_NOTIFICATION_SETTINGS,
+  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSettings() {
+      try {
+        const response = await fetch("/api/settings/notifications", {
+          cache: "no-store",
+        });
+        const data = (await response.json().catch(() => ({}))) as {
+          settings?: NotificationSettingsState;
+          error?: string;
+        };
+
+        if (!response.ok || !data.settings) {
+          throw new Error(data.error ?? "Einstellungen konnten nicht geladen werden.");
+        }
+
+        if (!cancelled) {
+          setSettings(data.settings);
+          setFeedback(null);
+        }
+      } catch (loadError) {
+        if (!cancelled) {
+          setFeedback({
+            type: "error",
+            message:
+              loadError instanceof Error
+                ? loadError.message
+                : "Einstellungen konnten nicht geladen werden.",
+          });
+        }
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    loadSettings();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function handleNotificationSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // TODO: An /api/settings/notifications anbinden.
+    if (isSaving) return;
+
+    setIsSaving(true);
+    setFeedback(null);
+
+    try {
+      const response = await fetch("/api/settings/notifications", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        settings?: NotificationSettingsState;
+        error?: string;
+      };
+
+      if (!response.ok || !data.settings) {
+        throw new Error(data.error ?? "Einstellungen konnten nicht gespeichert werden.");
+      }
+
+      setSettings(data.settings);
+      setFeedback({
+        type: "success",
+        message: "Benachrichtigungseinstellungen gespeichert.",
+      });
+    } catch (saveError) {
+      setFeedback({
+        type: "error",
+        message:
+          saveError instanceof Error
+            ? saveError.message
+            : "Einstellungen konnten nicht gespeichert werden.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -357,6 +453,39 @@ function NotificationSettings() {
       </div>
 
       <form className="mt-5 grid gap-5" onSubmit={handleNotificationSubmit}>
+        <SettingsBlock
+          icon={Bell}
+          title="Verpasste Lernsessions"
+          description="Steuert Hinweise, wenn geplante Lerneinheiten abgelaufen und die verknüpften Aufgaben noch offen sind."
+        >
+          <CheckboxField
+            id="missed-session-reschedule"
+            name="missedSessionRescheduleEnabled"
+            label="Bei 1 bis 2 verpassten Sessions einen Hinweis zum Verschieben anzeigen"
+            checked={settings.missedSessionRescheduleEnabled}
+            disabled={isLoading || isSaving}
+            onCheckedChange={(checked) =>
+              setSettings((previous) => ({
+                ...previous,
+                missedSessionRescheduleEnabled: checked,
+              }))
+            }
+          />
+          <CheckboxField
+            id="missed-session-replan"
+            name="missedSessionReplanWarningEnabled"
+            label="Ab 3 verpassten Sessions eine Warnung zum Neuplanen anzeigen"
+            checked={settings.missedSessionReplanWarningEnabled}
+            disabled={isLoading || isSaving}
+            onCheckedChange={(checked) =>
+              setSettings((previous) => ({
+                ...previous,
+                missedSessionReplanWarningEnabled: checked,
+              }))
+            }
+          />
+        </SettingsBlock>
+
         <SettingsBlock
           icon={CalendarClock}
           title="Deadline-Erinnerungen"
@@ -430,9 +559,19 @@ function NotificationSettings() {
         </SettingsBlock>
 
         <div className="flex justify-end border-t border-gray-100 pt-4">
-          <Button type="submit">
+          {feedback && (
+            <p
+              className={cn(
+                "mr-auto text-sm font-medium",
+                feedback.type === "success" ? "text-green-600" : "text-red-600",
+              )}
+            >
+              {feedback.message}
+            </p>
+          )}
+          <Button type="submit" disabled={isLoading || isSaving}>
             <Save className="h-4 w-4" />
-            Einstellungen speichern
+            {isSaving ? "Wird gespeichert" : "Einstellungen speichern"}
           </Button>
         </div>
       </form>
@@ -565,14 +704,35 @@ interface CheckboxFieldProps {
   id: string;
   label: string;
   name?: string;
+  checked?: boolean;
   defaultChecked?: boolean;
+  disabled?: boolean;
+  onCheckedChange?: (checked: boolean) => void;
 }
 
-function CheckboxField({ id, label, name, defaultChecked }: CheckboxFieldProps) {
+function CheckboxField({
+  id,
+  label,
+  name,
+  checked,
+  defaultChecked,
+  disabled,
+  onCheckedChange,
+}: CheckboxFieldProps) {
   return (
     <div className="flex items-center gap-3">
-      <Checkbox id={id} name={name} defaultChecked={defaultChecked} />
-      <Label htmlFor={id} className="text-gray-700">
+      <Checkbox
+        id={id}
+        name={name}
+        checked={checked}
+        defaultChecked={defaultChecked}
+        disabled={disabled}
+        onCheckedChange={(nextChecked) => onCheckedChange?.(nextChecked)}
+      />
+      <Label
+        htmlFor={id}
+        className={cn("text-gray-700", disabled && "text-gray-400")}
+      >
         {label}
       </Label>
     </div>

@@ -6,6 +6,7 @@ import {
   Archive,
   ArchiveRestore,
   BookOpen,
+  CalendarClock,
   CheckCircle,
   Search,
   Trash2,
@@ -16,7 +17,7 @@ import type {
 } from "@/lib/notifications/types";
 import { cn } from "@/lib/utils";
 
-const filters = ["Alle", "Offen", "Abgaben", "Klausuren", "Archiviert"] as const;
+const filters = ["Alle", "Offen", "Abgaben", "Klausuren", "Lernsessions", "Archiviert"] as const;
 type Filter = (typeof filters)[number];
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("de-DE", {
@@ -85,6 +86,8 @@ export function NotificationsPage() {
             return notification.type === "assignment" && !notification.isArchived;
           case "Klausuren":
             return notification.type === "exam" && !notification.isArchived;
+          case "Lernsessions":
+            return notification.type === "missed-session" && !notification.isArchived;
           case "Offen":
             return !notification.isDone && !notification.isArchived;
           case "Archiviert":
@@ -182,15 +185,18 @@ export function NotificationsPage() {
     }
   };
 
-  const getTypeIcon = (type: NotificationType) =>
-    type === "exam" ? (
-      <AlertCircle className="h-5 w-5" />
-    ) : (
-      <BookOpen className="h-5 w-5" />
-    );
+  const getTypeIcon = (type: NotificationType) => {
+    if (type === "exam") return <AlertCircle className="h-5 w-5" />;
+    if (type === "missed-session") return <CalendarClock className="h-5 w-5" />;
+    return <BookOpen className="h-5 w-5" />;
+  };
 
   const getTypeLabel = (type: NotificationType) =>
-    type === "exam" ? "Klausur" : "Abgabe";
+    type === "exam"
+      ? "Klausur"
+      : type === "missed-session"
+        ? "Lernsession"
+        : "Abgabe";
 
   return (
     <div className="flex h-full min-h-[calc(100vh-116px)] flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white">
@@ -219,7 +225,7 @@ export function NotificationsPage() {
             <div
               role="tablist"
               aria-label="Filter"
-              className="flex gap-1 rounded-xl bg-gray-100 p-1"
+              className="flex gap-1 overflow-x-auto rounded-xl bg-gray-100 p-1 dark:bg-white/5"
             >
               {filters.map((filter) => {
                 const isActive = activeFilter === filter;
@@ -231,10 +237,10 @@ export function NotificationsPage() {
                     aria-selected={isActive}
                     onClick={() => setActiveFilter(filter)}
                     className={cn(
-                      "flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
+                      "shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors",
                       isActive
-                        ? "bg-white text-gray-900 shadow-sm"
-                        : "text-gray-500 hover:text-gray-700",
+                        ? "bg-white text-gray-900 shadow-sm dark:bg-white/10 dark:text-white"
+                        : "text-gray-500 hover:text-gray-700 dark:text-white/65 dark:hover:text-white",
                     )}
                   >
                     {filter}
@@ -265,8 +271,13 @@ export function NotificationsPage() {
                     aria-current={isSelected ? "true" : undefined}
                     onClick={() => setSelectedId(notification.id)}
                     className={cn(
-                      "flex w-full gap-3 border-b border-gray-100 px-4 py-4 text-left transition-colors hover:bg-gray-50",
-                      isSelected && "bg-gray-50",
+                      "flex w-full gap-3 border-b border-gray-100 px-4 py-4 text-left transition-colors hover:bg-gray-50 dark:border-white/10 dark:hover:bg-white/5",
+                      notification.isUrgent &&
+                        "border-l-4 border-l-[#ef233c] bg-red-50/70 hover:bg-red-50 dark:bg-[#351316] dark:hover:bg-[#43171b]",
+                      isSelected &&
+                        (notification.isUrgent
+                          ? "bg-red-50 dark:bg-[#43171b]"
+                          : "bg-gray-50 dark:bg-white/5"),
                     )}
                   >
                     <div
@@ -281,10 +292,17 @@ export function NotificationsPage() {
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-gray-900">
-                            {notification.subject}
-                          </p>
-                          <p className="truncate text-xs text-gray-500">
+                          <div className="flex min-w-0 items-center gap-2">
+                            <p className="truncate text-sm font-semibold text-gray-900 dark:text-white">
+                              {notification.subject}
+                            </p>
+                            {notification.isUrgent && (
+                              <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-[11px] font-semibold text-red-700 ring-1 ring-red-200 dark:bg-[#ef233c]/20 dark:text-white dark:ring-[#ef233c]/45">
+                                Dringend
+                              </span>
+                            )}
+                          </div>
+                          <p className="truncate text-xs text-gray-500 dark:text-white/65">
                             {notification.course}
                           </p>
                         </div>
@@ -292,7 +310,7 @@ export function NotificationsPage() {
                           <CheckCircle className="h-4 w-4 shrink-0 text-green-600" />
                         )}
                       </div>
-                      <p className="mt-2 truncate text-sm font-semibold text-gray-800">
+                      <p className="mt-2 truncate text-sm font-semibold text-gray-800 dark:text-white/75">
                         Fällig: {formatDate(notification.dueDate)}
                       </p>
                     </div>
@@ -306,7 +324,14 @@ export function NotificationsPage() {
         <section className="flex min-h-0 flex-col bg-gray-50">
           {selectedNotification ? (
             <>
-              <div className="flex items-center justify-between border-b border-gray-200 bg-white px-6 py-4">
+              <div
+                className={cn(
+                  "flex items-center justify-between border-b px-6 py-4",
+                  selectedNotification.isUrgent
+                    ? "border-red-200 bg-red-50 dark:border-[#ef233c]/45 dark:bg-[#2a1114]"
+                    : "border-gray-200 bg-white dark:border-white/10 dark:bg-card",
+                )}
+              >
                 <div className="flex min-w-0 items-center gap-3">
                   <div
                     className={cn(
@@ -317,10 +342,17 @@ export function NotificationsPage() {
                     {getTypeIcon(selectedNotification.type)}
                   </div>
                   <div className="min-w-0">
-                    <h2 className="truncate text-lg font-bold text-gray-900">
-                      {selectedNotification.subject}
-                    </h2>
-                    <p className="truncate text-sm text-gray-500">
+                    <div className="flex min-w-0 items-center gap-2">
+                      <h2 className="truncate text-lg font-bold text-gray-900 dark:text-white">
+                        {selectedNotification.subject}
+                      </h2>
+                      {selectedNotification.isUrgent && (
+                        <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700 ring-1 ring-red-200 dark:bg-[#ef233c]/20 dark:text-white dark:ring-[#ef233c]/45">
+                          Dringend
+                        </span>
+                      )}
+                    </div>
+                    <p className="truncate text-sm text-gray-500 dark:text-white/65">
                       {selectedNotification.course} ·{" "}
                       {getTypeLabel(selectedNotification.type)}
                     </p>
@@ -389,29 +421,36 @@ export function NotificationsPage() {
                     {error}
                   </p>
                 )}
-                <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+                <div
+                  className={cn(
+                    "rounded-lg border bg-white p-6 shadow-sm dark:bg-card",
+                    selectedNotification.isUrgent
+                      ? "border-red-200 dark:border-[#ef233c]/45"
+                      : "border-gray-200 dark:border-white/10",
+                  )}
+                >
                   <div className="space-y-4">
                     <div>
-                      <h3 className="mb-2 text-sm font-semibold text-gray-600">
+                      <h3 className="mb-2 text-sm font-semibold text-gray-600 dark:text-white/75">
                         Beschreibung
                       </h3>
-                      <p className="text-gray-800">
+                      <p className="text-gray-800 dark:text-white">
                         {selectedNotification.description}
                       </p>
                     </div>
 
-                    <div className="border-t border-gray-200 pt-4">
+                    <div className="border-t border-gray-200 pt-4 dark:border-white/15">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-xs font-medium uppercase text-gray-500">
+                          <p className="text-xs font-medium uppercase text-gray-500 dark:text-white/60">
                             Fällig am
                           </p>
-                          <p className="mt-1 text-lg font-bold text-gray-900">
+                          <p className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
                             {formatDate(selectedNotification.dueDate)}
                           </p>
                         </div>
                         <div>
-                          <p className="text-xs font-medium uppercase text-gray-500">
+                          <p className="text-xs font-medium uppercase text-gray-500 dark:text-white/60">
                             Status
                           </p>
                           <p

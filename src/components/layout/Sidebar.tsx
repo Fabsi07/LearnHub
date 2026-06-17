@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LearnHubBrand } from "@/components/brand/LearnHubBrand";
 import type { CurrentUser } from "@/lib/auth/session";
+import type { NotificationSummary } from "@/lib/notifications/summary";
 import { cn } from "@/lib/utils";
 
 function getNavItems(canOpenManagement: boolean) {
@@ -46,6 +47,7 @@ function getNavItems(canOpenManagement: boolean) {
 
 interface SidebarProps {
   currentUser?: CurrentUser;
+  notificationSummary?: NotificationSummary;
 }
 
 function getInitials(displayName?: string): string {
@@ -67,11 +69,12 @@ function isActiveLink(currentPath: string, href: string) {
   return currentPath === target || currentPath.startsWith(`${target}/`);
 }
 
-export function Sidebar({ currentUser }: SidebarProps) {
+export function Sidebar({ currentUser, notificationSummary }: SidebarProps) {
   const pathname = usePathname() ?? "";
   const displayName = currentUser?.displayName ?? "LearnHub";
   const email = currentUser?.email ?? "";
   const navItems = getNavItems(currentUser?.role === "ADMIN" || currentUser?.role === "DEV");
+  const openNotificationCount = notificationSummary?.openCount ?? 0;
 
   return (
     <div className="flex h-full w-full flex-col border-r border-sidebar-border bg-sidebar px-5 py-6 text-sidebar-foreground transition-colors duration-300">
@@ -105,12 +108,22 @@ export function Sidebar({ currentUser }: SidebarProps) {
                       href={href}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
+                        "flex items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm font-semibold transition-colors",
                         active ? "bg-white/15 text-white" : "text-white hover:bg-white/10",
                       )}
                     >
-                      <Icon className="h-4 w-4 opacity-80" />
-                      {label}
+                      <span className="flex min-w-0 items-center gap-3">
+                        <Icon className="h-4 w-4 shrink-0 opacity-80" />
+                        <span className="truncate">{label}</span>
+                      </span>
+                      {label === "Benachrichtigungen" && openNotificationCount > 0 && (
+                        <span
+                          aria-label={`${openNotificationCount} offene Benachrichtigungen`}
+                          className="ml-auto inline-flex min-w-5 shrink-0 items-center justify-center rounded-full bg-[#ef233c] px-1.5 py-0.5 text-[11px] font-bold leading-none text-white shadow-sm ring-1 ring-white/20"
+                        >
+                          {openNotificationCount > 99 ? "99+" : openNotificationCount}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );
