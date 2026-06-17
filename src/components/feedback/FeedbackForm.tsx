@@ -81,7 +81,7 @@ export function FeedbackForm() {
           <div>
             <h2 className="text-base font-semibold text-gray-950">Feedback einreichen</h2>
             <p className="text-sm text-gray-500">
-              Rueckmeldung, Fehlerbericht oder Idee strukturiert senden.
+              Rückmeldung, Fehlerbericht oder Idee strukturiert senden.
             </p>
           </div>
         </div>
