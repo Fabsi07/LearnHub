@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import {
+  Code2,
+  MessageSquareText,
   Pencil,
   RefreshCw,
   Save,
@@ -14,14 +16,18 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FeedbackManagement } from "@/components/admin/FeedbackManagement";
 import type { AdminUserListItem, AdminUsersPayload } from "@/lib/admin/users";
+import type { FeedbackPayload } from "@/lib/feedback/types";
 import { cn } from "@/lib/utils";
+
+type AdminRole = "USER" | "ADMIN" | "DEV";
 
 type FormState = {
   displayName: string;
   email: string;
   password: string;
-  role: "USER" | "ADMIN";
+  role: AdminRole;
 };
 
 type EditState = Pick<FormState, "displayName" | "role">;
@@ -36,6 +42,7 @@ const emptyForm: FormState = {
 const roleLabels: Record<FormState["role"], string> = {
   USER: "Nutzer",
   ADMIN: "Admin",
+  DEV: "Dev",
 };
 
 const SELECT_CLASSES =
@@ -52,24 +59,35 @@ function formatDate(value: string) {
 }
 
 function roleBadgeClass(role: FormState["role"]) {
-  return role === "ADMIN"
-    ? "border-red-200 bg-red-50 text-red-700"
-    : "border-gray-200 bg-gray-50 text-gray-700";
+  if (role === "ADMIN") {
+    return "border-red-200 bg-red-50 text-red-700";
+  }
+  if (role === "DEV") {
+    return "border-blue-200 bg-blue-50 text-blue-700";
+  }
+  return "border-gray-200 bg-gray-50 text-gray-700";
 }
 
 interface AdminDashboardProps {
-  initialData: AdminUsersPayload;
+  initialUsersData: AdminUsersPayload | null;
+  initialFeedbackData: FeedbackPayload;
   currentUserId: string;
+  currentUserRole: AdminRole;
   fixedAdminEmail: string;
 }
 
 export function AdminDashboard({
-  initialData,
+  initialUsersData,
+  initialFeedbackData,
   currentUserId,
+  currentUserRole,
   fixedAdminEmail,
 }: AdminDashboardProps) {
-  const [users, setUsers] = useState<AdminUserListItem[]>(initialData.users);
-  const [total, setTotal] = useState(initialData.total);
+  const canManageUsers = currentUserRole === "ADMIN";
+  const [activeTab, setActiveTab] = useState<"feedback" | "users">("feedback");
+  const [feedbackBadgeCount, setFeedbackBadgeCount] = useState(initialFeedbackData.newCount);
+  const [users, setUsers] = useState<AdminUserListItem[]>(initialUsersData?.users ?? []);
+  const [total, setTotal] = useState(initialUsersData?.total ?? 0);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -83,6 +101,10 @@ export function AdminDashboard({
 
   const adminCount = useMemo(
     () => users.filter((user) => user.role === "ADMIN").length,
+    [users],
+  );
+  const devCount = useMemo(
+    () => users.filter((user) => user.role === "DEV").length,
     [users],
   );
 
@@ -201,15 +223,63 @@ export function AdminDashboard({
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm font-medium text-gray-500">Administration</p>
-          <h1 className="mt-1 text-3xl font-bold text-gray-950">Benutzerverwaltung</h1>
+          <h1 className="mt-1 text-3xl font-bold text-gray-950">Verwaltung</h1>
         </div>
-        <Button type="button" variant="outline" onClick={reloadUsers} disabled={loading}>
-          <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-          Aktualisieren
-        </Button>
+        {canManageUsers && activeTab === "users" && (
+          <Button type="button" variant="outline" onClick={reloadUsers} disabled={loading}>
+            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+            Aktualisieren
+          </Button>
+        )}
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="flex flex-wrap gap-2 rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
+        <button
+          type="button"
+          onClick={() => setActiveTab("feedback")}
+          className={cn(
+            "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors",
+            activeTab === "feedback"
+              ? "bg-gray-950 text-white dark:bg-white dark:text-black"
+              : "text-gray-600 hover:bg-gray-100 hover:text-gray-950",
+          )}
+        >
+          <MessageSquareText className="h-4 w-4" />
+          Feedback
+          {feedbackBadgeCount > 0 && (
+            <span className="rounded-full bg-brand-red px-2 py-0.5 text-xs font-bold text-white">
+              {feedbackBadgeCount}
+            </span>
+          )}
+        </button>
+
+        {canManageUsers && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("users")}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors",
+              activeTab === "users"
+                ? "bg-gray-950 text-white dark:bg-white dark:text-black"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-950",
+            )}
+          >
+            <Users className="h-4 w-4" />
+            Benutzer
+          </button>
+        )}
+      </div>
+
+      {activeTab === "feedback" && (
+        <FeedbackManagement
+          initialData={initialFeedbackData}
+          onNewCountChange={setFeedbackBadgeCount}
+        />
+      )}
+
+      {activeTab === "users" && canManageUsers && (
+        <>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-gray-100 text-gray-700">
@@ -229,6 +299,17 @@ export function AdminDashboard({
             <div>
               <p className="text-2xl font-bold text-gray-950">{adminCount}</p>
               <p className="text-sm text-gray-500">Admin-Accounts</p>
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-blue-50 text-blue-700">
+              <Code2 className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="text-2xl font-bold text-gray-950">{devCount}</p>
+              <p className="text-sm text-gray-500">Dev-Accounts</p>
             </div>
           </div>
         </div>
@@ -327,6 +408,9 @@ export function AdminDashboard({
                 <option value="ADMIN" className={OPTION_CLASSES}>
                   Admin
                 </option>
+                <option value="DEV" className={OPTION_CLASSES}>
+                  Dev
+                </option>
               </select>
             </Field>
           </div>
@@ -421,6 +505,9 @@ export function AdminDashboard({
                             <option value="ADMIN" className={OPTION_CLASSES}>
                               Admin
                             </option>
+                            <option value="DEV" className={OPTION_CLASSES}>
+                              Dev
+                            </option>
                           </select>
                         ) : (
                           <span
@@ -495,6 +582,8 @@ export function AdminDashboard({
           </div>
         </div>
       </section>
+        </>
+      )}
     </main>
   );
 }

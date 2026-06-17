@@ -1,24 +1,34 @@
 import { redirect } from "next/navigation";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { getAdminUsersPayload } from "@/lib/admin/users";
-import { getAdminAuth, getAdminCredentials } from "@/lib/auth/admin";
+import {
+  canManageFeedbackRole,
+  getAdminCredentials,
+} from "@/lib/auth/admin";
+import { getCurrentUser } from "@/lib/auth/session";
+import { getFeedbackPayload } from "@/lib/feedback/server";
 
 export default async function AdminPage() {
-  const auth = await getAdminAuth();
+  const currentUser = await getCurrentUser();
 
-  if (auth.status === "unauthenticated") {
+  if (!currentUser) {
     redirect("/login?redirect=/admin");
   }
-  if (auth.status === "forbidden") {
+  if (!canManageFeedbackRole(currentUser.role)) {
     redirect("/dashboard");
   }
 
-  const initialData = await getAdminUsersPayload();
+  const [initialUsersData, initialFeedbackData] = await Promise.all([
+    currentUser.role === "ADMIN" ? getAdminUsersPayload() : Promise.resolve(null),
+    getFeedbackPayload(),
+  ]);
 
   return (
     <AdminDashboard
-      initialData={initialData}
-      currentUserId={auth.user.id}
+      initialUsersData={initialUsersData}
+      initialFeedbackData={initialFeedbackData}
+      currentUserId={currentUser.id}
+      currentUserRole={currentUser.role}
       fixedAdminEmail={getAdminCredentials().email}
     />
   );

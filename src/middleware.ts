@@ -16,6 +16,7 @@ import { SESSION_COOKIE, SESSION_ROLE_COOKIE } from "@/lib/auth/cookie";
  */
 const AUTH_ENABLED = true;
 const ADMIN_ROLE = "ADMIN";
+const DEV_ROLE = "DEV";
 
 const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/api/auth"];
 
@@ -25,13 +26,25 @@ function isPublicPath(pathname: string) {
   );
 }
 
-function isAdminPath(pathname: string) {
-  return (
-    pathname === "/admin" ||
-    pathname.startsWith("/admin/") ||
-    pathname === "/api/admin" ||
-    pathname.startsWith("/api/admin/")
-  );
+function isAdminApiPath(pathname: string) {
+  return pathname === "/api/admin" || pathname.startsWith("/api/admin/");
+}
+
+function isAdminPagePath(pathname: string) {
+  return pathname === "/admin" || pathname === "/admin/";
+}
+
+function isAdminOnlyPagePath(pathname: string) {
+  return pathname.startsWith("/admin/") && pathname !== "/admin/";
+}
+
+function hasAdminRole(request: NextRequest) {
+  return request.cookies.get(SESSION_ROLE_COOKIE)?.value === ADMIN_ROLE;
+}
+
+function hasFeedbackManagerRole(request: NextRequest) {
+  const role = request.cookies.get(SESSION_ROLE_COOKIE)?.value;
+  return role === ADMIN_ROLE || role === DEV_ROLE;
 }
 
 export function middleware(request: NextRequest) {
@@ -40,10 +53,12 @@ export function middleware(request: NextRequest) {
   // Echte Session-Gültigkeit wird in Server Components / Route Handlern via getSession() geprüft.
   const hasSessionCookie = request.cookies.has(SESSION_COOKIE);
   const isPublic = isPublicPath(pathname);
-  const isAdmin = isAdminPath(pathname);
+  const isAdminApi = isAdminApiPath(pathname);
+  const isAdminPage = isAdminPagePath(pathname);
+  const isAdminOnlyPage = isAdminOnlyPagePath(pathname);
 
   if (AUTH_ENABLED) {
-    if (isAdmin) {
+    if (isAdminApi || isAdminOnlyPage) {
       if (!hasSessionCookie) {
         if (pathname.startsWith("/api/")) {
           return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
@@ -54,7 +69,7 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
       }
 
-      if (request.cookies.get(SESSION_ROLE_COOKIE)?.value !== ADMIN_ROLE) {
+      if (!hasAdminRole(request)) {
         if (pathname.startsWith("/api/")) {
           return NextResponse.json(
             { error: "Keine Admin-Berechtigung." },
@@ -62,6 +77,18 @@ export function middleware(request: NextRequest) {
           );
         }
 
+        return NextResponse.redirect(new URL("/dashboard", request.url));
+      }
+    }
+
+    if (isAdminPage) {
+      if (!hasSessionCookie) {
+        const loginUrl = new URL("/login", request.url);
+        loginUrl.searchParams.set("redirect", `${pathname}${search}`);
+        return NextResponse.redirect(loginUrl);
+      }
+
+      if (!hasFeedbackManagerRole(request)) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
     }

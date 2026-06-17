@@ -10,7 +10,7 @@ const updateUserSchema = z.object({
     .trim()
     .min(1, "Bitte gib einen Namen an.")
     .max(80, "Der Name darf hoechstens 80 Zeichen lang sein."),
-  role: z.enum(["USER", "ADMIN"]),
+  role: z.enum(["USER", "ADMIN", "DEV"]),
 });
 
 function unauthorized(status: "unauthenticated" | "forbidden") {

@@ -15,7 +15,7 @@ const createUserSchema = z.object({
   password: z
     .string()
     .min(8, "Das Passwort muss mindestens 8 Zeichen lang sein."),
-  role: z.enum(["USER", "ADMIN"]).default("USER"),
+  role: z.enum(["USER", "ADMIN", "DEV"]).default("USER"),
 });
 
 function unauthorized(status: "unauthenticated" | "forbidden") {
