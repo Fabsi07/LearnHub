@@ -19,7 +19,7 @@ const updateFeedbackSchema = z
     status: z.enum(FEEDBACK_STATUSES).optional(),
   })
   .refine((value) => Object.values(value).some((entry) => entry !== undefined), {
-    message: "Keine Aenderungen uebergeben.",
+    message: "Keine Änderungen übergeben.",
   });
 
 function unauthorized(status: "unauthenticated" | "forbidden") {
