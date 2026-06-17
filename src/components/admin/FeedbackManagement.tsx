@@ -259,7 +259,7 @@ export function FeedbackManagement({ initialData, onNewCountChange }: FeedbackMa
             <div>
               <p className="font-semibold text-gray-950">Keine Feedbacks gefunden</p>
               <p className="mt-1 text-sm text-gray-500">
-                Fuer die aktuelle Filterauswahl liegen keine Eintraege vor.
+                Für die aktuelle Filterauswahl liegen keine Einträge vor.
               </p>
             </div>
           </div>
