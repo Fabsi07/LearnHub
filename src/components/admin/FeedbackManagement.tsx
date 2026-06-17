@@ -234,7 +234,7 @@ export function FeedbackManagement({ initialData, onNewCountChange }: FeedbackMa
                 Neueste zuerst
               </option>
               <option value="created-asc" className={OPTION_CLASSES}>
-                Aelteste zuerst
+                Älteste zuerst
               </option>
               <option value="priority-desc" className={OPTION_CLASSES}>
                 Wichtigkeit absteigend
