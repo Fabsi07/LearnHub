@@ -403,7 +403,7 @@ export function FeedbackManagement({ initialData, onNewCountChange }: FeedbackMa
                 type="button"
                 variant="ghost"
                 size="icon"
-                aria-label="Feedback schliessen"
+                aria-label="Feedback schließen"
                 onClick={() => setSelectedFeedbackId(null)}
               >
                 <X className="h-4 w-4" />
