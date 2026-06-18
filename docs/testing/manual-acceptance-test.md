@@ -36,10 +36,11 @@ Eine Zeile pro Durchlauf. Älteste oben, neueste unten anhängen.
 Vor jedem Durchlauf folgende Voraussetzungen prüfen:
 
 - [ ] `git status` ist clean, aktueller Commit-Hash notiert.
-- [ ] `npm install` ist auf dem aktuellen Stand (`package-lock.json` unverändert nach `install`).
+- [ ] `npm ci` wurde auf dem aktuellen Lockfile-Stand erfolgreich ausgeführt.
 - [ ] `npm run build` läuft ohne Fehler durch.
+- [ ] `npm run typecheck`, `npm run lint` und `npm test` laufen ohne Fehler durch.
 - [ ] Lokale PostgreSQL-Datenbank läuft, `DATABASE_URL` in `.env` gesetzt.
-- [ ] `npm run prisma:migrate` wurde ausgeführt; Schema ist aktuell.
+- [ ] `npm run prisma:deploy` und `npm run prisma:generate` wurden ausgeführt; Schema und Prisma Client sind aktuell.
 - [ ] Demo-Daten geladen (siehe Issue #53 / H1 für den Demo-Daten-Mechanismus). Falls H1 noch nicht umgesetzt: manuell vorbereiteten Datenstand verwenden und das in den Notizen vermerken.
 - [ ] Browser: aktueller Chrome, Firefox **oder** Safari (laut PRD §8.2 Browser-Unterstützung).
 - [ ] Browser-Cache und Cookies für `localhost:3000` gelöscht — sonst hängt UC1 an einer alten Session.
@@ -51,7 +52,9 @@ Vor jedem Durchlauf folgende Voraussetzungen prüfen:
 
 Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschnitt enthält Vorbedingung, Schritte mit Eingabewerten, das erwartete Ergebnis und ein Feld für das tatsächliche Ergebnis pro Durchlauf.
 
-> Hinweis: Die UCs in dieser Checkliste setzen den finalen MVP-Funktionsumfang voraus (Auth, Lernpläne, Aufgaben, Kalender, algorithmische Planung). Vor Implementierung der zugehörigen Tickets bleiben einzelne Schritte „n/a" — das ist explizit zu vermerken, nicht als Pass zu zählen.
+> Hinweis: Die Checkliste beschreibt den aktuell implementierten MVP-Flow.
+> Noch nicht vollständig angebundene Einstellungsfunktionen sind nicht Teil
+> dieses Abnahmedurchlaufs.
 
 ---
 
@@ -72,7 +75,8 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 
 **Erwartetes Ergebnis**
 - Weiterleitung auf `/dashboard`.
-- Dashboard ist leer und zeigt einen Hinweis, einen ersten Lernplan anzulegen.
+- Dashboard zeigt `0` offene Aufgaben und aktive Lernpläne sowie einen Hinweis,
+  den ersten Lernplan anzulegen.
 - Cookie `lh_session` ist in den DevTools sichtbar, mit `HttpOnly` und `SameSite=Lax` (PRD §8.2 + Auth-Konzept §5.2).
 - Eintrag in `User`-Tabelle existiert; `passwordHash` ist **nicht** das Klartextpasswort.
 
@@ -96,18 +100,23 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
    - Veranstaltung / Fach: `Statistik`
    - Zieltyp: `Klausur`
    - Zieldatum: heute + 70 Tage (≈ 10 Wochen)
-   - Modus: **Plan automatisch berechnen**
-3. [ ] Acht Themen eintragen, jeweils mit geschätztem Aufwand (z. B. 2–6 h) und subjektiver Schwierigkeit (1–5).
-4. [ ] Verfügbare Lernzeit: `6 Stunden pro Woche`.
-5. [ ] Berechnung auslösen.
-6. [ ] Berechneten Plan öffnen und prüfen.
-7. [ ] Zwei berechnete Aufgaben manuell um eine Woche nach hinten verschieben und speichern.
+   - Schwierigkeit: `3`
+   - Vorwissen: `2`
+   - Seiten / Folien: `120`
+   - ECTS: `5`
+3. [ ] Lernplan speichern und die Detailansicht öffnen.
+4. [ ] Berechnete Gesamtstunden, Stunden pro Tag und Plantyp prüfen.
+5. [ ] „In Kalender eintragen" öffnen und die Vorschau prüfen.
+6. [ ] Die vorgeschlagenen Lerneinheiten in den Kalender übernehmen.
+7. [ ] Seite neu laden und Lernplan, Aufgaben sowie Kalendertermine erneut prüfen.
 
 **Erwartetes Ergebnis**
-- Die Berechnung erzeugt eine Liste konkreter Aufgaben mit Fälligkeitsdaten verteilt über den Zeitraum bis zum Zieldatum.
-- Bei identischen Eingaben liefert eine erneute Berechnung **dasselbe Ergebnis** (Determinismus, PRD §8.1).
+- Die Berechnung erzeugt Gesamtstunden, Tagesintensität und einen normalen oder kritischen Plantyp.
+- Die Vorschau erzeugt konkrete zweistündige Lerneinheiten bis zum Zieldatum und berücksichtigt vorhandene Kalendertermine.
+- Beim Übernehmen entstehen verknüpfte Aufgaben und Kalender-Lernsessions.
+- Bei identischen Eingaben und demselben Bezugsdatum liefert eine erneute Berechnung **dasselbe Ergebnis** (Determinismus, PRD §8.1).
 - Die Berechnung dauert auf einem normalen Entwicklungsrechner unter einer Sekunde (PRD §8.2 Reaktionszeit).
-- Die zwei manuell verschobenen Aufgaben behalten ihre Verschiebung nach Reload des Plans.
+- Lernplan, Aufgaben und Termine bleiben nach einem Reload erhalten.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 - 
@@ -120,20 +129,19 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 
 **Vorbedingung**
 - [ ] Lernplan aus UC2 ist gespeichert.
-- [ ] Mindestens ein Vorlesungstermin liegt für heute im Kalender (manuell angelegt oder über DHBW-ICS-Feed).
-- [ ] Mindestens zwei berechnete Aufgaben fallen auf den heutigen Tag.
+- [ ] Die Lerneinheiten aus UC2 wurden in den Kalender übernommen.
 
 **Schritte**
 1. [ ] Dashboard öffnen.
-2. [ ] Anstehende Aufgaben und heutige Termine auf einen Blick erfassen.
+2. [ ] Kennzahlen, nächste Lernsessions und Lernplanfortschritt prüfen.
 3. [ ] Auf „Kalender" wechseln.
-4. [ ] In der Wochenansicht den aktuellen Tag und die folgenden zwei Tage prüfen.
+4. [ ] In der Wochenansicht die erzeugten Lernsessions und den Zieltermin prüfen.
 
 **Erwartetes Ergebnis**
-- Dashboard zeigt die für heute geplanten Aufgaben **und** die heutigen Termine.
-- Anstehende Aufgaben sind nach Fälligkeit sortiert oder klar gruppiert.
+- Dashboard zeigt offene Aufgaben, aktive Lernpläne und anstehende verknüpfte Lernsessions.
+- Der Lernplan ist mit seinem aktuellen Fortschritt erreichbar.
 - Wochenansicht zeigt Vorlesungen, Lerneinheiten und Zieltermine farblich unterschiedlich (PRD §6.1 M5).
-- Externe DHBW-Termine sind als read-only markiert und nicht editierbar (CLAUDE.md §13).
+- Falls ein DHBW-Kurs konfiguriert ist, sind externe Termine read-only und nicht editierbar.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 - 
@@ -146,12 +154,12 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 
 **Vorbedingung**
 - [ ] Lernplan aus UC2 existiert.
-- [ ] Mindestens zwei Aufgaben des Plans wurden vorher abgehakt (siehe UC6) — diese dürfen die Umplanung nicht verschieben.
-- [ ] Mindestens drei Aufgaben sind offen und haben Fälligkeitsdaten in der Vergangenheit (manuell auf gestern setzen, um Verzug zu simulieren).
+- [ ] Mindestens zwei Aufgaben des Plans wurden vorher in der Detailansicht abgehakt — diese dürfen die Umplanung nicht verschieben.
+- [ ] Mindestens drei Aufgaben sind offen; ihre bisherigen Fälligkeitsdaten wurden notiert.
 
 **Schritte**
 1. [ ] Lernplan öffnen.
-2. [ ] „Plan neu verteilen" auslösen.
+2. [ ] „Offene Aufgaben neu verteilen" auslösen.
 3. [ ] Neue Fälligkeitsdaten der offenen Aufgaben prüfen.
 4. [ ] Erledigte Aufgaben prüfen.
 5. [ ] Kalenderansicht öffnen und Lerneinheiten gegen den Plan abgleichen.
@@ -159,8 +167,8 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 **Erwartetes Ergebnis**
 - Offene Aufgaben sind über den verbleibenden Zeitraum bis zum Zieldatum neu verteilt.
 - Bereits erledigte Aufgaben sind **unverändert** (PRD §6.1 M7).
-- Die Verteilung berücksichtigt verbleibende Tage, Aufwand und Schwierigkeit (PRD §8.1).
-- Neue Fälligkeitsdaten sind sofort auch im Kalender sichtbar.
+- Die Verteilung berücksichtigt verbleibende Tage, geschätzten Aufwand und Schwierigkeit (PRD §8.1).
+- Bei Aufgaben mit verknüpftem Lernslot wird der Kalendertermin mitverschoben.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 - 
@@ -204,19 +212,19 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 **Bezug:** PRD §7 UC6, Must-Have M4 + M2
 
 **Vorbedingung**
-- [ ] Lernplan mit mindestens einer offenen Aufgabe für heute existiert.
-- [ ] Dashboard zeigt die Aufgabe in der „Anstehend"-Liste.
+- [ ] Lernplan aus UC2 enthält mindestens eine offene Aufgabe mit verknüpftem Lernslot.
 
 **Schritte**
-1. [ ] Dashboard öffnen.
-2. [ ] Eine Aufgabe abhaken (direkt auf dem Dashboard).
-3. [ ] Lernplan-Detailseite öffnen und Status der Aufgabe prüfen.
-4. [ ] Auf das Dashboard zurückkehren und die „Anstehend"-Liste prüfen.
+1. [ ] Lernplan-Detailseite öffnen.
+2. [ ] Eine offene Aufgabe über ihre Checkbox als erledigt markieren.
+3. [ ] Status und Fortschrittsanzeige im Lernplan prüfen.
+4. [ ] Kalender öffnen und den verknüpften Lernslot prüfen.
+5. [ ] Dashboard öffnen und Kennzahlen beziehungsweise Lernplanfortschritt prüfen.
 
 **Erwartetes Ergebnis**
 - Aufgabe ist im Lernplan als erledigt markiert (Datum/Zeit der Erledigung gespeichert).
-- Aufgabe verschwindet aus der „Anstehend"-Liste auf dem Dashboard.
-- Verknüpfter Kalender-Lernslot zeigt die Erledigung visuell an (sofern Should-Have S1 umgesetzt ist).
+- Der Lernplanfortschritt und die Anzahl offener Aufgaben werden aktualisiert.
+- Der verknüpfte Kalender-Lernslot zeigt die Erledigung visuell an.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 - 
@@ -229,7 +237,7 @@ Diese Punkte sind nicht an einen einzelnen UC gebunden, müssen aber pro Durchla
 
 - [ ] Logout funktioniert — `/api/auth/logout` löscht das Cookie und führt zurück auf `/login` (Auth-Konzept §5.5).
 - [ ] Direkter Aufruf einer geschützten Route (`/dashboard`) ohne Cookie führt auf `/login?redirect=/dashboard` (Auth-Konzept §6.3).
-- [ ] Aufruf von `/login` mit gültigem Cookie führt auf `/dashboard`.
+- [ ] Anmeldung mit gültigen Zugangsdaten führt auf `/dashboard`; eine bereits gültige Sitzung erlaubt den Zugriff auf geschützte Routen.
 - [ ] Zwei verschiedene Konten sehen **ausschließlich** ihre eigenen Lernpläne, Aufgaben und Termine (PRD §8.1).
 - [ ] Hauptfunktionen sind tastaturbedienbar (PRD §8.2 Zugänglichkeit).
 - [ ] Keine unbehandelten Fehler in der Browser-Konsole oder im `next dev`-Log.
@@ -252,4 +260,4 @@ Diese Punkte sind nicht an einen einzelnen UC gebunden, müssen aber pro Durchla
 - Use-Case-Beschreibungen: [`docs/prd.md`](../prd.md) §7
 - Abnahmekriterien des Gesamtprojekts: [`docs/prd.md`](../prd.md) §14
 - Auth-Konzept und geschützte Routen: [`docs/auth-concept.md`](../auth-concept.md)
-- Bekannte Baustellen Kalender / DB: [`docs/kalender-db-todos.md`](../kalender-db-todos.md)
+- Lokales Setup: [`SETUP.md`](../../SETUP.md)

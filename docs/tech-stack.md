@@ -1,10 +1,12 @@
 # Technologien und Tools
 
-Stand: 2026-05-18
+Stand: 2026-06-18
 
 ## Zielsetzung
 
-LearnHub wird als lokale Webanwendung fuer ein Hochschulprojekt entwickelt. Der Stack ist auf eine schnelle MVP-Umsetzung, klare UI-Strukturen und spaetere Erweiterbarkeit ausgelegt.
+LearnHub ist eine lokale Webanwendung fuer ein Hochschulprojekt. Der Stack ist
+auf eine schnelle MVP-Umsetzung, nachvollziehbare Fachlogik und spaetere
+Erweiterbarkeit ausgelegt.
 
 ---
 
@@ -16,57 +18,129 @@ LearnHub wird als lokale Webanwendung fuer ein Hochschulprojekt entwickelt. Der 
 - Tailwind CSS v4
 - shadcn/ui-Konfiguration mit Base UI (`@base-ui/react`)
 - Lucide React fuer Icons
+- CSS-Variablen und persistenter Light-/Dark-Mode
 
 Begruendung:
 
-- Next.js bietet Routing, Layouts und API-Routes in einem Framework.
+- Next.js stellt Routing, Server Components und API-Route-Handler in einem
+  Framework bereit.
 - React und TypeScript ermoeglichen komponentenbasierte, typisierte Entwicklung.
-- Tailwind CSS passt gut zum schnellen Aufbau konsistenter UI-Komponenten.
-- Die bestehende `(app)`-Route-Group kapselt den eingeloggten App-Bereich ueber `DashboardShell`.
+- Tailwind CSS und die vorhandenen UI-Primitives beschleunigen den Aufbau einer
+  konsistenten Oberflaeche.
+- Die `(app)`-Route-Group kapselt den geschuetzten App-Bereich ueber
+  `DashboardShell`, `Sidebar` und `Topbar`.
 
 ---
 
 ## Backend / Datenhaltung
 
 - Next.js Route Handlers unter `src/app/api/`
-- PostgreSQL als geplante lokale Datenbank
-- Prisma als ORM
-- Prisma-Schema aktuell noch ohne Fachmodelle
+- PostgreSQL 16 als lokale Docker-Datenbank
+- Prisma 6 als ORM und Migrationswerkzeug
+- Zod fuer Request-Validierung in ausgewaehlten Endpunkten
 
-Geplanter Kern:
+Das Prisma-Schema enthaelt aktuell:
 
-- `User`
-- `StudyPlan`
-- `Task`
-- `CalendarEvent`
+- `User` und `Session`
+- `StudyPlan` und `Task`
+- `CalendarEvent` und `CalendarSource`
+- `Notification` und `NotificationSettings`
+- `Feedback`
 
-Das Prisma-Schema enthaelt Generator, PostgreSQL-Datasource und die Kernmodelle (`User`, `Session`, `StudyPlan`, `Task`, `CalendarEvent`, `CalendarSource`) inklusive Enums fuer Zieltyp und Termin-Typ. Die erste Migration (Issue B3 / #41) und die lokale DB-Konfiguration (Issue B2 / #35) stehen noch aus, bevor die Persistenz tatsaechlich genutzt werden kann.
+Die Datenbankmigrationen liegen versioniert unter `prisma/migrations/`.
+Eingecheckte Migrationen werden beim Setup oder nach einem Pull mit
+`npm run prisma:deploy` angewendet. `npm run prisma:migrate` ist fuer eigene
+Aenderungen an `prisma/schema.prisma` vorgesehen.
+
+Die API deckt Authentifizierung, Lernplan- und Aufgabenverwaltung,
+algorithmische Umplanung, Kalendertermine und -quellen, Benachrichtigungen,
+Feedback, Profilbilder sowie die Admin-Benutzerverwaltung ab.
 
 ---
 
-## Authentifizierung
+## Authentifizierung und Rollen
 
-Status: Konzept finalisiert (Issue #36 / C1), Implementierung steht aus (Tickets C2, C3).
+Status: im MVP implementiert und aktiviert.
 
-Festlegung fuer das MVP:
+- Eigene minimale Implementierung in Next.js Route Handlers
+- Passwort-Hashing mit `bcryptjs` und Cost-Faktor 12
+- Serverseitige Sessions in PostgreSQL
+- Opaker Session-Token im HTTP-Only-Cookie `lh_session`
+- `SameSite=Lax`; `Secure` im Produktionsmodus
+- Middleware-Schutz fuer App- und API-Routen
+- Zusaetzliche serverseitige Session- und Owner-Pruefungen in Route Handlers
+- Rollen `USER`, `ADMIN` und `DEV`
 
-- Eigene minimale Implementierung in Next.js Route Handlers (keine externe Auth-Library wie NextAuth oder Lucia).
-- Passwort-Hashing mit bcrypt (`bcryptjs`, Cost 12).
-- Server-Sessions in der Datenbank (`Session`-Tabelle in Prisma); opaker Token im `lh_session`-Cookie (HTTP-Only, SameSite=Lax).
-- Schutzlogik in [src/middleware.ts](../src/middleware.ts) ist vorbereitet, aber ueber `AUTH_ENABLED = false` deaktiviert. C3 aktiviert sie.
+`ADMIN` darf Nutzer und Feedback verwalten. `DEV` darf Feedback verwalten,
+erhaelt aber keinen Zugriff auf die Admin-Benutzerverwaltung.
 
-Vollstaendiges Konzept inklusive Datenmodell, Endpunkten, geschuetzten Routen und Sicherheits-Erwaegungen: [docs/auth-concept.md](./auth-concept.md).
+Vollstaendiges urspruengliches Konzept:
+[docs/auth-concept.md](./auth-concept.md).
+
+---
+
+## Lernplan und Planungslogik
+
+Die Lernplan-Erstellung besteht aus zwei getrennten, deterministischen Schritten:
+
+1. `studyPlanAlgorithm.ts` berechnet aus Zieldatum, Schwierigkeit, Vorwissen,
+   Seitenumfang und ECTS den Gesamtaufwand, die Tagesintensitaet und den Plantyp.
+2. `scheduler.ts` verteilt den Aufwand auf konkrete zweistuendige
+   Lerneinheiten und prueft dabei bestehende lokale und externe Termine.
+
+Die Planung unterscheidet normale und kritische Lernplaene, verteilt
+Lerneinheiten in fachlich aufeinanderfolgende Phasen und gibt bei unrealistischer
+Belastung Warnungen aus. Vor der Kalenderuebernahme wird eine Vorschau angezeigt.
+
+Offene Aufgaben koennen ueber `replanTasks.ts` bis zum Zieldatum neu verteilt
+werden. Erledigte Aufgaben bleiben unveraendert; verknuepfte Kalendertermine
+werden mit aktualisiert.
 
 ---
 
 ## Kalenderintegration
 
-- Kalender-UI mit Tages-, Wochen- und Monatsansicht
+- Tages-, Wochen-, Monats- und Listenansicht
+- Persistente lokale Termine mit CRUD, Drag-and-drop und Resize
+- Terminfilter, Suche, Typfarben und Wichtig-Markierung
+- Verknuepfung von Lernplan, Aufgabe und Kalender-Lernslot
+- Zieltermine der Lernplaene im Kalender
+- Nutzerspezifische DHBW-Kurskennung ueber `CalendarSource`
 - Externer DHBW-ICS-Abruf ueber `/api/calendar/external`
 - `node-ical` zum Parsen von ICS-Daten
-- Retry-, Timeout- und In-Memory-Cache-Logik fuer den externen Kalenderfeed
+- Retry-, Timeout- und In-Memory-Cache-Logik fuer den externen Feed
 
-Wichtig: Der externe ICS-Abruf ist eine technische Integration fuer Kalenderdaten. Persistente manuelle Termine und nutzerspezifische Kalenderquellen sind noch nicht umgesetzt.
+Externe DHBW-Termine sind read-only. Eigene Termine und erzeugte Lernsessions
+werden in PostgreSQL gespeichert.
+
+---
+
+## Benachrichtigungen, Feedback und Administration
+
+- Persistente Benachrichtigungen mit Offen-/Erledigt-/Archiviert-Status
+- Erkennung verpasster Lernsessions
+- Hinweis zum Verschieben bei ein bis zwei verpassten Sessions
+- Dringende Neuplanungswarnung ab drei verpassten Sessions
+- Persistente Einstellungen fuer diese Warnungen
+- Nutzerfeedback fuer Bugs, Verbesserungen und Feature-Ideen
+- Feedback-Prioritaet und -Status fuer `ADMIN` und `DEV`
+- Rollenbasierte Benutzerverwaltung fuer `ADMIN`
+
+---
+
+## Tests und Qualitaet
+
+- ESLint mit Next.js-Konfiguration
+- TypeScript-Strict-Mode und `npm run typecheck`
+- Produktions-Build ueber `npm run build`
+- Node-Test-Runner fuer die vorhandenen Unit-Tests
+- Aktuelle Unit-Tests fuer Lernplanberechnung, Umplanung,
+  Fortschrittsberechnung und Aufgabenvalidierung
+- Manueller End-to-End-Abnahmetest unter
+  [docs/testing/manual-acceptance-test.md](./testing/manual-acceptance-test.md)
+
+Automatisierte API- und Browser-End-to-End-Tests sind derzeit noch nicht
+vorhanden.
 
 ---
 
@@ -74,49 +148,53 @@ Wichtig: Der externe ICS-Abruf ist eine technische Integration fuer Kalenderdate
 
 - GitHub Repository
 - GitHub Projects als Projektplan / Kanban-Board
-- GitHub Issues fuer Aufgaben, Meilensteine, Akzeptanzkriterien und Schaetzungen
+- GitHub Issues fuer Aufgaben, Akzeptanzkriterien und Schaetzungen
 - Pull Requests fuer Review und Zusammenfuehrung
 
-Die Projektplanung wird fuehrend im GitHub Project gepflegt. Lokale Backlog-Dateien sind Arbeitsentwuerfe oder Dokumentationshilfen.
+Die Projektplanung wird fuehrend im GitHub Project gepflegt. Lokale
+Planungsdateien koennen historische Arbeitsstaende enthalten.
 
 ---
 
-## Design & Prototyping
+## Design und Prototyping
 
 - Excalidraw fuer Design-Skizzen und Wireframes
-- Exportierte Wireframes im Repository
+- Exportierte Wireframes unter `docs/design/wireframes/`
 - HTML-Prototyp unter `docs/design/prototypes/prototype_1/`
+- Implementierte responsive App-Shell mit Light-/Dark-Mode
 
 ---
 
-## KI-Tools
+## KI-Tools und KI-Entscheidung
 
-- ChatGPT / Codex
-- Claude
-- GitHub Copilot
-- OpenAI API als moegliche optionale Produktfunktion
+Im Entwicklungsprozess wurden ChatGPT/Codex, Claude und GitHub Copilot
+unterstuetzend eingesetzt.
 
-Einsatz:
-
-- Unterstuetzung bei Entwicklung, Review und Dokumentation
-- Optionale KI-Funktionen im Produkt nur als Could-Have, nicht als MVP-Kern
-- Die Lernplan-Erstellung selbst ist als deterministischer Algorithmus geplant
+Eine KI-Funktion im Produkt wurde fuer den aktuellen MVP bewusst nicht
+implementiert. Die Kernplanung bleibt deterministisch, reproduzierbar und ohne
+externen KI-Dienst nutzbar. Die Entscheidung ist unter
+[docs/KI/ki-entscheidung.md](./KI/ki-entscheidung.md) dokumentiert.
 
 ---
 
-## Entwicklungsumgebung
+## Entwicklungsumgebung und lokaler Betrieb
 
 - Visual Studio Code
+- Node.js LTS und npm
+- Docker Desktop mit Docker Compose
+- Lokale PostgreSQL-Datenbank im Container
 - Browser fuer manuelle Tests
-- Node.js / npm
-- Lokale PostgreSQL-Umgebung spaeter fuer Persistenz
+
+Der vollstaendige Ablauf ist in [SETUP.md](../SETUP.md) beschrieben. Der
+PostgreSQL-Host-Port kann lokal ueber `POSTGRES_PORT` angepasst werden.
 
 ---
 
 ## Offene technische Punkte
 
-- Datenmodell und erste Prisma-Migration definieren (inkl. `User` und `Session` aus [docs/auth-concept.md](./auth-concept.md))
-- Lokale Datenbankkonfiguration dokumentieren
-- Authentifizierung implementieren (Tickets C2, C3 nach Bestaetigung des Konzepts)
-- ESLint-Konfiguration reparieren oder ergaenzen
-- Root-README zu einer vollstaendigen Setup-Anleitung ausbauen
+- Reproduzierbare Demo-Daten beziehungsweise Seed fuer die Praesentation
+- Automatisierte API- und End-to-End-Tests
+- Persistenz der noch offenen Profil- und allgemeinen Reminder-Einstellungen
+- Produktivbetrieb, Rate Limiting und Passwort-Recovery ausserhalb des lokalen MVP
+- Externes Datei-/Objekt-Storage fuer Profilbilder bei einer spaeteren
+  Produktivsetzung

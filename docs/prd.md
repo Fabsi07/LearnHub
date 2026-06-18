@@ -168,19 +168,19 @@ Die folgenden Abläufe beschreiben den Lieferumfang aus Nutzersicht. Jeder Use C
 
 ### UC1 — Erstanmeldung
 
-Eine Studierende öffnet LearnHub zum ersten Mal. Sie registriert sich mit ihrer Hochschul-E-Mail und einem Passwort, vergibt einen Anzeigenamen und wird im Anschluss direkt auf das Dashboard geleitet. Das Dashboard ist zu diesem Zeitpunkt leer und zeigt einen Hinweis, einen ersten Lernplan anzulegen.
+Eine Studierende öffnet LearnHub zum ersten Mal. Sie registriert sich mit ihrer Hochschul-E-Mail und einem Passwort, vergibt einen Anzeigenamen und wird im Anschluss direkt auf das Dashboard geleitet. Das Dashboard zeigt noch keine aktiven Lernpläne oder offenen Aufgaben und weist auf das Anlegen des ersten Lernplans hin.
 
 ### UC2 — Vorbereitung auf einen Zieltermin mit berechnetem Lernplan
 
-Die Studierende möchte sich auf einen Zieltermin in ihrer Statistik-Veranstaltung in zehn Wochen vorbereiten. Sie legt einen neuen Lernplan an, wählt „Plan automatisch berechnen", trägt Veranstaltung/Fach, Zieldatum, Zieltyp, acht Themen, geschätzte Bearbeitungszeiten, subjektive Schwierigkeiten und sechs verfügbare Wochenstunden ein. Die Anwendung berechnet daraus einen Plan mit konkreten Aufgaben, die über die zehn Wochen verteilt sind, und speichert den Plan. Die Studierende öffnet den Plan, prüft die Verteilung und schiebt zwei Aufgaben manuell um eine Woche nach hinten.
+Die Studierende möchte sich auf einen Zieltermin in ihrer Statistik-Veranstaltung in zehn Wochen vorbereiten. Sie legt einen neuen Lernplan an und trägt Veranstaltung/Fach, Zieldatum, Zieltyp, Schwierigkeit, Vorwissen, Seitenumfang und ECTS ein. Die Anwendung berechnet daraus Gesamtstunden, Tagesintensität und einen normalen oder kritischen Plantyp. In der Detailansicht öffnet die Studierende die Kalender-Vorschau. LearnHub verteilt den Aufwand auf konkrete zweistündige Lerneinheiten, berücksichtigt vorhandene Termine und übernimmt die bestätigten Einheiten als verknüpfte Aufgaben und Kalendertermine.
 
 ### UC3 — Tägliche Übersicht
 
-Am Folgetag öffnet die Studierende das Dashboard und sieht direkt die zwei für heute geplanten Lernaufgaben sowie die heutige Vorlesung. Sie öffnet die Kalenderansicht in der Wochendarstellung und prüft, an welchen Nachmittagen freie Zeitfenster für zusätzliche Lerneinheiten verbleiben.
+Am Folgetag öffnet die Studierende das Dashboard und sieht die Anzahl offener Aufgaben, ihre aktiven Lernpläne, den jeweiligen Fortschritt und die nächsten geplanten Lernsessions. Sie öffnet die Kalenderansicht in der Wochendarstellung und prüft die erzeugten Lerneinheiten, Zieltermine und gegebenenfalls importierten DHBW-Veranstaltungen.
 
 ### UC4 — Verzug und Umplanung
 
-Nach zwei Wochen erkennt die Studierende, dass sie hinter ihrem Plan zurückliegt. Sie öffnet den betroffenen Lernplan und klickt auf „Plan neu verteilen". LearnHub verteilt die offenen Aufgaben über die verbleibenden acht Wochen bis zum Zieldatum neu, ohne bereits erledigte Aufgaben zu verschieben. Die neuen Fälligkeitsdaten sind anschließend im Plan und im Kalender sichtbar.
+Nach zwei Wochen erkennt die Studierende, dass sie hinter ihrem Plan zurückliegt. Sie öffnet den betroffenen Lernplan und klickt auf „Offene Aufgaben neu verteilen". LearnHub verteilt die offenen Aufgaben über die verbleibenden acht Wochen bis zum Zieldatum neu, ohne bereits erledigte Aufgaben zu verschieben. Bei Aufgaben mit verknüpftem Lernslot wird auch der Kalendertermin aktualisiert.
 
 ### UC5 — Termin manuell pflegen
 
@@ -188,7 +188,7 @@ Die Studierende erhält eine zusätzliche Sprechstunde beim Professor. Sie öffn
 
 ### UC6 — Abschluss einer Aufgabe
 
-Nach Erledigung einer Lernaufgabe öffnet die Studierende das Dashboard oder den Lernplan und hakt die Aufgabe ab. Die Aufgabe wird als erledigt markiert und verschwindet aus der „Anstehend"-Liste auf dem Dashboard.
+Nach Erledigung einer Lernaufgabe öffnet die Studierende den Lernplan und hakt die Aufgabe ab. Die Aufgabe wird als erledigt markiert, der Fortschritt des Lernplans und die Anzahl offener Aufgaben werden aktualisiert. Ein verknüpfter Kalender-Lernslot zeigt den Erledigungsstatus ebenfalls an.
 
 ### UC7 — Optionaler KI-Check eines Lernplans
 
