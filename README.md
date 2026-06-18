@@ -184,4 +184,4 @@ npm run prisma:deploy     # Schema neu anwenden
 - [Tech-Stack](./docs/tech-stack.md) — eingesetzte Technologien und Begruendung
 - [Auth-Konzept](./docs/auth-concept.md) — Login, Sessions, Schutzlogik
 - [Manueller Abnahmetest](./docs/testing/manual-acceptance-test.md) — Test-Checkliste fuer UC1–UC6
-- [Algorithmus-Konzept](./docs/Algorithmus/) — Entwurf fuer den Lernplan-Algorithmus
+- [Algorithmus-Konzept](./docs/Algorithmus/) — Formel, Phasen und Ausgabeformat der Lernplanung

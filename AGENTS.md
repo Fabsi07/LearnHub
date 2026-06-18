@@ -241,11 +241,8 @@ For a fresh checkout or after pulling committed migrations, use
 4. Use existing UI primitives from `src/components/ui/`
 
 ### Adding UI Primitives
-Use shadcn setup (if needed):
-```bash
-npm run shadcn:init    # Already done (base-nova style)
-# New components can be added via shadcn when needed
-```
+Use the existing shadcn/Base UI setup. New primitives can be added manually in
+`src/components/ui/` following the established component patterns.
 
 ### Styling
 - Use **Tailwind CSS utilities** directly in JSX

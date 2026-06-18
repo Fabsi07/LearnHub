@@ -358,7 +358,7 @@ Lokal hast du evtl. andere Node-Module installiert als die CI. Versuch:
 
 ```bash
 rm -rf .next node_modules
-npm install
+npm ci
 npm run prisma:generate
 npm run build
 ```
