@@ -14,6 +14,7 @@ export interface CurrentUser {
   id: string;
   email: string;
   displayName: string;
+  username?: string | null;
   role: UserRole;
   avatarUrl?: string | null;
 }
@@ -60,7 +61,14 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     where: { id: token },
     include: {
       user: {
-        select: { id: true, email: true, displayName: true, role: true, avatarUrl: true },
+        select: {
+          id: true,
+          email: true,
+          displayName: true,
+          username: true,
+          role: true,
+          avatarUrl: true,
+        },
       },
     },
   });
