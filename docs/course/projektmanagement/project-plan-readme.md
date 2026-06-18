@@ -41,15 +41,7 @@ Wir verwenden eine Story-Point-Skala, die sich an der erwarteten Bearbeitungszei
 
 ## Rollen im Team
 
-| Rolle                                                         | Personen                      |
-| ------------------------------------------------------------- | ----------------------------- |
-| Projektleitung und Koordination                               | Lucas                         |
-| Design / UX                                                   | Lennard, Lucas unterstuetzend |
-| Frontend-Entwicklung                                          | Finn, Yannik                  |
-| Backend-Entwicklung, Datenmodell, API, Auth und Planungslogik | Fabi, Yannik                  |
-| Code-Reviews, Tests und Dokumentation                         | Gesamtes Team                 |
-
-Die Rollen sind bewusst flexibel gehalten, damit Aufgaben je nach Projektphase und Verfuegbarkeit sinnvoll verteilt werden koennen.
+Die fuehrende Rollenverteilung liegt in [`docs/roles.md`](../../roles.md). Dort werden die aktuellen Verantwortlichkeiten und die flexible Rollenlogik im Team gepflegt.
 
 ## Struktur des Plans
 

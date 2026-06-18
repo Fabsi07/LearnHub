@@ -275,15 +275,7 @@ Die Auswahl wurde getroffen, um eine schnelle prototypische Entwicklung zu ermö
 
 ## 12. Projektorganisation
 
-Die detaillierte Rollenverteilung liegt in [docs/roles.md](./roles.md). Verantwortlichkeiten im Überblick:
-
-| Rolle                | Verantwortung                                                     | Personen                       |
-| -------------------- | ----------------------------------------------------------------- | ------------------------------ |
-| Projektleitung       | Koordination, Kommunikation mit dem Auftraggeber, Terminsteuerung | Lucas                          |
-| Design / UX          | Wireframes, Mockups, Designsystem                                 | Lennard, Lucas (unterstützend) |
-| Entwicklung Frontend | Umsetzung der Oberfläche und Datenanbindung                       | Yannik, Finn                   |
-| Entwicklung Backend  | Datenmodell, API-Schnittstellen, Authentifizierung, Planungslogik | Fabi, Finn                     |
-| Querschnitt          | Code-Reviews, Tests, Dokumentation                                | Gesamtes Team                  |
+Die detaillierte und führende Rollenverteilung liegt in [docs/roles.md](./roles.md).
 
 Die Zusammenarbeit erfolgt über regelmäßige Team-Treffen, ein Kanban-Board auf GitHub Projects und Pull-Request-basierte Entwicklung im Hauptrepository.
 
