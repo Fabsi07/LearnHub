@@ -1,263 +1,102 @@
-# Auth-Konzept — LearnHub MVP
+# Authentifizierungs- und Berechtigungskonzept
 
-| Feld          | Inhalt                                                              |
-| ------------- | ------------------------------------------------------------------- |
-| **Status**    | Entwurf zur Team-Abstimmung                                         |
-| **Bezug**     | Issue #36 (C1), blockiert C2 (Registrierung) und C3 (Login/Logout)  |
-| **Datum**     | 2026-05-18                                                          |
-| **Geltung**   | Verbindliche Grundlage für die Auth-Implementierung im MVP          |
+> **Status:** Implementiert
+> **Zuletzt mit dem Code abgeglichen:** 18.06.2026
 
----
+## 1. Zweck und Umfang
 
-## 1. Zweck dieses Dokuments
+LearnHub verwendet eine eigene, schlanke E-Mail-/Passwort-Authentifizierung über Next.js Route Handler. Das Konzept deckt Registrierung, Login, Logout, Sitzungen sowie die Rollen `USER`, `DEV` und `ADMIN` ab.
 
-Das PRD (§6.1 M1, §8.2) legt fest, dass Studierende sich registrieren und anmelden können, dass Passwörter gehasht gespeichert werden und dass Sitzungen über HTTP-Only-Cookies laufen. Dieses Dokument konkretisiert den minimalen Auth-Flow für das MVP, sodass die Tickets C2 und C3 ohne weitere fachliche Klärung umgesetzt werden können.
+Bewusst nicht Bestandteil des MVP sind:
 
-Nicht-Ziele dieses Konzepts:
+- E-Mail-Verifikation
+- Passwort-Reset
+- Single Sign-on oder DHBW-Login
+- Zwei-Faktor-Authentifizierung
+- Rate-Limiting und Account-Sperren
 
-- Kein Passwort-Reset per E-Mail (im PRD §6.3 explizit als Could-Have ausgeschlossen).
-- Kein Single-Sign-On, kein DHBW-Login (PRD §6.3).
-- Keine Mehrnutzer-Administration, keine Rollen (PRD §9).
-- Keine E-Mail-Verifikation. Eine eingegebene E-Mail wird als gültig akzeptiert; doppelte Registrierung mit gleicher E-Mail wird abgelehnt.
+Für das Passwort-Hashing wird keine eigene Kryptografie implementiert, sondern `bcryptjs` verwendet.
 
----
+## 2. Datenmodell
 
-## 2. Entscheidung: Eigene Implementierung statt Library
+Die maßgeblichen Modelle stehen in [`prisma/schema.prisma`](../prisma/schema.prisma):
 
-Für das MVP wird eine **eigene minimale Auth-Implementierung** in Next.js Route Handlers umgesetzt. Keine externe Auth-Library (kein NextAuth/Auth.js, kein Lucia, kein Clerk).
+- `User` speichert E-Mail, Anzeigename, Passwort-Hash, Rolle und optionale Profildaten.
+- `Session` speichert einen opaken Sitzungstoken, die zugehörige User-ID und den Ablaufzeitpunkt.
+- Beim Löschen eines Users werden dessen Sessions über `onDelete: Cascade` entfernt.
 
-Begründung:
+Die E-Mail ist eindeutig und wird bei Registrierung und Login normalisiert in Kleinschreibung verarbeitet.
 
-- **Erklärbarkeit für die Abnahme.** Das Team muss in der Abschlusspräsentation Architekturentscheidungen erläutern (PRD §14). Eine selbst gebaute, schlanke Auth ist vollständig durchschaubar; Library-Internals (NextAuth-Callbacks, Adapter, etc.) müssten zusätzlich erklärt werden.
-- **Kleiner Funktionsumfang.** Es werden nur Registrierung, Login, Logout, Session-Prüfung und Passwort-Hashing benötigt. OAuth, Magic Links, E-Mail-Verifikation, Multi-Factor sind nicht im Lieferumfang. Der Mehrwert einer Library kommt erst bei diesen Features zum Tragen.
-- **Lokaler Betrieb.** LearnHub läuft nur lokal (PRD §6.1 M8, §9). Anforderungen wie horizontale Skalierung, externe IdPs oder verteiltes Session-Management existieren nicht.
-- **Lerneffekt.** Das Projekt ist ein Hochschulprojekt — das Selbstbauen entspricht dem Bildungsauftrag.
+## 3. Passwörter
 
-Abgrenzung: Für das Passwort-Hashing wird trotzdem eine etablierte Library (`bcryptjs`) eingesetzt. Krypto-Primitive selbst implementieren ist explizit kein Ziel.
+- Passwörter werden mit bcrypt und Cost-Faktor 12 gehasht.
+- Bei der Registrierung sind mindestens acht Zeichen erforderlich.
+- Klartextpasswörter werden weder gespeichert noch protokolliert oder über eine API zurückgegeben.
+- Beim Login wird auch für unbekannte E-Mail-Adressen ein bcrypt-Vergleich gegen einen Dummy-Hash ausgeführt. Dadurch lässt sich die Existenz eines Accounts nicht einfach aus der Antwortzeit ableiten.
+- Eine fehlgeschlagene Anmeldung liefert unabhängig von der Ursache die generische Meldung „E-Mail oder Passwort ist falsch.“
 
----
+Die Implementierung befindet sich in [`src/lib/auth/password.ts`](../src/lib/auth/password.ts) sowie den Auth-Route-Handlern unter [`src/app/api/auth`](../src/app/api/auth).
 
-## 3. Datenmodell (Prisma)
+## 4. Sitzungen und Cookies
 
-Das Auth-Konzept fügt zwei Tabellen zum geplanten Prisma-Schema hinzu. `User` wird ohnehin in [docs/tech-stack.md](./tech-stack.md) als Kernmodell genannt.
+Bei erfolgreicher Registrierung oder Anmeldung erzeugt der Server mit `crypto.randomBytes(32)` einen zufälligen Session-Token. Der Token wird als ID der `Session` gespeichert und im Cookie `lh_session` gesetzt.
 
-```prisma
-model User {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  displayName  String
-  passwordHash String
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  sessions     Session[]
-}
+| Cookie | Zweck |
+|---|---|
+| `lh_session` | Opaker Token zur serverseitigen Session-Prüfung |
+| `lh_role` | Rollenhinweis für die frühe Weiterleitung in der Middleware |
 
-model Session {
-  id        String   @id                  // zufälliger, kryptografisch starker Token, identisch zum Cookie-Wert
-  userId    String
-  expiresAt DateTime
-  createdAt DateTime @default(now())
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+Beide Cookies verwenden:
 
-  @@index([userId])
-  @@index([expiresAt])
-}
-```
+- `HttpOnly`
+- `SameSite=Lax`
+- `Secure` in Produktionsumgebungen
+- `Path=/`
 
-Begründungen:
+Die Laufzeit beträgt ohne „Eingeloggt bleiben“ 24 Stunden, mit aktivierter Option 30 Tage. Eine Sliding-Renewal findet nicht statt.
 
-- **E-Mail als unique Login-Kennung.** Das Login-Formular verwendet bereits eine E-Mail (siehe [src/components/login/LoginForm.tsx](../src/components/login/LoginForm.tsx)). Großbuchstaben werden vor dem Speichern und Vergleich auf Kleinbuchstaben normalisiert.
-- **`displayName`** entspricht dem in PRD §UC1 erwähnten Anzeigenamen.
-- **`Session.id` als Token.** Der zufällige Session-Token wird unverändert als Primärschlüssel verwendet. Es gibt keinen separaten Identifier — das hält die Logik einfach. Der Token wird über `crypto.randomBytes(32).toString('base64url')` erzeugt (≥ 256 Bit Entropie).
-- **`onDelete: Cascade`** stellt sicher, dass beim Löschen eines Nutzers alle seine Sessions verschwinden.
+`getSession()` und `getCurrentUser()` in [`src/lib/auth/session.ts`](../src/lib/auth/session.ts) prüfen den Token gegen die Datenbank und verwerfen abgelaufene Sessions. Beim Logout wird die aktuelle Session gelöscht und beide Cookies werden entwertet.
 
----
+## 5. Auth-Endpunkte
 
-## 4. Passwort-Hashing
+| Methode | Pfad | Verhalten |
+|---|---|---|
+| `POST` | `/api/auth/register` | Eingaben validieren, User und Session erstellen |
+| `POST` | `/api/auth/login` | Zugangsdaten prüfen und Session erstellen |
+| `POST` | `/api/auth/logout` | Session löschen und Cookies entwerten |
 
-**Festlegung:** `bcrypt` mit Cost-Faktor 12, Implementierung über das `bcryptjs`-Paket.
+Die Request-Bodies werden mit Zod validiert. Eine doppelte Registrierung liefert Status `409`, ungültige Eingaben Status `400` und falsche Zugangsdaten Status `401`.
 
-Begründungen:
+## 6. Schutz von Seiten und APIs
 
-- Industriestandard und in Lehrbüchern verbreitet — gut erklärbar in der Abnahme.
-- Reines JavaScript-Paket (`bcryptjs`), keine nativen Build-Schritte nötig — vereinfacht das lokale Setup auf den Geräten der Teammitglieder.
-- Cost 12 ist gängiger Default für 2026 und liefert ≈ 200–300 ms pro Hash auf einem typischen Entwicklerrechner. Für den lokalen MVP-Betrieb ist das akzeptabel.
+[`src/middleware.ts`](../src/middleware.ts) schützt alle nicht öffentlichen Seiten und APIs:
 
-Regeln:
+- Ohne Session-Cookie werden Seiten auf `/login?redirect=<pfad>` weitergeleitet.
+- Geschützte APIs antworten ohne Session-Cookie mit `401`.
+- Die Middleware prüft nur die Existenz der Cookies, da sie keinen Prisma-Zugriff verwendet.
+- Die tatsächliche Gültigkeit der Session wird anschließend serverseitig über `getSession()` oder `getCurrentUser()` geprüft.
+- Das Layout der geschützten `(app)`-Route-Group leitet bei ungültiger oder abgelaufener Session auf `/login` um.
 
-- Passwörter werden **niemals** im Klartext gespeichert, geloggt oder über die API zurückgegeben.
-- Mindestlänge bei Registrierung: 8 Zeichen. Keine weiteren Komplexitätsregeln im MVP. NIST SP 800-63B empfiehlt explizit, auf Sonderzeichen-Pflicht zu verzichten.
-- Beim Login wird `bcrypt.compare` benutzt; bei nicht-existierender E-Mail wird ein Dummy-`compare` gegen einen Hash mit gleicher Cost ausgeführt, um die Antwortzeit konstant zu halten und User-Enumeration zu erschweren.
+Öffentlich sind insbesondere `/login`, `/register` und `/api/auth/*`. Nach einem erfolgreichen Login wird ein lokaler `redirect`-Pfad berücksichtigt; externe oder mit `//` beginnende Ziele werden abgelehnt.
 
----
+## 7. Rollen und Admin-Zugriff
 
-## 5. Sessions
+Das Datenmodell kennt die Rollen:
 
-**Modell:** Server-Sessions in der Datenbank, opakes Token im HTTP-Only-Cookie.
+- `USER`: reguläre Nutzung
+- `DEV`: Zugriff auf die Feedback-Verwaltung
+- `ADMIN`: Benutzer- und Feedback-Verwaltung
 
-### 5.1 Session-Erstellung
+Die Middleware verwendet `lh_role` nur für eine frühe Navigation beziehungsweise Ablehnung. Autoritative Berechtigungsprüfungen laden den aktuellen User aus der Datenbank und prüfen dessen Rolle serverseitig über [`src/lib/auth/admin.ts`](../src/lib/auth/admin.ts).
 
-Bei erfolgreichem Login oder erfolgreicher Registrierung:
+Ein fester Admin-Account wird über `ADMIN_EMAIL`, `ADMIN_PASSWORD` und `ADMIN_DISPLAY_NAME` konfiguriert. Die lokalen Beispielwerte stehen in [`.env.example`](../.env.example) und sind nicht für einen produktiven Betrieb geeignet. Die reservierte Admin-E-Mail kann nicht über die normale Registrierung angelegt werden.
 
-1. Token erzeugen (`crypto.randomBytes(32).toString('base64url')`).
-2. Eintrag in `Session` schreiben (`id = token`, `userId`, `expiresAt`).
-3. Cookie `lh_session` mit dem Token setzen.
+## 8. Nutzerbezogene Daten
 
-### 5.2 Cookie-Attribute
+Alle fachlichen API-Routen ermitteln den eingeloggten Nutzer serverseitig und begrenzen Datenbankabfragen auf dessen User-ID. Dadurch sind Lernpläne, Aufgaben, Kalenderdaten, Benachrichtigungen, Einstellungen und Feedback nutzerbezogen.
 
-| Attribut    | Wert                                                 |
-| ----------- | ---------------------------------------------------- |
-| `name`      | `lh_session`                                         |
-| `value`     | opaker Session-Token (≥ 256 Bit Entropie)            |
-| `HttpOnly`  | true                                                 |
-| `SameSite`  | `Lax`                                                |
-| `Secure`    | `process.env.NODE_ENV === "production"`              |
-| `Path`      | `/`                                                  |
-| `Max-Age`   | siehe §5.3                                           |
+Anzeigename, E-Mail, Rolle und Profilbild werden über `getCurrentUser()` in den geschützten App-Bereich gereicht. Der Upload eines Profilbilds ist implementiert; das Bearbeiten von Name, E-Mail und Passwort in den Einstellungen ist derzeit noch nicht funktional angebunden.
 
-- **HttpOnly** verhindert Zugriff via JavaScript und schützt vor XSS-basiertem Token-Diebstahl.
-- **SameSite=Lax** schützt vor CSRF bei Standard-Formularen und ist mit dem Login-Flow kompatibel.
-- **Secure** bleibt im lokalen Dev-Betrieb (HTTP) aus, da der Browser sonst das Cookie verwirft.
+## 9. Sicherheitsgrenzen des MVP
 
-### 5.3 Lebensdauer und „Eingeloggt bleiben"
-
-Das Login-Formular hat bereits eine Checkbox „Eingeloggt bleiben" (siehe [src/components/login/LoginForm.tsx](../src/components/login/LoginForm.tsx)). Diese steuert die Cookie-TTL:
-
-| Checkbox            | Cookie-`Max-Age` und `Session.expiresAt` |
-| ------------------- | ---------------------------------------- |
-| **nicht angehakt**  | 24 Stunden                               |
-| **angehakt**        | 30 Tage                                  |
-
-Jede authentifizierte Anfrage prüft `expiresAt`. Eine **Sliding-Renewal** findet im MVP **nicht** statt — die Session läuft hart nach `Max-Age` ab. Begründung: einfacher zu implementieren, ausreichend für den MVP-Demonstrationsfluss.
-
-### 5.4 Session-Prüfung
-
-Eine Hilfsfunktion `getCurrentUser()` in `src/lib/auth/session.ts` (zu erstellen in C3):
-
-1. Cookie `lh_session` lesen.
-2. `Session`-Datensatz inklusive `user` über Prisma laden.
-3. Wenn nicht gefunden oder `expiresAt < now()`: Session löschen, `null` zurückgeben.
-4. Sonst `user` zurückgeben.
-
-Diese Funktion wird sowohl in Server Components als auch in Route Handlers verwendet.
-
-### 5.5 Logout
-
-`POST /api/auth/logout`:
-
-1. Session-Token aus Cookie lesen.
-2. `Session`-Datensatz löschen.
-3. Cookie mit `Max-Age=0` überschreiben.
-4. Redirect auf `/login`.
-
----
-
-## 6. Geschützte Routen
-
-Das Routing wurde in PR #29 auf eine `(app)`-Route-Group umgestellt. Diese Gruppe kapselt den eingeloggten Bereich und ist die natürliche Schutzgrenze.
-
-### 6.1 Öffentliche Routen
-
-- `/login`
-- `/register`
-- `/forgot-password` (statische Seite, im MVP ohne Funktion — Passwort-Reset ist Could-Have, PRD §6.3)
-- `/api/auth/*` (Login-, Register-, Logout-Endpunkte)
-- alle Next.js-Interna (`/_next/*`, `/favicon.ico`, `/icons/*`, `/images/*`)
-
-### 6.2 Geschützte Routen
-
-Alles in der `(app)`-Route-Group, insbesondere:
-
-- `/dashboard`
-- `/learning-plans/*`
-- `/calendar`
-- `/settings`
-- alle weiteren App-Routen unterhalb der `(app)`-Group
-
-Auch geschützt: alle API-Routen außer `/api/auth/*` (z.B. `/api/calendar/*`, später `/api/learning-plans/*`).
-
-### 6.3 Schutzmechanismus
-
-In [src/middleware.ts](../src/middleware.ts) existiert die Schutzlogik bereits, ist aber per `AUTH_ENABLED = false` deaktiviert. C3 aktiviert sie. Verhalten:
-
-- Nicht eingeloggter Aufruf einer geschützten Route ⇒ Redirect auf `/login?redirect=<ursprünglicher Pfad>`.
-- Eingeloggter Aufruf von `/login` oder `/register` ⇒ Redirect auf `/dashboard`.
-- Nach erfolgreichem Login wird der `redirect`-Parameter respektiert, sofern er ein **lokaler Pfad** ist (Start mit `/`, kein `//`, keine absolute URL) — Schutz vor Open-Redirect.
-
-Wichtig: Die Middleware prüft im MVP **nur** das Vorhandensein des Cookies, nicht dessen Gültigkeit gegen die Datenbank (Next.js Middleware läuft in der Edge-Runtime ohne Prisma-Zugang). Die echte Session-Validierung erfolgt in Server Components und Route Handlern über `getCurrentUser()`. Das ist akzeptabel, weil:
-
-- Ein abgelaufenes oder gefälschtes Cookie führt zwar zu einem Render-Versuch, aber jede geschützte Server-Action und jede geschützte API-Route ruft `getCurrentUser()` und gibt bei `null` einen 401/Redirect zurück.
-- Es gibt im MVP keinen anonymen Datenzugriff über UI-Skelette hinaus.
-
----
-
-## 7. API-Endpunkte (Übersicht für C2/C3)
-
-| Methode | Pfad                  | Zweck                                           | Ticket |
-| ------- | --------------------- | ----------------------------------------------- | ------ |
-| `POST`  | `/api/auth/register`  | Neuen Nutzer anlegen, Session erstellen, Cookie | C2     |
-| `POST`  | `/api/auth/login`     | Credentials prüfen, Session erstellen, Cookie   | C3     |
-| `POST`  | `/api/auth/logout`    | Session löschen, Cookie entwerten               | C3     |
-
-Antworten:
-
-- **Erfolg:** `200`/`201` mit minimalem JSON (`{ ok: true }`); Cookie wird vom Server gesetzt. Die Weiterleitung passiert im Client (`router.push`).
-- **Fehler bei Login:** `401` mit generischer Fehlermeldung „E-Mail oder Passwort ist falsch." — keine Unterscheidung zwischen unbekannter E-Mail und falschem Passwort (Schutz vor User-Enumeration).
-- **Fehler bei Registrierung:** `409` wenn E-Mail bereits existiert; `400` bei ungültiger Eingabe.
-
-Validierung der Request-Bodies erfolgt mit `zod`, weil das Projekt bereits TypeScript-first arbeitet und so die Typen aus dem Schema abgeleitet werden können.
-
----
-
-## 8. Sicherheits-Erwägungen im MVP
-
-**XSS-Token-Diebstahl** — `HttpOnly`-Cookie. React rendert nur escaped Inhalte; kein `dangerouslySetInnerHTML` in Auth-relevanten Pfaden.
-
-**CSRF** — `SameSite=Lax`. Alle State-ändernden Aktionen laufen über Same-Origin-Formulare und Fetch.
-
-**User-Enumeration** — Generische Fehlermeldung bei Login; Dummy-Hash-Vergleich bei unbekannter E-Mail (siehe §4).
-
-**Brute Force** — Aus dem MVP-Scope ausgeklammert. Hashing-Cost 12 macht serverseitiges Bruteforcing teuer. Rate-Limiting wird in C2/C3 nicht implementiert, da es vorerst für den lokalen Gebrauch ohne skalierte Nutzung gedacht ist.
-
-**Session-Fixation** — Nach erfolgreichem Login oder Register wird **immer** ein frischer Token erzeugt (keine Wiederverwendung bestehender Cookies).
-
-**Klartext-Passwort** — Nirgends gespeichert oder geloggt. Auch nicht im Browser-Storage. Das Login-Formular hält den Wert nur im React-State. 
-
-**Open Redirect** — Der `redirect`-Parameter wird gegen lokale Pfade validiert (siehe §6.3).
-
-Bewusst **außerhalb** des MVP-Scopes:
-
-- 2FA / TOTP.
-- E-Mail-Verifikation.  
-- Passwort-Reset.
-- Rate-Limiting / Account-Lockout.
-- Audit-Logs.
-- Refresh-Token-Rotation.
-
-Diese Punkte sind dokumentiert, damit klar ist, dass sie bewusst weggelassen — nicht vergessen — wurden. Für eine spätere Weiterentwicklung oder bei verbleibender Restzeit im Projekt können einzelne Punkte ergänzt werden. Aus diesen Gründen sind die oben genannten Themen als optionale Erweiterungen einzuordnen (vgl. PRD §6.3 Could-Have und §16 Ausblick) und nicht Teil der MVP-Abnahmekriterien.
-
----
-
-## 9. Auswirkungen auf bestehenden Code
-
-Damit C2/C3 wissen, was zu ändern ist:
-
-- [src/middleware.ts](../src/middleware.ts) — `AUTH_ENABLED` auf `true` setzen, Public-Paths-Liste prüfen.
-- [src/components/login/LoginForm.tsx](../src/components/login/LoginForm.tsx) — `handleSubmit` ruft `POST /api/auth/login` statt `router.push("/dashboard")`. Fehleranzeige ergänzen.
-- `src/components/register/RegisterForm.tsx` — analog für Registrierung anlegen (existiert noch nicht).
-- `src/lib/auth/` — neu: `session.ts` (Helper), `password.ts` (Hash/Verify), `cookie.ts` (Cookie-Konstanten).
-- `prisma/schema.prisma` — `User` und `Session` ergänzen (siehe §3). Migration erstellen.
-- `package.json` — `bcryptjs`, `zod` ergänzen.
-
----
-
-## 10. Offene Punkte für die Team-Abstimmung
-
-Diese Punkte werden im Team-Meeting bestätigt (Akzeptanzkriterium „Konzept im Team bestätigt"):
-
-1. Ist die Entscheidung gegen eine Auth-Library mitgetragen?
-2. Sind die Session-TTLs (24 h / 30 d) angemessen?
-3. Soll die E-Mail-Verifikation wirklich entfallen? Falls ja: ist dem Auftraggeber klar, dass jede E-Mail-Eingabe akzeptiert wird?
-4. Wer übernimmt C2 (Registrierung) und C3 (Login/Logout/Schutz)?
-
-Nach Bestätigung wird dieses Dokument auf Status „Verbindlich" gehoben und die Tickets C2/C3 entsprechend verfeinert.
+Die aktuelle Lösung ist für den lokalen Hochschul-MVP ausgelegt. Für einen öffentlichen Produktivbetrieb wären insbesondere Rate-Limiting, sichere produktive Admin-Credentials, Passwort-Reset, E-Mail-Verifikation, Audit-Logging und zusätzliche CSRF-Schutzmaßnahmen zu ergänzen.

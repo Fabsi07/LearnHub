@@ -1,5 +1,5 @@
 // Geteilte Typen, Serializer und Validierungs-Helfer für die Lernplan-Features.
-// Siehe docs/lernplan-umsetzung.md (Phase B).
+// Gemeinsame Datentypen für Lernplan-API und UI.
 
 import type { CalendarEvent, GoalType, StudyPlan, Task } from "@prisma/client";
 

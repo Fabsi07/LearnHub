@@ -3,7 +3,7 @@
 //
 // Reine Funktion ohne Seiteneffekte – gleiche Eingaben ergeben den gleichen
 // Plan (docs/Algorithmus/Ausgabeformat.md: "Die Ausgabe soll deterministisch
-// sein"). Logik und Konstanten: docs/lernplan-umsetzung.md §6.
+// sein"). Fachliche Grundlagen: docs/Algorithmus/.
 
 import type { AlgorithmResult } from "@/lib/calculations/studyPlanAlgorithm";
 

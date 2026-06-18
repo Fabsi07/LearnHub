@@ -79,7 +79,7 @@ model StudyPlan {
   ownerId     String
 
   // Algorithmus-Eingaben (optional, nur gesetzt wenn ein Plan berechnet wurde).
-  // Siehe docs/lernplan-umsetzung.md §7.1 und docs/Algorithmus/Algorithmus_neue_Formel.md.
+  // Siehe docs/Algorithmus/Algorithmus_neue_Formel.md.
   difficulty     Int? // Schwierigkeit der Klausur 1–5
   priorKnowledge Int? // Vorwissen 1–5
   pages          Int? // Anzahl Seiten / Folien
@@ -182,7 +182,7 @@ model CalendarEvent {
 }
 
 // =====================================================================
-// Externe Kalender-Quellen (siehe docs/kalender-db-todos.md)
+// Externe Kalender-Quellen
 // =====================================================================
 
 model CalendarSource {
