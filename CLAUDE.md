@@ -50,7 +50,7 @@ Vermeiden:
 | UI            | shadcn + `@base-ui/react`            |
 | Icons         | `lucide-react` only                  |
 | DB            | Prisma 6 (`prisma` CLI + `@prisma/client`) + PostgreSQL |
-| Auth          | Noch nicht implementiert             |
+| Auth          | Eigene E-Mail/Passwort-Auth mit bcrypt, DB-Sessions und HTTP-Only-Cookies |
 | Utilities     | `clsx` + `tailwind-merge` via `cn()` |
 | External APIs | `node-ical` für DHBW ICS Feed        |
 
@@ -60,9 +60,16 @@ Vermeiden:
 npm run dev
 npm run build
 npm run lint
+npm run typecheck
+npm test
 npm run prisma:generate
+npm run prisma:deploy
 npm run prisma:migrate
 ```
+
+`prisma:deploy` wendet eingecheckte Migrationen beim Setup bzw. nach einem
+`git pull` an. `prisma:migrate` ist nur für eigene Änderungen an
+`prisma/schema.prisma` gedacht.
 
 ---
 
@@ -94,6 +101,7 @@ src/
 │   ├── (app)/
 │   ├── api/
 │   ├── login/
+│   ├── register/
 │   ├── globals.css
 │   └── layout.tsx
 │
@@ -102,19 +110,28 @@ src/
 │   ├── layout/
 │   ├── calendar/
 │   ├── dashboard/
+│   ├── feedback/
+│   ├── admin/
 │   ├── notifications/
 │   ├── settings/
 │   └── study-plan/
 │
 ├── lib/
-├── types/
+│   ├── auth/
+│   ├── calculations/
+│   ├── calendar/
+│   ├── study-plan/
+│   ├── notifications/
+│   ├── feedback/
+│   └── admin/
 └── middleware.ts
 ```
 
 ## Strukturregeln
 
 * `app/` bleibt dünn
-* Business-Logik liegt in `components/<feature>/`
+* Render- und Interaktionslogik liegt in `components/<feature>/`
+* Berechnungen, Validierung, Datenzugriffs-Helfer und DTOs liegen in `lib/<feature>/`
 * Wiederverwendbare UI → `components/ui/`
 * Layout-Komponenten → `components/layout/`
 * Kleine lokale Helfer bleiben feature-nah
@@ -204,7 +221,9 @@ Neue Komponenten bevorzugt mit Tailwind-Utilities (`bg-brand-red`) statt Inline-
 
 ## Dark Mode
 
-Dark Mode wird über State gesteuert, nicht über `dark:` Klassen auf `<html>`.
+Dark Mode wird über `useTheme()` persistent in `localStorage` gespeichert und
+über die `dark`-Klasse auf `<html>` angewendet. Bestehende Theme-Variablen und
+`dark:`-Varianten weiterverwenden.
 
 ---
 
@@ -297,22 +316,27 @@ sind Pflicht.
 
 ## Datenbank
 
-Prisma-Schema ist bewusst noch fast leer.
+Das Prisma-Schema enthält die produktrelevanten MVP-Modelle für Nutzer,
+Sessions, Lernpläne, Aufgaben, Kalender, Benachrichtigungen und Feedback.
 
 Wichtig:
 
-* Keine Prisma-Models erfinden
-* Keine speculative architecture
-* DB-Ideen dokumentieren statt implementieren
+* Bestehende Relationen und Löschregeln vor Schemaänderungen prüfen
+* Nutzerbezogene Abfragen immer über die authentifizierte `ownerId`/`userId` begrenzen
+* Nach eigenen Schemaänderungen `npm run prisma:migrate` und `npm run prisma:generate`
+* Nach einem Pull eingecheckte Migrationen mit `npm run prisma:deploy` anwenden
+* Keine speculative architecture oder unnötigen neuen Modelle
 
 ---
 
 ## Kalender
 
 * Keine Dummy-Events mehr
-* Externe Events kommen ausschließlich über `/api/calendar/external`
+* Externe DHBW-Events kommen über `/api/calendar/external`
+* Eigene Events werden persistent über `/api/calendar/events` verwaltet
 * Read-only Events dürfen nicht editierbar sein
 * All-Day-Events gehören ausschließlich in die AllDayBar
+* Verknüpfte Task- und Lernplan-Daten beim Verschieben/Löschen konsistent halten
 
 ---
 
@@ -333,9 +357,12 @@ Vor jedem Commit:
 
 ```bash
 npm run build
+npm run typecheck
+npm run lint
+npm test
 ```
 
-muss erfolgreich durchlaufen.
+Die Prüfungen müssen in einem zur Änderung passenden Umfang erfolgreich laufen.
 
 ---
 
@@ -364,13 +391,10 @@ Vor jeder größeren Änderung:
 
 # 13. Bekannte Baustellen
 
-* Auth existiert noch nicht
-* Prisma-Schema noch offen
-* `src/types/` aktuell weitgehend leer
-* DHBW OWA Server ist instabil
-* Retry + Cache sind essenziell
-* DB-bezogene TODOs landen in:
-
-```txt
-docs/kalender-db-todos.md
-```
+* Profilname, E-Mail und Passwort-Reset sind in den Einstellungen noch nicht angebunden
+* Allgemeine Deadline-Erinnerungen und tägliche Übersichten sind teilweise UI-Stubs
+* Reproduzierbare Demo-Daten/Seed fehlen noch
+* Automatisierte Tests decken bisher vor allem Lernplanlogik ab; API-/E2E-Tests fehlen
+* Der DHBW-ICS-Server ist extern und kann instabil sein; Retry, Timeout und Cache beibehalten
+* KI-Funktionen wurden bewusst nicht in den MVP aufgenommen
+* Produktivbetrieb, Rate Limiting, Passwort-Recovery und externes Datei-Storage sind nicht Teil des lokalen MVP

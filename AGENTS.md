@@ -2,20 +2,25 @@
 
 **Project:** Learning Management Application (MVP)  
 **Stack:** Next.js 15 + React 18 + TypeScript + Tailwind CSS + Prisma  
-**Status:** Early MVP scaffold with app shell, calendar UI, settings/notifications mocks, and core backend work still open
+**Status:** Functional local MVP with authentication, persistent study plans/tasks,
+calendar integration, deterministic scheduling, notifications, feedback, and
+role-based administration. Some settings and presentation/demo preparation remain open.
 
 ---
 
 ## Quick Start Commands
 
 ```bash
-npm install           # Install dependencies
+npm ci                # Install dependencies exactly from package-lock.json
 npm run dev           # Start development server (http://localhost:3000)
 npm run build         # Build for production
 npm start             # Start production server
 npm run lint          # Run ESLint
+npm run typecheck     # Run TypeScript without emitting files
+npm test              # Run unit tests
 npm run prisma:generate  # Generate Prisma Client
-npm run prisma:migrate   # Run database migrations
+npm run prisma:deploy    # Apply committed migrations after setup/pull
+npm run prisma:migrate   # Create a migration after editing schema.prisma
 ```
 
 ---
@@ -24,11 +29,14 @@ npm run prisma:migrate   # Run database migrations
 
 LearnHub is a web-based learning management system designed for students to plan, organize, and track their study activities. The application provides centralized dashboard views, calendar-based task scheduling, and learning plan management.
 
-**Key Features (in design/implementation):**
-- Dashboard with task overview
-- Calendar view for deadlines and planning
-- Study plan management
-- Activity/event tracking
+**Implemented core features:**
+- Registration, login/logout, database sessions, and protected routes
+- Dashboard with learning-session, task, and study-plan summaries
+- Persistent study-plan and task CRUD with progress tracking and replanning
+- Deterministic workload calculation and collision-aware calendar scheduling
+- Day/week/month/list calendar views, local events, and DHBW ICS integration
+- Missed-session notifications and persistent notification settings
+- User feedback plus `ADMIN`/`DEV` management views
 
 See [design documentation](./docs/design/design.md) and [tech stack details](./docs/tech-stack.md).
 
@@ -47,7 +55,8 @@ See [design documentation](./docs/design/design.md) and [tech stack details](./d
 ### Backend & Data
 - **Database:** PostgreSQL (configured in Prisma, core domain models defined)
 - **ORM:** Prisma 6 (`prisma` CLI + `@prisma/client`, both on 6.x)
-- **API Routes:** Next.js API routes; `/api/calendar/external` already loads the DHBW ICS feed, other feature routes are still scaffolded
+- **API Routes:** Next.js Route Handlers for auth, study plans/tasks, calendar
+  events/sources, notifications/settings, feedback, profile avatars, and admin users
 
 ### Project Setup
 - **Component Library Setup:** shadcn/ui (base-nova style, Base UI icons)
@@ -76,9 +85,13 @@ src/
 │   │   ├── calendar/       # Calendar route (/calendar)
 │   │   ├── notifications/  # Notifications route (/notifications)
 │   │   ├── settings/       # Settings route (/settings)
+│   │   ├── study-plan/     # Study-plan overview/detail routes
+│   │   ├── feedback/       # User feedback route
+│   │   ├── admin/          # ADMIN/DEV management route
 │   │   └── layout.tsx      # App shell layout
 │   ├── page.tsx            # Home route (/)
 │   ├── login/page.tsx      # Login route (/login)
+│   ├── register/page.tsx   # Registration route (/register)
 │   ├── api/                # API routes
 │   ├── layout.tsx          # Root layout
 │   └── globals.css         # Global styles
@@ -87,24 +100,27 @@ src/
 │   ├── ui/                 # UI primitives (button, input, card, label, checkbox)
 │   ├── layout/             # Layout components (DashboardShell, Sidebar, Topbar)
 │   ├── login/              # Login-specific components
-│   ├── dashboard/          # Dashboard components (placeholder)
+│   ├── dashboard/          # Dashboard summaries and progress
 │   ├── calendar/           # Calendar components and views
-│   ├── notifications/      # Notifications mock UI
-│   ├── settings/           # Settings mock UI
-│   ├── study-plan/         # Study plan components (placeholder)
-│   └── app-shell/          # App shell components (placeholder)
+│   ├── notifications/      # Persistent notification UI
+│   ├── settings/           # Profile/calendar/notification settings
+│   ├── study-plan/         # Study-plan, task, scheduler preview UI
+│   ├── feedback/           # Feedback submission
+│   └── admin/              # User and feedback management
 │
 ├── lib/                    # Utilities & helpers
 │   ├── utils.ts            # `cn()` utility for Tailwind class merging
+│   ├── auth/               # Password, cookie, session, and role helpers
+│   ├── calculations/       # Study-plan calculation and replanning
 │   ├── calendar/           # ICS mapping and external calendar hook
-│   ├── api/                # API client utilities (empty, ready for implementation)
-│   ├── db/                 # Database queries & helpers (empty)
-│   ├── calculations/       # Business logic (empty)
-│   └── utils/              # Additional utilities (empty)
+│   ├── study-plan/         # DTOs, validation, progress, scheduler, hooks
+│   ├── notifications/      # Notification types, summaries, settings, checks
+│   ├── feedback/           # Feedback server/types
+│   └── admin/              # Admin user helpers
 │
-├── types/                  # TypeScript type definitions (empty, ready for use)
 └── prisma/                 # Prisma schema & migrations
-    └── schema.prisma       # Database schema (basic config only)
+    ├── schema.prisma       # Complete current domain schema
+    └── migrations/         # Committed database migrations
 ```
 
 ---
@@ -120,8 +136,7 @@ src/
 "use client"; // Client component for state management
 export function DashboardShell({ children }: DashboardShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-  // ... render layout with sidebar, topbar, content
+  // ... load notification summary and render sidebar/topbar/content
 }
 ```
 
@@ -169,12 +184,17 @@ Pages inside `src/app/(app)/` are already wrapped by `src/app/(app)/layout.tsx`,
 
 ## API Routes & Database
 
-### API Routes (Current Status: Scaffolded)
+### API Routes (Current Status: Implemented MVP)
 **Location:** `src/app/api/`
 
 Current status:
-- `api/calendar/external/route.ts` loads external DHBW ICS events.
-- `api/activity/`, `api/events/`, and `api/study-plan/` are scaffolded but still empty.
+- Auth: register, login, logout
+- Study plans: CRUD, task CRUD, open-task replanning
+- Calendar: local event CRUD, DHBW ICS feed, persisted course source
+- Notifications: list/update/delete, missed-session checks and settings
+- Feedback: submission and management
+- Admin: role-protected user management
+- Profile: avatar upload
 
 **When implementing API routes:**
 Use Next.js App Router API route conventions:
@@ -189,24 +209,30 @@ export async function POST(request: Request) {
 ```
 
 ### Database & Prisma
-**Current Status:** Basic PostgreSQL config only (no models defined)
+**Current Status:** PostgreSQL schema and migrations are implemented.
 
 **Schema location:** [prisma/schema.prisma](./prisma/schema.prisma)
 
-**When adding models:**
+Current models include `User`, `Session`, `StudyPlan`, `Task`, `CalendarEvent`,
+`CalendarSource`, `Notification`, `NotificationSettings`, and `Feedback`.
+
+**When changing models:**
 1. Define in `schema.prisma`
 2. Run `npm run prisma:migrate` to create migrations
 3. Run `npm run prisma:generate` to update Prisma Client
+
+For a fresh checkout or after pulling committed migrations, use
+`npm run prisma:deploy` instead of creating a new migration.
 
 ---
 
 ## Common Development Tasks
 
 ### Adding a New Page
-1. Create directory in `src/app/` (e.g., `src/app/profile/`)
+1. Create the route in the appropriate public or `(app)` directory
 2. Add `page.tsx` file
 3. Use existing layouts or create new ones
-4. Example: [dashboard/page.tsx](src/app/dashboard/page.tsx)
+4. Example: [dashboard/page.tsx](src/app/(app)/dashboard/page.tsx)
 
 ### Adding a New Component
 1. Create file in appropriate `src/components/` subdirectory
@@ -227,7 +253,7 @@ npm run shadcn:init    # Already done (base-nova style)
 - CSS variables available for theme customization (see [globals.css](src/app/globals.css))
 
 ### Type Definitions
-- Add shared types to `src/types/` as needed
+- Keep feature DTOs/types in `src/lib/<feature>/` unless they are truly global
 - Use `interface` for React props
 - Component-specific types can live in component files
 
@@ -265,14 +291,20 @@ className={cn("p-4", someCondition && "p-2")}
 
 ### 2. Database: Schema Defined, Local Setup Required
 **Current state:** Prisma schema and initial migration are committed (`prisma/schema.prisma`, `prisma/migrations/`).  
-**Note:** Each developer needs a local `.env` with `DATABASE_URL` (see README setup section) and runs `npm run prisma:migrate` once to apply the migration against the local Docker PostgreSQL.
+**Note:** Each developer needs a local `.env` (see README/SETUP). Apply committed
+migrations with `npm run prisma:deploy`, then run `npm run prisma:generate`.
+Use `POSTGRES_PORT` plus the matching `DATABASE_URL` for local port conflicts.
 
-### 3. API Routes Are Mostly Scaffolded
-**Current state:** Calendar external sync exists; study-plan, activity, and events handlers are still missing.  
-**Next step:** Add `route.ts` files with GET/POST handlers when backend development begins.
+### 3. APIs Are User-Scoped
+All protected route handlers must validate the database session. Queries and
+mutations for study plans, tasks, events, notifications, and feedback must stay
+scoped to the authenticated user. Middleware cookie checks are not a substitute
+for server-side session and role checks.
 
-### 4. Feature Directories Are Mixed
-Calendar, settings, and notifications already contain components. Dashboard and study-plan are still placeholders.
+### 4. Some Settings Are Still Partial
+Profile name/e-mail changes, password reset, general deadline reminders, and
+daily digest controls are visible but not fully persisted. Do not present these
+as completed backend features.
 
 ### 5. TypeScript Strict Mode Enabled
 - All types must be properly defined
@@ -295,15 +327,13 @@ Calendar, settings, and notifications already contain components. Dashboard and 
 
 ---
 
-## Next Steps for Development
+## Current Follow-up Areas
 
-1. **Database Models:** Define Prisma schema for users, activities, events, study plans
-2. **API Implementation:** Add route handlers for CRUD operations
-3. **Feature Components:** Fill in dashboard, calendar, and study-plan components
-4. **Type Definitions:** Centralize data models in `src/types/`
-5. **Form Handling:** Implement form submission logic (currently only LoginForm has structure)
-6. **Authentication:** Integrate authentication (not yet started)
-7. **Styling Refinement:** Fine-tune Tailwind theme and component variants
+1. **Demo readiness:** reproducible presentation data and a verified end-to-end demo flow
+2. **Documentation:** align PRD, acceptance test, and architecture documents with the implemented MVP
+3. **Settings:** persist the remaining profile/reminder controls or label them clearly as future work
+4. **Testing:** extend coverage beyond the current study-plan unit tests to API and end-to-end flows
+5. **Product hardening:** deployment, rate limiting, password recovery, and external storage remain outside the local MVP
 
 ---
 
@@ -315,4 +345,4 @@ Calendar, settings, and notifications already contain components. Dashboard and 
 - Keep components small and focused; split large features into multiple components
 - Always use the `cn()` utility for conditional class merging
 - Check [components.json](./components.json) for import aliases before creating utility functions
-- Most directories have `.gitkeep` files marking them as "ready for implementation" — this is intentional
+- Preserve the existing Prisma models, API ownership checks, and scheduler constraints
