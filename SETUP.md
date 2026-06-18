@@ -22,7 +22,7 @@ Komplette Schritt-fuer-Schritt-Anleitung, um LearnHub auf einem frischen Rechner
 
 Drei Tools, einmalig zu installieren. Wenn du eines schon hast, ueberspring den Punkt.
 
-### Node.js 20 oder neuer
+### Node.js (LTS-Version)
 
 Pruefen ob bereits installiert:
 
@@ -30,8 +30,19 @@ Pruefen ob bereits installiert:
 node --version
 ```
 
-- Ausgabe `v20.x.x` oder hoeher → passt.
-- Ausgabe `command not found` (macOS/Linux) bzw. „is not recognized" (Windows) oder Version unter 20 → von [nodejs.org](https://nodejs.org/) installieren (LTS-Variante).
+- Empfohlen ist eine von Node.js aktuell unterstuetzte **LTS-Version**, mindestens Node 20.
+- Fuer das Team sollte moeglichst dieselbe LTS-Hauptversion verwendet werden. Das vermeidet Unterschiede zwischen Entwicklungsrechnern und CI.
+- Ausgabe `command not found` (macOS/Linux) bzw. „is not recognized" (Windows) oder Version unter 20 → von [nodejs.org](https://nodejs.org/) die **LTS-Variante** installieren.
+
+Danach auch npm pruefen:
+
+```bash
+npm --version
+```
+
+Wenn `node --version` funktioniert, aber `npm --version` fehlschlaegt, ist die
+Node-Installation unvollstaendig oder eine alte globale npm-Installation stoert.
+Siehe [Node funktioniert, aber npm ist kaputt](#node-funktioniert-aber-npm-ist-kaputt-windows).
 
 ### Docker Desktop
 
@@ -41,9 +52,13 @@ Pruefen:
 
 ```bash
 docker --version
+docker compose version
+docker info
 ```
 
-- Ausgabe `Docker version 24.x.x` o. ae. → passt.
+- `docker --version` und `docker compose version` pruefen nur die Installation.
+- Erst wenn `docker info` Serverinformationen ausgibt, laeuft Docker Desktop wirklich.
+- Meldet `docker info`, dass keine Verbindung zur Docker API moeglich ist, Docker Desktop starten und warten, bis es bereit ist.
 - Nicht gefunden → von [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/) installieren.
 
 #### Nach der Installation: macOS / Linux
@@ -103,10 +118,15 @@ cd LearnHub
 ### Schritt 2: Node-Pakete installieren
 
 ```bash
-npm install
+npm ci
 ```
 
-**Was passiert:** Alle Bibliotheken aus `package.json` werden in den Ordner `node_modules/` geladen. Dauert beim ersten Mal 1-2 Minuten. Identisch auf allen Systemen.
+**Was passiert:** Alle Bibliotheken werden exakt nach `package-lock.json` in
+`node_modules/` installiert. Das ist fuer einen frischen Checkout reproduzierbarer
+als `npm install` und dauert beim ersten Mal typischerweise 1-2 Minuten.
+
+`npm install` wird verwendet, wenn Abhaengigkeiten bewusst hinzugefuegt oder
+aktualisiert werden sollen und sich dadurch das Lockfile aendern darf.
 
 > **Shortcut fuer Eilige:** Die Schritte 3-5 (`.env` anlegen, DB starten, Prisma) gibt's auch als einzelnen Befehl: `npm run setup`. Schritt 6 (`npm run dev`) startest du danach selbst. Die ausfuehrliche Anleitung unten bleibt hilfreich, falls beim Skript etwas nicht klappt.
 
@@ -153,16 +173,18 @@ Erwartete Ausgabe: in der Spalte „STATUS" steht bei `learnhub-db` etwas wie `U
 ### Schritt 5: Datenbank-Schema anwenden
 
 ```bash
-npm run prisma:migrate
+npm run prisma:deploy
 npm run prisma:generate
 ```
 
 **Was passiert:**
 
-- `prisma:migrate` legt alle Tabellen in der Datenbank an (User, Session, StudyPlan, …) gemaess `prisma/schema.prisma`.
+- `prisma:deploy` wendet die bereits im Repository eingecheckten Migrationen an und legt damit alle Tabellen an.
 - `prisma:generate` erzeugt den typisierten Datenbank-Client, mit dem der Code spaeter die DB abfragt.
 
-Beim ersten Mal fragt `prisma:migrate` evtl. nach einem Namen fuer die Migration → einfach Enter druecken. Identisch auf allen Systemen.
+Der Setup-Ablauf erzeugt bewusst **keine neue Migration**. Nur wenn du selbst
+`prisma/schema.prisma` aenderst, verwendest du als Entwickler
+`npm run prisma:migrate`, um eine neue Migration anzulegen.
 
 ### Schritt 6: Entwicklungs-Server starten
 
@@ -203,10 +225,13 @@ Plattformunabhaengig, in jedem Terminal nutzbar (macOS Terminal, Linux Shell, Gi
 | Logs der DB anschauen | `docker compose logs -f db` |
 | Build-Check (so wie die CI ihn macht) | `npm run build` |
 | Code-Stil pruefen (Linter) | `npm run lint` |
-| Schema-Aenderung in DB einspielen | `npm run prisma:migrate` |
+| Eingecheckte Migrationen nach `git pull` anwenden | `npm run prisma:deploy` |
+| Eigene Schema-Aenderung als neue Migration entwickeln | `npm run prisma:migrate` |
 | Prisma-Client nach Schema-Aenderung neu generieren | `npm run prisma:generate` |
 
-> **Faustregel:** Wenn jemand das Schema in `prisma/schema.prisma` geaendert hat (z. B. neues Feld), nach `git pull` immer `npm run prisma:migrate` **und** `npm run prisma:generate` ausfuehren.
+> **Faustregel:** Wenn nach `git pull` neue Dateien unter `prisma/migrations/`
+> vorhanden sind, `npm run prisma:deploy` und danach
+> `npm run prisma:generate` ausfuehren.
 
 ---
 
@@ -215,6 +240,43 @@ Plattformunabhaengig, in jedem Terminal nutzbar (macOS Terminal, Linux Shell, Gi
 ### „Cannot connect to the Docker daemon"
 
 Docker Desktop laeuft nicht. Oeffne Docker Desktop, warte bis das Wal-Symbol ruhig ist (macOS oben rechts, Windows im System-Tray unten rechts), dann den Befehl wiederholen.
+
+Pruefen:
+
+```bash
+docker info
+```
+
+`docker --version` allein reicht nicht, weil dieser Befehl auch bei beendetem
+Docker Desktop funktioniert.
+
+### Node funktioniert, aber npm ist kaputt (Windows)
+
+Typisches Fehlerbild:
+
+```text
+Cannot find module '...\AppData\Roaming\npm\node_modules\npm\bin\npm-cli.js'
+```
+
+Vorgehen:
+
+1. Alle VS-Code-Terminals schliessen.
+2. Unter **Installierte Apps** die bestehende Node.js-Installation deinstallieren.
+3. Die aktuelle **Node.js-LTS-Version** von [nodejs.org](https://nodejs.org/) installieren.
+4. VS Code komplett neu starten, damit der aktualisierte `PATH` geladen wird.
+5. In einem neuen PowerShell-Terminal pruefen:
+
+```powershell
+where.exe node
+where.exe npm
+node --version
+npm --version
+```
+
+`node` und `npm` sollten beide aus `C:\Program Files\nodejs\` kommen. Falls unter
+`%APPDATA%\npm` noch alte globale Startdateien liegen, diesen Ordner nicht
+ungeprueft loeschen: Dort koennen auch andere global installierte Werkzeuge liegen.
+Eine saubere Node-LTS-Neuinstallation ist in diesem Fall der robusteste Weg.
 
 ### Docker startet nicht (Windows)
 
@@ -246,7 +308,17 @@ lsof -i :5432
 netstat -ano | findstr :5432
 ```
 
-Loesung: die andere PostgreSQL stoppen — oder in `docker-compose.yml` den Port aendern (z. B. `"5433:5432"`) und passend in `.env` die `DATABASE_URL` von `:5432` auf `:5433`.
+Loesung: die andere PostgreSQL stoppen — oder nur in der lokalen `.env`
+den Host-Port konfigurieren:
+
+```env
+POSTGRES_PORT="5433"
+DATABASE_URL="postgresql://learnhub:learnhub_dev@localhost:5433/learnhub"
+```
+
+Danach den Container mit `docker compose up -d --force-recreate --wait`
+neu erstellen. `docker-compose.yml` muss fuer einen lokalen Portkonflikt
+nicht veraendert werden.
 
 ### `npm run prisma:migrate` schlaegt fehl mit „Can't reach database server"
 
@@ -265,7 +337,7 @@ docker compose logs db    # Auf Fehlermeldungen achten
 Dependencies fehlen oder sind veraltet. Loesung:
 
 ```bash
-npm install
+npm ci
 ```
 
 ### TypeScript-Fehler nach Schema-Aenderung
@@ -295,7 +367,7 @@ npm run build
 
 ```powershell
 Remove-Item -Recurse -Force .next, node_modules
-npm install
+npm ci
 npm run prisma:generate
 npm run build
 ```
@@ -305,7 +377,7 @@ npm run build
 ```cmd
 rmdir /s /q .next
 rmdir /s /q node_modules
-npm install
+npm ci
 npm run prisma:generate
 npm run build
 ```
@@ -321,9 +393,9 @@ Erst die DB platt machen und Build-Cache loeschen, dann alles neu aufbauen.
 ```bash
 docker compose down -v
 rm -rf .next node_modules
-npm install
+npm ci
 docker compose up -d
-npm run prisma:migrate
+npm run prisma:deploy
 npm run prisma:generate
 npm run dev
 ```
@@ -333,9 +405,9 @@ npm run dev
 ```powershell
 docker compose down -v
 Remove-Item -Recurse -Force .next, node_modules
-npm install
+npm ci
 docker compose up -d
-npm run prisma:migrate
+npm run prisma:deploy
 npm run prisma:generate
 npm run dev
 ```
@@ -376,8 +448,9 @@ Stand des MVP (Mai/Juni 2026), wichtig zu wissen:
 - **Keine Email-Verifizierung beim Registrieren** — jede E-Mail wird akzeptiert, Hauptsache eindeutig.
 - **Keine Passwort-Wiederherstellung** — wer das Passwort vergisst, muss neu registrieren oder direkt in die DB schreiben.
 - **DHBW-Kalender:** Vorlesungen werden ueber den DHBW-ICS-Feed geladen. Der externe Server ist gelegentlich instabil; bei Fehlern erscheint eine Hinweismeldung, die App bleibt nutzbar.
-- **Avatar-Bilder** werden aktuell als Base64-String direkt in der DB gespeichert. Funktioniert, ist aber kein Produktivansatz (Filesystem oder S3 waere besser).
-- **Lernplaene** sind nur teilweise implementiert: Algorithmus existiert (auf `/study-plan`), die Anlage und Persistierung ueber das normale UI folgt.
+- **Avatar-Bilder** werden aktuell direkt als Binaerdaten in PostgreSQL gespeichert. Fuer das lokale MVP ist das ausreichend; fuer einen Produktivbetrieb waere ein Objektspeicher sinnvoller.
+- **Profil- und Benachrichtigungseinstellungen** sind teilweise noch Mock-Oberflaechen. Unter anderem sind Namens-/E-Mail-Aenderung, Passwort-Reset und allgemeine Deadline-Erinnerungen noch nicht vollstaendig angebunden.
+- **Lernplaene, Aufgaben, algorithmische Planung und Kalenderuebernahme** sind implementiert. Die Berechnungsfaktoren sind ein transparenter Projektansatz, aber noch nicht lernwissenschaftlich validiert.
 - **Performance auf Windows** ist durch die WSL-Schicht etwas langsamer als auf macOS oder Linux. Fuer die Entwicklung kein Problem.
 
 ---

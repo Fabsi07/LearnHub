@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Automatisiert das lokale Setup: .env anlegen, Docker-DB hochfahren,
-// Prisma-Migrationen anwenden und Client generieren.
+// Bereits eingecheckte Prisma-Migrationen anwenden und Client generieren.
 //
 // Aufruf: npm run setup
 //
@@ -44,9 +44,11 @@ step("Docker-Datenbank starten");
 run("docker compose up -d --wait");
 done("Datenbank laeuft");
 
-// 3. Prisma-Migrationen anwenden
+// 3. Bereits eingecheckte Prisma-Migrationen anwenden.
+// `migrate deploy` ist fuer das Setup reproduzierbarer als `migrate dev`,
+// weil dabei niemals versehentlich eine neue Migration erzeugt wird.
 step("Prisma-Migrationen anwenden");
-run("npm run prisma:migrate");
+run("npm run prisma:deploy");
 done("Schema synchronisiert");
 
 // 4. Prisma-Client generieren

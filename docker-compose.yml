@@ -20,7 +20,7 @@ services:
       # Nur an localhost binden — andere Geraete im selben Netz koennen
       # den Port nicht erreichen, das Default-Passwort wird damit irrelevant
       # fuer externe Angreifer.
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
     volumes:
       - learnhub_pgdata:/var/lib/postgresql/data
     healthcheck:

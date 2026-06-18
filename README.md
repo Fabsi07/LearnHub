@@ -39,8 +39,8 @@ Aus dem Stand „frischer Checkout" zum laufenden Dev-Server:
 git clone https://github.com/Fabsi07/LearnHub.git
 cd LearnHub
 
-# 2. Node-Pakete installieren
-npm install
+# 2. Node-Pakete exakt nach Lockfile installieren
+npm ci
 
 # 3. Umgebungsvariablen vorbereiten
 cp .env.example .env
@@ -48,8 +48,8 @@ cp .env.example .env
 # 4. Lokale PostgreSQL via Docker starten
 docker compose up -d
 
-# 5. Datenbank-Schema anwenden und Prisma-Client generieren
-npm run prisma:migrate
+# 5. Eingecheckte Migrationen anwenden und Prisma-Client generieren
+npm run prisma:deploy
 npm run prisma:generate
 
 # 6. Entwicklungs-Server starten
@@ -88,7 +88,8 @@ Der feste Admin-Account wird beim ersten Login automatisch angelegt. Die Default
 Wenn sich `prisma/migrations/` veraendert hat (neue Migrationsdateien im Diff), muss die lokale Datenbank einmalig aktualisiert werden:
 
 ```bash
-npm run prisma:migrate
+npm run prisma:deploy
+npm run prisma:generate
 ```
 
 **Woran erkennst du, dass Migrationen fehlen?** API-Routen antworten mit HTTP 500 und im Terminal erscheint ein Fehler wie:
@@ -97,7 +98,8 @@ npm run prisma:migrate
 PrismaClientKnownRequestError: The column `User.xyz` does not exist in the current database. (code: P2022)
 ```
 
-In diesem Fall einfach `npm run prisma:migrate` ausfuehren und den Dev-Server neu starten.
+In diesem Fall `npm run prisma:deploy` und `npm run prisma:generate`
+ausfuehren und den Dev-Server neu starten.
 
 ---
 
@@ -107,10 +109,13 @@ Die lokale PostgreSQL laeuft als Docker-Container, beschrieben in [docker-compos
 
 | Befehl | Was passiert |
 | --- | --- |
-| `npm run prisma:migrate` | Vergleicht das Prisma-Schema mit der Datenbank, erzeugt bei Bedarf eine neue Migration unter `prisma/migrations/` und wendet sie an |
+| `npm run prisma:deploy` | Wendet bereits eingecheckte Migrationen reproduzierbar auf die lokale Datenbank an |
+| `npm run prisma:migrate` | Erzeugt bei einer eigenen Schema-Aenderung eine neue Entwicklungs-Migration und wendet sie an |
 | `npm run prisma:generate` | Erzeugt den typisierten Prisma-Client unter `node_modules/@prisma/client` auf Basis des aktuellen Schemas |
 
-Nach Aenderungen am Schema (`prisma/schema.prisma`) immer beide Befehle ausfuehren.
+Nach einem `git pull` mit neuen Migrationen `npm run prisma:deploy` und
+`npm run prisma:generate` ausfuehren. `npm run prisma:migrate` ist fuer eigene
+Aenderungen an `prisma/schema.prisma` vorgesehen.
 
 ---
 
@@ -121,7 +126,8 @@ Nach Aenderungen am Schema (`prisma/schema.prisma`) immer beide Befehle ausfuehr
 Neue Migrationen wurden ins Repository gepusht, aber noch nicht auf der lokalen Datenbank angewendet. Loesung:
 
 ```bash
-npm run prisma:migrate
+npm run prisma:deploy
+npm run prisma:generate
 ```
 
 Danach den Dev-Server neu starten. Dies passiert typischerweise nach einem `git pull`, wenn sich der Ordner `prisma/migrations/` veraendert hat.
@@ -138,7 +144,10 @@ Wahrscheinlich laeuft schon eine andere PostgreSQL auf deinem Rechner (native In
 lsof -i :5432
 ```
 
-Loesung: die andere Instanz stoppen oder in `docker-compose.yml` das Port-Mapping aendern (z.B. `"5433:5432"`) und in `.env` die DATABASE_URL anpassen.
+Loesung: die andere Instanz stoppen oder in der lokalen `.env`
+`POSTGRES_PORT="5433"` setzen und in `DATABASE_URL` ebenfalls Port `5433`
+verwenden. Danach den Container mit
+`docker compose up -d --force-recreate --wait` neu erstellen.
 
 ### `npm run prisma:migrate` faellt mit „Can't reach database server"
 
@@ -164,7 +173,7 @@ Pruefe ob `npm run prisma:generate` nach der Schema-Aenderung gelaufen ist. Type
 ```bash
 docker compose down -v    # Container + Volume entfernen
 docker compose up -d      # Container neu erstellen
-npm run prisma:migrate    # Schema neu anwenden
+npm run prisma:deploy     # Schema neu anwenden
 ```
 
 ---
