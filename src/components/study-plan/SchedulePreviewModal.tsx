@@ -101,6 +101,12 @@ export function SchedulePreviewModal({
           credits: plan.credits as number,
         });
 
+        const validEvents = [...localEvents, ...externalEvents].filter((e) => {
+          const s = e.start.getTime();
+          const en = e.end.getTime();
+          return Number.isFinite(s) && Number.isFinite(en) && en > s;
+        });
+
         const scheduled = scheduleStudyPlan(
           result,
           {
@@ -108,7 +114,7 @@ export function SchedulePreviewModal({
             now: referenceDate,
             subject: plan.subject,
           },
-          [...localEvents, ...externalEvents],
+          validEvents,
         );
         setSchedule(scheduled);
         // Kritische Anmerkungen: zu viel Lernen pro Tag / ein Fach zu oft pro Woche
