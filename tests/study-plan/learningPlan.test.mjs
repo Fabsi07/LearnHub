@@ -51,6 +51,31 @@ test("erstellt einen normalen deterministischen Plan über mehrere Wochen", () =
   assert.ok(plannedWeeks.size >= 4);
 });
 
+test("verwendet die aktualisierten Deadline- und Seitenfaktoren", () => {
+  const baseInput = {
+    referenceDate: localDate(2026, 6, 1),
+    deadlineDate: localDate(2026, 6, 22),
+    difficulty: 3,
+    priorKnowledge: 3,
+    pages: 51,
+    credits: 6,
+  };
+
+  assert.equal(calculateStudyPlan(baseInput).deadlineFactor, 1.1);
+  assert.equal(
+    calculateStudyPlan({
+      ...baseInput,
+      deadlineDate: localDate(2026, 6, 11),
+    }).deadlineFactor,
+    1.2,
+  );
+
+  assert.equal(calculateStudyPlan({ ...baseInput, pages: 50 }).volumeFactor, 0.7);
+  assert.equal(calculateStudyPlan({ ...baseInput, pages: 150 }).volumeFactor, 1.0);
+  assert.equal(calculateStudyPlan({ ...baseInput, pages: 300 }).volumeFactor, 1.3);
+  assert.equal(calculateStudyPlan({ ...baseInput, pages: 301 }).volumeFactor, 1.6);
+});
+
 test("begrenzt den Plan kontrolliert bei sehr wenig verfügbarer Zeit", () => {
   const referenceDate = localDate(2026, 6, 1, 8);
   const deadlineDate = localDate(2026, 6, 3);
