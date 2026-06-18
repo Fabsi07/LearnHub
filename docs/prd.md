@@ -122,7 +122,7 @@ Beim Anlegen eines Lernplans kann der Nutzer wählen, ob er den Plan leer beginn
 Die Anwendung berechnet daraus eine Liste konkreter Aufgaben oder Lerneinheiten mit Fälligkeitsdaten und geschätzten Bearbeitungszeiten. Die Berechnung erfolgt deterministisch anhand festgelegter Regeln, zum Beispiel nach verbleibender Zeit bis zum Zieldatum, Aufwand, Schwierigkeit und gleichmäßiger Verteilung. Der Nutzer kann den berechneten Plan anschließend frei bearbeiten.
 
 **M7 — Algorithmische Umplanung**
-Wenn ein Nutzer hinter seinem Plan zurückfällt oder sich Termine verschieben, kann er für einen Lernplan eine Neuplanung auslösen. LearnHub verteilt alle noch offenen Aufgaben über den verbleibenden Zeitraum bis zum Zieldatum neu, unter Berücksichtigung der verfügbaren Lernzeit, des geschätzten Aufwands und der Schwierigkeit. Bereits erledigte Aufgaben bleiben unverändert.
+Wenn ein Nutzer hinter seinem Plan zurückfällt oder sich Termine verschieben, kann er für einen Lernplan eine Neuplanung auslösen. LearnHub verteilt alle noch offenen Aufgaben über den verbleibenden Zeitraum bis zum Zieldatum neu, unter Berücksichtigung des geschätzten Aufwands und der Schwierigkeit. Bereits erledigte Aufgaben bleiben unverändert. Bei offenen Aufgaben mit verknüpftem Lernslot wird der zugehörige Kalendertermin auf das neue Fälligkeitsdatum verschoben.
 
 **M8 — Lokaler Betrieb**
 Die Anwendung ist auf einem lokalen Entwicklungsrechner über einen dokumentierten Setup-Vorgang startbar. Ein Hosting im Internet ist im MVP nicht vorgesehen.
@@ -242,7 +242,7 @@ Funktionen, die hier nicht erwähnt sind, sollten im Zweifel als „nicht im Lie
 
 ## 10. UX- und Design-Konzept
 
-Die visuelle Konzeption ist in einem eigenen Dokument festgehalten: [docs/design/design.md](./design/design.md). Wireframes und Mockups werden iterativ über das Excalidraw-Board des Teams entwickelt und in den Wireframe-Ordner des Repositorys exportiert.
+Die visuelle Konzeption ist in einem eigenen Dokument festgehalten: [docs/design/design.md](./design/design.md). Wireframes, Excalidraw-Board und HTML-Prototyp dokumentieren die frühe Konzeptionsphase; maßgeblich für den aktuellen Stand ist die implementierte Webanwendung.
 
 Leitlinien des Designs:
 
@@ -297,8 +297,8 @@ Der genaue Zeitplan wird laufend in GitHub Projects gepflegt. Die Meilensteine a
 | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------- | ------------- |
 | **M1 — Projektstart**                    | Teamfindung, Rollenverteilung, erste Wireframes, technische Grundsatzentscheidungen, Repository-Setup           | abgeschlossen |
 | **M2 — Frontend-Gerüst**                 | Lauffähiges Next.js-Projekt, Login-Maske, Dashboard-Shell, Kalenderansicht mit Beispieldaten                    | abgeschlossen |
-| **M3 — Datenmodell und API**             | Datenbankschema, persistente Speicherung, Anbindung des bestehenden Frontends an reale Daten, Authentifizierung | in Arbeit     |
-| **M4 — Planungslogik**                   | Algorithmische Lernplan-Erstellung und Umplanung im Lernplan- und Kalenderfluss verfügbar                       | in Arbeit     |
+| **M3 — Datenmodell und API**             | Datenbankschema, persistente Speicherung, Anbindung des bestehenden Frontends an reale Daten, Authentifizierung | abgeschlossen |
+| **M4 — Planungslogik**                   | Algorithmische Lernplan-Erstellung und Umplanung im Lernplan- und Kalenderfluss verfügbar                       | abgeschlossen |
 | **M5 — Optionale KI-Prüfung**            | Falls zeitlich möglich: KI-gestützte Prüfung oder Verbesserungsvorschläge für bestehende Lernpläne              | offen         |
 | **M6 — Stabilisierung und Präsentation** | Fehlerbehebung, manuelle Abnahmetests, Demonstrationsdaten, Setup-Dokumentation, finale Präsentation            | offen         |
 

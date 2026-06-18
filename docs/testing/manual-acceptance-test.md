@@ -41,7 +41,7 @@ Vor jedem Durchlauf folgende Voraussetzungen prüfen:
 - [ ] `npm run typecheck`, `npm run lint` und `npm test` laufen ohne Fehler durch.
 - [ ] Lokale PostgreSQL-Datenbank läuft, `DATABASE_URL` in `.env` gesetzt.
 - [ ] `npm run prisma:deploy` und `npm run prisma:generate` wurden ausgeführt; Schema und Prisma Client sind aktuell.
-- [ ] Demo-Daten geladen (siehe Issue #53 / H1 für den Demo-Daten-Mechanismus). Falls H1 noch nicht umgesetzt: manuell vorbereiteten Datenstand verwenden und das in den Notizen vermerken.
+- [ ] Testdaten vorbereitet: Entweder frischer Account ohne Daten für UC1 oder manuell angelegter Demo-Datenstand für UC2–UC6. Den verwendeten Datenstand in den Notizen vermerken.
 - [ ] Browser: aktueller Chrome, Firefox **oder** Safari (laut PRD §8.2 Browser-Unterstützung).
 - [ ] Browser-Cache und Cookies für `localhost:3000` gelöscht — sonst hängt UC1 an einer alten Session.
 - [ ] `npm run dev` läuft auf `http://localhost:3000`.
@@ -77,7 +77,7 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 - Weiterleitung auf `/dashboard`.
 - Dashboard zeigt `0` offene Aufgaben und aktive Lernpläne sowie einen Hinweis,
   den ersten Lernplan anzulegen.
-- Cookie `lh_session` ist in den DevTools sichtbar, mit `HttpOnly` und `SameSite=Lax` (PRD §8.2 + Auth-Konzept §5.2).
+- Cookie `lh_session` ist in den DevTools sichtbar, mit `HttpOnly` und `SameSite=Lax` (PRD §8.2 + Auth-Konzept).
 - Eintrag in `User`-Tabelle existiert; `passwordHash` ist **nicht** das Klartextpasswort.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
@@ -140,7 +140,7 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 **Erwartetes Ergebnis**
 - Dashboard zeigt offene Aufgaben, aktive Lernpläne und anstehende verknüpfte Lernsessions.
 - Der Lernplan ist mit seinem aktuellen Fortschritt erreichbar.
-- Wochenansicht zeigt Vorlesungen, Lerneinheiten und Zieltermine farblich unterschiedlich (PRD §6.1 M5).
+- Wochenansicht zeigt vorhandene Vorlesungen, Lerneinheiten und Zieltermine farblich unterschiedlich (PRD §6.1 M5).
 - Falls ein DHBW-Kurs konfiguriert ist, sind externe Termine read-only und nicht editierbar.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
@@ -235,8 +235,8 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 
 Diese Punkte sind nicht an einen einzelnen UC gebunden, müssen aber pro Durchlauf bestätigt werden:
 
-- [ ] Logout funktioniert — `/api/auth/logout` löscht das Cookie und führt zurück auf `/login` (Auth-Konzept §5.5).
-- [ ] Direkter Aufruf einer geschützten Route (`/dashboard`) ohne Cookie führt auf `/login?redirect=/dashboard` (Auth-Konzept §6.3).
+- [ ] Logout funktioniert — `/api/auth/logout` löscht die Session-Cookies und führt zurück auf `/login` (Auth-Konzept).
+- [ ] Direkter Aufruf einer geschützten Route (`/dashboard`) ohne Cookie führt auf `/login?redirect=/dashboard` (Auth-Konzept).
 - [ ] Anmeldung mit gültigen Zugangsdaten führt auf `/dashboard`; eine bereits gültige Sitzung erlaubt den Zugriff auf geschützte Routen.
 - [ ] Zwei verschiedene Konten sehen **ausschließlich** ihre eigenen Lernpläne, Aufgaben und Termine (PRD §8.1).
 - [ ] Hauptfunktionen sind tastaturbedienbar (PRD §8.2 Zugänglichkeit).

@@ -1,6 +1,6 @@
 # 🎓 LearnHub — Lernmanagement Mockup
 
-Ein professionelles, vollständiges HTML-Mockup für eine moderne Lernmanagement-App.
+Dieses HTML-Mockup dokumentiert den frühen Entwurfsstand aus der Konzeptionsphase. Es ist eine historische Referenz und bildet nicht den aktuellen Funktionsumfang der implementierten Webanwendung ab.
 
 ## ✨ Features
 
