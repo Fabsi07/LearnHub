@@ -84,12 +84,12 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 - Eintrag in `User`-Tabelle existiert; `passwordHash` ist **nicht** das Klartextpasswort.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
--- Testdurchlauf 1 (Finn) 18.06. --
-[x] Weiterleitung auf `/dashboard`.
-[x] Dashboard zeigt `0` offene Aufgaben und aktive Lernpläne sowie einen Hinweis,
-den ersten Lernplan anzulegen.
-[x] Cookie `lh_session` ist in den DevTools sichtbar, mit `HttpOnly` und `SameSite=Lax`
-[x] Eintrag in `User`-Tabelle existiert; `passwordHash` ist **nicht** das Klartextpasswort.
+
+- -- Testdurchlauf 1 (Finn) 18.06. --
+- [x] Weiterleitung auf `/dashboard`.
+- [x] Dashboard zeigt `0` offene Aufgaben und aktive Lernpläne sowie einen Hinweis, den ersten Lernplan anzulegen.
+- [x] Cookie `lh_session` ist in den DevTools sichtbar, mit `HttpOnly` und `SameSite=Lax`
+- [x] Eintrag in `User`-Tabelle existiert; `passwordHash` ist **nicht** das Klartextpasswort.
 
 ---
 
@@ -130,12 +130,12 @@ den ersten Lernplan anzulegen.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 
--- Testdurchlauf 1 (Finn) 18.06. --
-[x] Die Berechnung erzeugt Gesamtstunden, Tagesintensität und einen normalen oder kritischen Plantyp.
-[x] Die Vorschau erzeugt konkrete zweistündige Lerneinheiten bis zum Zieldatum und berücksichtigt vorhandene Kalendertermine.
-[x] Bei identischen Eingaben und demselben Bezugsdatum liefert eine erneute Berechnung **dasselbe Ergebnis**
-[x] Die Berechnung dauert auf einem normalen Entwicklungsrechner unter einer Sekunde (PRD §8.2 Reaktionszeit).
-[x] Lernplan, Aufgaben und Termine bleiben nach einem Reload erhalten.
+- -- Testdurchlauf 1 (Finn) 18.06. --
+- [x] Die Berechnung erzeugt Gesamtstunden, Tagesintensität und einen normalen oder kritischen Plantyp.
+- [x] Die Vorschau erzeugt konkrete zweistündige Lerneinheiten bis zum Zieldatum und berücksichtigt vorhandene Kalendertermine.
+- [x] Bei identischen Eingaben und demselben Bezugsdatum liefert eine erneute Berechnung **dasselbe Ergebnis**
+- [x] Die Berechnung dauert auf einem normalen Entwicklungsrechner unter einer Sekunde (PRD §8.2 Reaktionszeit).
+- [x] Lernplan, Aufgaben und Termine bleiben nach einem Reload erhalten.
 
 ---
 
@@ -164,11 +164,11 @@ den ersten Lernplan anzulegen.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 
--- Testdurchlauf 1 (Finn) 18.06. --
-[x] Dashboard zeigt offene Aufgaben, aktive Lernpläne und anstehende verknüpfte Lernsessions.
-[x] Der Lernplan ist mit seinem aktuellen Fortschritt erreichbar.
-[x] Wochenansicht zeigt vorhandene Vorlesungen, Lerneinheiten und Zieltermine farblich unterschiedlich (PRD §6.1 M5).
-[x] Falls ein DHBW-Kurs konfiguriert ist, sind externe Termine read-only und nicht editierbar.
+- -- Testdurchlauf 1 (Finn) 18.06. --
+- [x] Dashboard zeigt offene Aufgaben, aktive Lernpläne und anstehende verknüpfte Lernsessions.
+- [x] Der Lernplan ist mit seinem aktuellen Fortschritt erreichbar.
+- [x] Wochenansicht zeigt vorhandene Vorlesungen, Lerneinheiten und Zieltermine farblich unterschiedlich (PRD §6.1 M5).
+- [x] Falls ein DHBW-Kurs konfiguriert ist, sind externe Termine read-only und nicht editierbar.
 
 ---
 
@@ -199,9 +199,7 @@ den ersten Lernplan anzulegen.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 
--
-
----
+- ***
 
 ### UC5 — Termin manuell pflegen
 
@@ -235,9 +233,7 @@ den ersten Lernplan anzulegen.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 
--
-
----
+- ***
 
 ### UC6 — Abschluss einer Aufgabe
 
@@ -263,9 +259,7 @@ den ersten Lernplan anzulegen.
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 
--
-
----
+- ***
 
 ## 5. Querschnitt — pro Durchlauf zusätzlich prüfen
 
