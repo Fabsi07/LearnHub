@@ -88,7 +88,9 @@ export function SchedulePreviewModal({
         const localEvents = deserialize(localData.events ?? []);
         const externalEvents = deserialize(externalData.events ?? []);
         setExistingPlanEvents(
-          localEvents.filter((e) => e.studyPlanId === plan.id).length,
+          localEvents.filter(
+            (e) => e.studyPlanId === plan.id && e.type === "Lernsession",
+          ).length,
         );
 
         const referenceDate = new Date();
