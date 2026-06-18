@@ -20,8 +20,8 @@ Assessment overview:
 Known milestone status:
 
 - Milestone 1: project idea, planning, roles. Deadline: 2026-04-27. Status: completed.
-- Milestone 2: functional scope, specifications, PRDs. Deadline: 2026-05-21. Status: current focus.
-- Milestone 3: demonstrable prototype and remaining requirements for final submission. Deadline to be tracked from the milestone document.
+- Milestone 2: functional scope, specifications, PRDs. Deadline: 2026-05-21. Status: completed.
+- Milestone 3: demonstrable prototype and remaining requirements for final submission. Status: implementation completed; presentation preparation and final verification are in progress.
 
 Relevant expectations:
 
@@ -55,7 +55,7 @@ Known Projektmanagement deadlines:
 - Short test: 2026-06-22.
 - Peer assessment: 2026-06-23.
 
-Acute focus: project plan by 2026-05-19.
+The project plan submission was completed on 2026-05-19.
 
 - No separate full project plan document is required.
 - The plan should be readable from the GitHub Project.
