@@ -13,7 +13,7 @@ const profileSchema = z.object({
   lastName: z
     .string()
     .trim()
-    .max(40, "Der Nachname darf höchstens 40 Zeichen lang sein.")
+    .max(80, "Der Nachname darf höchstens 80 Zeichen lang sein.")
     .optional()
     .default(""),
   username: z
