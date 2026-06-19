@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
+  AlertTriangle,
   BookOpen,
   CalendarClock,
   CalendarDays,
@@ -18,6 +19,7 @@ import {
   isLernsessionEvent,
   type CalEvent,
 } from "@/components/calendar/events";
+import { isOpenTaskOverdue } from "@/lib/study-plan/dueDates";
 import type { StudyPlanSummaryDTO } from "@/lib/study-plan/types";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +29,7 @@ type DashboardTask = {
   id: string;
   title: string;
   dueDate: Date;
+  overdue: boolean;
   studyPlanId: string;
   studyPlanTitle: string;
   subject: string;
@@ -83,7 +86,6 @@ function formatDayTime(d: Date): string {
 function formatTaskDueDate(d: Date, today: Date, tomorrow: Date): string {
   if (isSameDay(d, today)) return "Heute fällig";
   if (isSameDay(d, tomorrow)) return "Morgen fällig";
-  if (d.getTime() < today.getTime()) return `Überfällig seit ${formatDate(d)}`;
   return `Fällig am ${formatDate(d)}`;
 }
 
@@ -175,6 +177,10 @@ export function DashboardContent() {
             id: task.id,
             title: task.title,
             dueDate: new Date(task.dueDate),
+            overdue: isOpenTaskOverdue(
+              { completed: false, dueDate: task.dueDate },
+              today,
+            ),
             studyPlanId: plan.id,
             studyPlanTitle: plan.title,
             subject: plan.subject,
@@ -185,7 +191,7 @@ export function DashboardContent() {
           if (dateDiff !== 0) return dateDiff;
           return a.title.localeCompare(b.title, "de");
         }),
-    [plans],
+    [plans, today],
   );
 
   const visibleOpenTasks = openTasks.slice(0, MAX_DASHBOARD_ITEMS);
@@ -302,13 +308,30 @@ export function DashboardContent() {
                 <Link
                   key={task.id}
                   href={`/study-plan/${task.studyPlanId}`}
-                  className="flex items-center gap-3 rounded-xl border border-gray-200 px-4 py-2.5 transition-colors hover:border-gray-300"
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl border px-4 py-2.5 transition-colors",
+                    task.overdue
+                      ? "border-red-200 bg-red-50/70 hover:border-red-300"
+                      : "border-gray-200 hover:border-gray-300",
+                  )}
                 >
-                  <ClipboardList className="h-4 w-4 shrink-0 text-amber-500" />
+                  {task.overdue ? (
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />
+                  ) : (
+                    <ClipboardList className="h-4 w-4 shrink-0 text-amber-500" />
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-gray-900">{task.title}</p>
-                    <p className="truncate text-xs text-gray-500">
-                      {task.subject} · {formatTaskDueDate(task.dueDate, today, tomorrow)}
+                    <p
+                      className={cn(
+                        "truncate text-xs",
+                        task.overdue ? "font-medium text-red-700" : "text-gray-500",
+                      )}
+                    >
+                      {task.subject} ·{" "}
+                      {task.overdue
+                        ? `Überfällig seit ${formatDate(task.dueDate)}`
+                        : formatTaskDueDate(task.dueDate, today, tomorrow)}
                     </p>
                   </div>
                   <ArrowRight className="h-4 w-4 shrink-0 text-gray-400" />

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  AlertTriangle,
   CalendarCheck,
   CalendarDays,
   CalendarPlus,
@@ -11,9 +12,10 @@ import {
   Trash2,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
+import { isOpenTaskOverdue } from "@/lib/study-plan/dueDates";
 import { cn } from "@/lib/utils";
 import type { TaskCalendarEventDTO, TaskDTO } from "@/lib/study-plan/types";
-import { daysUntil, formatDate, formatMinutes } from "./planMeta";
+import { formatDate, formatMinutes } from "./planMeta";
 
 interface TaskItemProps {
   planId: string;
@@ -47,7 +49,7 @@ export function TaskItem({
   const [busy, setBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
-  const overdue = !task.completed && daysUntil(task.dueDate) < 0;
+  const overdue = isOpenTaskOverdue(task);
 
   async function toggleCompleted(checked: boolean) {
     setBusy(true);
@@ -80,8 +82,10 @@ export function TaskItem({
   return (
     <div
       className={cn(
-        "group flex items-start gap-3 rounded-xl border border-gray-200 px-4 py-3 transition-colors",
-        task.completed ? "bg-gray-50" : "bg-white hover:border-gray-300",
+        "group flex items-start gap-3 rounded-xl border px-4 py-3 transition-colors",
+        task.completed && "border-gray-200 bg-gray-50",
+        !task.completed && !overdue && "border-gray-200 bg-white hover:border-gray-300",
+        overdue && "border-red-200 bg-red-50/70 hover:border-red-300",
       )}
     >
       <div className="pt-0.5">
@@ -109,12 +113,20 @@ export function TaskItem({
           <span
             className={cn(
               "inline-flex items-center gap-1",
-              overdue && "text-red-600 font-medium",
+              overdue && "font-medium text-red-700",
             )}
           >
-            <CalendarDays className="w-3.5 h-3.5" />
+            {overdue ? (
+              <AlertTriangle className="w-3.5 h-3.5" />
+            ) : (
+              <CalendarDays className="w-3.5 h-3.5" />
+            )}
             {formatDate(task.dueDate)}
-            {overdue && " · überfällig"}
+            {overdue && (
+              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[11px] font-semibold text-red-700">
+                Überfällig
+              </span>
+            )}
           </span>
           <span className="inline-flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" />
