@@ -190,6 +190,8 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
 
       {replanResult && (
         <div
+          role={replanResult.type === "error" ? "alert" : "status"}
+          aria-live={replanResult.type === "error" ? "assertive" : "polite"}
           className={cn(
             "rounded-xl border px-4 py-3 text-sm",
             replanResult.type === "success"
