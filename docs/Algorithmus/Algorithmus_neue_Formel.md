@@ -14,7 +14,7 @@ Der User muss eine Deadline angeben, an welchem Tag die Klausur ansteht.
 
 2-4Wochen 1.1 Der User muss sich ranhalten
 
-< 2 Wochen 1.2 User hat nicht mehr viel zeit wird geprüft bei kritisch
+< 2 Wochen 1.2 User hat nicht mehr viel Zeit wird geprüft bei kritisch
 
 D = Faktor der Deadline
 
