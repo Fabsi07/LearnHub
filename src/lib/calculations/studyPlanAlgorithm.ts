@@ -72,7 +72,7 @@ function getDeadlineFactor(daysUntilDeadline: number): number {
   if (daysUntilDeadline > 60) return 1.1;  // 2–3 Monate
   if (daysUntilDeadline > 30) return 0.9;  // 1–2 Monate
   if (daysUntilDeadline > 14) return 1.1;  // 2–4 Wochen
-  return 1.2;                               // < 2 Wochen
+  return 1.2;                               // ≤ 2 Wochen
 }
 
 function getDifficultyFactor(difficulty: number): number {
