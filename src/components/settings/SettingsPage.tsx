@@ -68,11 +68,14 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // displayName → Vorname / Nachname aufsplitten
-  const nameParts = currentUser?.displayName?.split(" ") ?? [];
+  const nameParts = currentUser?.displayName?.trim().split(/\s+/).filter(Boolean) ?? [];
   const firstName = nameParts[0] ?? "";
   const lastName = nameParts.slice(1).join(" ");
   // Username-Fallback: Teil vor dem @
-  const username = currentUser?.email?.split("@")[0] ?? "";
+  const username =
+    currentUser?.username ??
+    currentUser?.email?.split("@")[0]?.replace(/[^A-Za-z0-9._-]/g, "_") ??
+    "";
 
   const tabParam = searchParams.get("tab");
   // S-2 Fix: Default-Tab ist 'profile'.
@@ -238,15 +241,65 @@ function ProfileSettings({
   username: initialUsername,
   email: initialEmail,
 }: ProfileSettingsProps) {
+  const router = useRouter();
   const [firstName, setFirstName] = useState(initialFirstName);
   const [lastName, setLastName] = useState(initialLastName);
   const [username, setUsername] = useState(initialUsername);
-  const [email, setEmail] = useState(initialEmail);
+  const [isSaving, setIsSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   // S-5 Fix: Submit-Handler verhindert Page-Reload (echte Persistenz folgt mit API).
-  function handleProfileSubmit(event: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    setFirstName(initialFirstName);
+    setLastName(initialLastName);
+    setUsername(initialUsername);
+  }, [initialFirstName, initialLastName, initialUsername]);
+
+  async function handleProfileSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    // TODO: An /api/profile anbinden, sobald verfügbar.
+    if (isSaving) return;
+
+    setIsSaving(true);
+    setFeedback(null);
+
+    try {
+      const response = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ firstName, lastName, username }),
+      });
+      const data = (await response.json().catch(() => ({}))) as {
+        user?: {
+          displayName: string;
+          username: string | null;
+        };
+        error?: string;
+      };
+
+      if (!response.ok || !data.user) {
+        throw new Error(data.error ?? "Profil konnte nicht gespeichert werden.");
+      }
+
+      const savedNameParts = data.user.displayName.trim().split(/\s+/).filter(Boolean);
+      setFirstName(savedNameParts[0] ?? "");
+      setLastName(savedNameParts.slice(1).join(" "));
+      setUsername(data.user.username ?? "");
+      setFeedback({ type: "success", message: "Profil gespeichert." });
+      router.refresh();
+    } catch (saveError) {
+      setFeedback({
+        type: "error",
+        message:
+          saveError instanceof Error
+            ? saveError.message
+            : "Profil konnte nicht gespeichert werden.",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -298,15 +351,33 @@ function ProfileSettings({
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Name" htmlFor="first-name">
               {/* S-14 Fix: name-Attribut. Controlled input — kein uncontrolled-Warning. */}
-              <Input id="first-name" name="firstName" value={firstName} onChange={(e) => setFirstName(e.target.value)} />
+              <Input
+                id="first-name"
+                name="firstName"
+                value={firstName}
+                disabled={isSaving}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
             </Field>
             <Field label="Nachname" htmlFor="last-name">
-              <Input id="last-name" name="lastName" value={lastName} onChange={(e) => setLastName(e.target.value)} />
+              <Input
+                id="last-name"
+                name="lastName"
+                value={lastName}
+                disabled={isSaving}
+                onChange={(e) => setLastName(e.target.value)}
+              />
             </Field>
           </div>
 
           <Field label="Username" htmlFor="username">
-            <Input id="username" name="username" value={username} onChange={(e) => setUsername(e.target.value)} />
+            <Input
+              id="username"
+              name="username"
+              value={username}
+              disabled={isSaving}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </Field>
 
           <div className="grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
@@ -315,11 +386,12 @@ function ProfileSettings({
                 id="email"
                 name="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={initialEmail}
+                readOnly
+                className="cursor-default text-gray-500"
               />
             </Field>
-            <Button type="button" variant="outline" className="md:mb-0">
+            <Button type="button" variant="outline" className="md:mb-0" disabled>
               <Mail className="h-4 w-4" />
               E-Mail ändern
             </Button>
@@ -339,7 +411,19 @@ function ProfileSettings({
           </div>
 
           <div className="flex justify-end border-t border-gray-100 pt-4">
-            <Button type="submit">
+            {feedback && (
+              <p
+                role={feedback.type === "error" ? "alert" : "status"}
+                aria-live={feedback.type === "error" ? "assertive" : "polite"}
+                className={cn(
+                  "mr-auto text-sm font-medium",
+                  feedback.type === "success" ? "text-green-600" : "text-red-600",
+                )}
+              >
+                {feedback.message}
+              </p>
+            )}
+            <Button type="submit" disabled={isSaving}>
               <Save className="h-4 w-4" />
               Änderungen speichern
             </Button>
