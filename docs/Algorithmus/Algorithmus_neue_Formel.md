@@ -52,11 +52,11 @@ Der User gibt ein Volumen an was er für die Klausur an Wissen erlangen muss. (z
 
 0-50 Seiten = 0.7
 
-50-150 = 1.0
+51-150 Seiten = 1.0
 
-150-300 = 1.3
+151-300 Seiten = 1.3
 
-\>300 = 1.6
+\>300 Seiten = 1.6
 
 Evtl bisschen längeres Grundlagen Fenster da der User viele Seiten behandeln muss.
 
