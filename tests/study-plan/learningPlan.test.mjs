@@ -63,10 +63,15 @@ test("verwendet die aktualisierten Deadline- und Seitenfaktoren", () => {
 
   assert.equal(calculateStudyPlan(baseInput).deadlineFactor, 1.1);
   assert.equal(
-    calculateStudyPlan({
-      ...baseInput,
-      deadlineDate: localDate(2026, 6, 11),
-    }).deadlineFactor,
+    calculateStudyPlan({ ...baseInput, deadlineDate: localDate(2026, 6, 16) }).deadlineFactor,
+    1.1,
+  );
+  assert.equal(
+    calculateStudyPlan({ ...baseInput, deadlineDate: localDate(2026, 6, 15) }).deadlineFactor,
+    1.2,
+  );
+  assert.equal(
+    calculateStudyPlan({ ...baseInput, deadlineDate: localDate(2026, 6, 11) }).deadlineFactor,
     1.2,
   );
 
