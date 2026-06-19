@@ -413,6 +413,8 @@ function ProfileSettings({
           <div className="flex justify-end border-t border-gray-100 pt-4">
             {feedback && (
               <p
+                role={feedback.type === "error" ? "alert" : "status"}
+                aria-live={feedback.type === "error" ? "assertive" : "polite"}
                 className={cn(
                   "mr-auto text-sm font-medium",
                   feedback.type === "success" ? "text-green-600" : "text-red-600",
