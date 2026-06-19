@@ -71,8 +71,8 @@ function getDeadlineFactor(daysUntilDeadline: number): number {
   if (daysUntilDeadline > 90) return 1.4;  // > 3 Monate
   if (daysUntilDeadline > 60) return 1.1;  // 2–3 Monate
   if (daysUntilDeadline > 30) return 0.9;  // 1–2 Monate
-  if (daysUntilDeadline > 14) return 1.2;  // 2–4 Wochen
-  return 1.5;                               // < 2 Wochen
+  if (daysUntilDeadline > 14) return 1.1;  // 2–4 Wochen
+  return 1.2;                               // ≤ 2 Wochen
 }
 
 function getDifficultyFactor(difficulty: number): number {
@@ -87,8 +87,8 @@ function getKnowledgeFactor(priorKnowledge: number): number {
 
 function getVolumeFactor(pages: number): number {
   if (pages <= 50) return 0.7;
-  if (pages <= 100) return 1.0;
-  if (pages <= 150) return 1.3;
+  if (pages <= 150) return 1.0;
+  if (pages <= 300) return 1.3;
   return 1.6;
 }
 

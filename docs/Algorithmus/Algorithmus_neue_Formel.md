@@ -12,9 +12,9 @@ Der User muss eine Deadline angeben, an welchem Tag die Klausur ansteht.
 
 1-2 Monate 0.9 Der User hat den idealen Zeitraum
 
-2-4Wochen 1.2 Der User muss sich ranhalten
+2-4Wochen 1.1 Der User muss sich ranhalten
 
-< 2 Wochen 1.5 User hat nicht mehr viel zeit wird geprüft bei kritisch
+< 2 Wochen 1.2 User hat nicht mehr viel Zeit wird geprüft bei kritisch
 
 D = Faktor der Deadline
 
@@ -52,11 +52,11 @@ Der User gibt ein Volumen an was er für die Klausur an Wissen erlangen muss. (z
 
 0-50 Seiten = 0.7
 
-50-100 = 1.0
+51-150 Seiten = 1.0
 
-100-150 = 1.3
+151-300 Seiten = 1.3
 
-\>150 = 1.6
+\>300 Seiten = 1.6
 
 Evtl bisschen längeres Grundlagen Fenster da der User viele Seiten behandeln muss.
 
