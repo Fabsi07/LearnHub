@@ -72,7 +72,10 @@ export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
   const firstName = nameParts[0] ?? "";
   const lastName = nameParts.slice(1).join(" ");
   // Username-Fallback: Teil vor dem @
-  const username = currentUser?.username ?? currentUser?.email?.split("@")[0] ?? "";
+  const username =
+    currentUser?.username ??
+    currentUser?.email?.split("@")[0]?.replace(/[^A-Za-z0-9._-]/g, "_") ??
+    "";
 
   const tabParam = searchParams.get("tab");
   // S-2 Fix: Default-Tab ist 'profile'.
