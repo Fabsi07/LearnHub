@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, CalendarDays, Pencil } from "lucide-react";
+import { ArrowLeft, CalendarDays, Pencil, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { calculateTaskProgress } from "@/lib/study-plan/progress";
 import type { StudyPlanDetailDTO } from "@/lib/study-plan/types";
@@ -22,6 +22,11 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
   const [error, setError] = useState<string | null>(null);
   const [editOpen, setEditOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [replanBusy, setReplanBusy] = useState(false);
+  const [replanResult, setReplanResult] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -45,6 +50,47 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
   useEffect(() => {
     void refresh();
   }, [refresh]);
+
+  async function replanPlan() {
+    setReplanBusy(true);
+    setReplanResult(null);
+    try {
+      const res = await fetch(`/api/study-plan/${planId}/replan`, {
+        method: "POST",
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { error?: string; updatedTaskCount?: number; warnings?: string[] }
+        | null;
+
+      if (!res.ok) {
+        setReplanResult({
+          type: "error",
+          message: data?.error ?? "Plan konnte nicht neu verteilt werden.",
+        });
+        return;
+      }
+
+      const updatedTaskCount = data?.updatedTaskCount ?? 0;
+      const warning = data?.warnings?.[0];
+      setReplanResult({
+        type: "success",
+        message:
+          updatedTaskCount > 0
+            ? `${updatedTaskCount} offene ${
+                updatedTaskCount === 1 ? "Aufgabe wurde" : "Aufgaben wurden"
+              } neu verteilt. Erledigte Aufgaben bleiben unverändert.`
+            : warning ?? "Keine offenen Aufgaben mussten verschoben werden.",
+      });
+      await refresh();
+    } catch {
+      setReplanResult({
+        type: "error",
+        message: "Plan konnte nicht neu verteilt werden.",
+      });
+    } finally {
+      setReplanBusy(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -83,8 +129,8 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
 
   return (
     <div className="flex flex-col h-full p-6 gap-5 overflow-auto">
-      {/* Zurück + Bearbeiten */}
-      <div className="flex items-center justify-between gap-2">
+      {/* Zurück + Aktionen */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <Link
           href="/study-plan"
           className="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors"
@@ -92,14 +138,27 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
           <ArrowLeft className="w-4 h-4" />
           Zurück zur Übersicht
         </Link>
-        <button
-          type="button"
-          onClick={() => setEditOpen(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-        >
-          <Pencil className="w-4 h-4 text-gray-500" />
-          Bearbeiten
-        </button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <button
+            type="button"
+            onClick={() => void replanPlan()}
+            disabled={replanBusy}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors disabled:opacity-50"
+          >
+            <RefreshCw
+              className={cn("w-4 h-4 text-gray-500", replanBusy && "animate-spin")}
+            />
+            Plan neu verteilen
+          </button>
+          <button
+            type="button"
+            onClick={() => setEditOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+          >
+            <Pencil className="w-4 h-4 text-gray-500" />
+            Bearbeiten
+          </button>
+        </div>
       </div>
 
       {/* Plan-Header */}
@@ -129,6 +188,21 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
         )}
       </div>
 
+      {replanResult && (
+        <div
+          role={replanResult.type === "error" ? "alert" : "status"}
+          aria-live={replanResult.type === "error" ? "assertive" : "polite"}
+          className={cn(
+            "rounded-xl border px-4 py-3 text-sm",
+            replanResult.type === "success"
+              ? "border-green-200 bg-green-50 text-green-700"
+              : "border-red-200 bg-red-50 text-red-700",
+          )}
+        >
+          {replanResult.message}
+        </div>
+      )}
+
       {/* Widgets: Fortschritt + Algorithmus */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
@@ -154,7 +228,6 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
         <AlgorithmResultWidget
           plan={plan}
           onRecalculated={() => void refresh()}
-          onReplanned={() => void refresh()}
           onSchedule={() => setScheduleOpen(true)}
         />
       </div>
