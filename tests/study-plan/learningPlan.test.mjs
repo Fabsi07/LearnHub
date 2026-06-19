@@ -71,7 +71,9 @@ test("verwendet die aktualisierten Deadline- und Seitenfaktoren", () => {
   );
 
   assert.equal(calculateStudyPlan({ ...baseInput, pages: 50 }).volumeFactor, 0.7);
+  assert.equal(calculateStudyPlan({ ...baseInput, pages: 51 }).volumeFactor, 1.0);
   assert.equal(calculateStudyPlan({ ...baseInput, pages: 150 }).volumeFactor, 1.0);
+  assert.equal(calculateStudyPlan({ ...baseInput, pages: 151 }).volumeFactor, 1.3);
   assert.equal(calculateStudyPlan({ ...baseInput, pages: 300 }).volumeFactor, 1.3);
   assert.equal(calculateStudyPlan({ ...baseInput, pages: 301 }).volumeFactor, 1.6);
 });
