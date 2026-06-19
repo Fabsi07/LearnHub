@@ -9,7 +9,7 @@ const profileSchema = z.object({
     .string()
     .trim()
     .min(1, "Bitte gib einen Namen an.")
-    .max(40, "Der Name darf höchstens 40 Zeichen lang sein."),
+    .max(80, "Der Name darf höchstens 80 Zeichen lang sein."),
   lastName: z
     .string()
     .trim()
