@@ -57,6 +57,7 @@ export interface StudyPlanSummaryDTO extends StudyPlanDTO {
   taskCount: number;
   completedTaskCount: number;
   nextTask: { id: string; title: string; dueDate: string } | null;
+  openTasks: { id: string; title: string; dueDate: string }[];
 }
 
 /** Detailansicht – mit voller Aufgabenliste. */

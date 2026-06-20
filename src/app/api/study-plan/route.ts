@@ -34,7 +34,8 @@ export async function GET() {
 
   const studyPlans: StudyPlanSummaryDTO[] = plans.map((p) => {
     const { completedTaskCount } = calculateTaskProgress(p.tasks);
-    const next = p.tasks.find((t) => !t.completed) ?? null;
+    const openTasks = p.tasks.filter((t) => !t.completed);
+    const next = openTasks[0] ?? null;
     return {
       ...serializeStudyPlan(p),
       taskCount: p.tasks.length,
@@ -42,6 +43,11 @@ export async function GET() {
       nextTask: next
         ? { id: next.id, title: next.title, dueDate: next.dueDate.toISOString() }
         : null,
+      openTasks: openTasks.map((task) => ({
+        id: task.id,
+        title: task.title,
+        dueDate: task.dueDate.toISOString(),
+      })),
     };
   });
 

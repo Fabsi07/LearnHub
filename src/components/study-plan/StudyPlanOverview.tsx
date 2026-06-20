@@ -7,10 +7,14 @@ import type { StudyPlanSummaryDTO } from "@/lib/study-plan/types";
 import { StudyPlanCard } from "./StudyPlanCard";
 import { StudyPlanForm } from "./StudyPlanForm";
 
-export function StudyPlanOverview() {
+interface StudyPlanOverviewProps {
+  initialCreateOpen?: boolean;
+}
+
+export function StudyPlanOverview({ initialCreateOpen = false }: StudyPlanOverviewProps) {
   const { plans, loading, error, refresh } = useStudyPlans();
 
-  const [formOpen, setFormOpen] = useState(false);
+  const [formOpen, setFormOpen] = useState(initialCreateOpen);
   const [editPlan, setEditPlan] = useState<StudyPlanSummaryDTO | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<StudyPlanSummaryDTO | null>(null);
   const [deleting, setDeleting] = useState(false);
