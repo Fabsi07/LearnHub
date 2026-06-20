@@ -139,7 +139,7 @@ export function Sidebar({ currentUser, notificationSummary }: SidebarProps) {
       {/* User Card – führt zum Profil-Tab in den Einstellungen */}
       <Link
         href="/settings?tab=profile"
-        className="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/10"
+        className="flex min-w-0 items-center gap-3 rounded-lg p-2 transition-colors hover:bg-white/10"
       >
         <div
           className="flex shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-bold text-white"
@@ -156,9 +156,13 @@ export function Sidebar({ currentUser, notificationSummary }: SidebarProps) {
             getInitials(displayName)
           )}
         </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-semibold text-white">{displayName}</span>
-          <span className="text-xs text-sidebar-foreground/60">{email}</span>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <span className="truncate text-sm font-semibold text-white" title={displayName}>
+            {displayName}
+          </span>
+          <span className="truncate text-xs text-sidebar-foreground/60" title={email}>
+            {email}
+          </span>
         </div>
       </Link>
     </div>
