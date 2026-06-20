@@ -1,14 +1,15 @@
 import { StudyPlanOverview } from "@/components/study-plan/StudyPlanOverview";
 
 interface StudyPlanPageProps {
-  searchParams?: Promise<{
+  searchParams?: {
     create?: string | string[];
-  }>;
+  };
 }
 
-export default async function StudyPlanPage({ searchParams }: StudyPlanPageProps) {
-  const params = await searchParams;
-  const createParam = Array.isArray(params?.create) ? params?.create[0] : params?.create;
+export default function StudyPlanPage({ searchParams }: StudyPlanPageProps) {
+  const createParam = Array.isArray(searchParams?.create)
+    ? searchParams.create[0]
+    : searchParams?.create;
 
   return <StudyPlanOverview initialCreateOpen={createParam === "1"} />;
 }
