@@ -18,20 +18,24 @@ export async function GET() {
   }
 
   const now = new Date();
+
+  // Abgelaufene Einträge zuerst entfernen, damit ein abgelaufener Eintrag mit
+  // gleichem triggerKey die Neuerstellung in runNotificationChecks
+  // (createMany skipDuplicates) nicht blockiert – z. B. wenn sich ein Zieldatum
+  // ändert und dieselbe Erinnerung erneut fällig wird.
+  await prisma.notification.deleteMany({
+    where: { ownerId: session.userId, expiresAt: { lte: now } },
+  });
+
   await runNotificationChecks(session.userId, now);
 
-  const [, notifications] = await prisma.$transaction([
-    prisma.notification.deleteMany({
-      where: { ownerId: session.userId, expiresAt: { lte: now } },
-    }),
-    prisma.notification.findMany({
-      where: {
-        ownerId: session.userId,
-        expiresAt: { gt: now },
-      },
-      orderBy: [{ isArchived: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
-    }),
-  ]);
+  const notifications = await prisma.notification.findMany({
+    where: {
+      ownerId: session.userId,
+      expiresAt: { gt: now },
+    },
+    orderBy: [{ isArchived: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
+  });
 
   return NextResponse.json({
     notifications: notifications.map(serializeNotification),
