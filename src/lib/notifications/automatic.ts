@@ -50,11 +50,90 @@ async function createNotifications(
   notifications: Prisma.NotificationCreateManyInput[],
 ): Promise<number> {
   if (notifications.length === 0) return 0;
-  const result = await prisma.notification.createMany({
-    data: notifications,
-    skipDuplicates: true,
+
+  const notificationsWithTriggerKey = notifications.filter(
+    (
+      notification,
+    ): notification is Prisma.NotificationCreateManyInput & { triggerKey: string } =>
+      typeof notification.triggerKey === "string" && notification.triggerKey.length > 0,
+  );
+  const notificationsWithoutTriggerKey = notifications.filter(
+    (notification) =>
+      typeof notification.triggerKey !== "string" || notification.triggerKey.length === 0,
+  );
+
+  let createdCount = 0;
+
+  await prisma.$transaction(async (tx) => {
+    if (notificationsWithTriggerKey.length > 0) {
+      const existingNotifications = await tx.notification.findMany({
+        where: {
+          OR: notificationsWithTriggerKey.map((notification) => ({
+            ownerId: notification.ownerId,
+            triggerKey: notification.triggerKey,
+          })),
+        },
+        select: { ownerId: true, triggerKey: true },
+      });
+
+      const existingKeys = new Set(
+        existingNotifications.map(
+          (notification) => `${notification.ownerId}:${notification.triggerKey ?? ""}`,
+        ),
+      );
+
+      const toCreate: Prisma.NotificationCreateManyInput[] = [];
+      const toUpdate: Array<Prisma.NotificationCreateManyInput & { triggerKey: string }> = [];
+
+      for (const notification of notificationsWithTriggerKey) {
+        const dedupeKey = `${notification.ownerId}:${notification.triggerKey}`;
+        if (existingKeys.has(dedupeKey)) {
+          toUpdate.push(notification);
+        } else {
+          toCreate.push(notification);
+        }
+      }
+
+      if (toCreate.length > 0) {
+        const result = await tx.notification.createMany({
+          data: toCreate,
+          skipDuplicates: true,
+        });
+        createdCount += result.count;
+      }
+
+      await Promise.all(
+        toUpdate.map((notification) =>
+          tx.notification.update({
+            where: {
+              ownerId_triggerKey: {
+                ownerId: notification.ownerId,
+                triggerKey: notification.triggerKey,
+              },
+            },
+            data: {
+              type: notification.type,
+              subject: notification.subject,
+              course: notification.course,
+              dueDate: notification.dueDate,
+              description: notification.description,
+              isUrgent: notification.isUrgent,
+              expiresAt: notification.expiresAt,
+            },
+          }),
+        ),
+      );
+    }
+
+    if (notificationsWithoutTriggerKey.length > 0) {
+      const result = await tx.notification.createMany({
+        data: notificationsWithoutTriggerKey,
+      });
+      createdCount += result.count;
+    }
   });
-  return result.count;
+
+  return createdCount;
 }
 
 // ─── Deadline-Erinnerungen ──────────────────────────────────────────────────
