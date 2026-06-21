@@ -3,16 +3,12 @@ import {
   Plus,
   Filter,
   Lightbulb,
-  Search,
   Star,
-  X,
 } from "lucide-react";
 import { getEventColor } from "./events";
 
 interface CalendarSidebarProps {
   onNewEvent?: () => void;
-  searchQuery: string;
-  onSearchQueryChange: (query: string) => void;
   subjects: string[];
   eventTypes: string[];
   typeColors: Record<string, string>;
@@ -26,8 +22,6 @@ interface CalendarSidebarProps {
 
 export function CalendarSidebar({
   onNewEvent,
-  searchQuery,
-  onSearchQueryChange,
   subjects,
   eventTypes,
   typeColors,
@@ -52,28 +46,6 @@ export function CalendarSidebar({
         <Plus className="w-4 h-4" strokeWidth={2.5} />
         Neues Event
       </button>
-
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={(event) => onSearchQueryChange(event.target.value)}
-          placeholder="Events suchen"
-          aria-label="Kalender durchsuchen"
-          className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-9 text-sm text-gray-800 shadow-sm outline-none transition-colors placeholder:text-gray-400 focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => onSearchQueryChange("")}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-700"
-            aria-label="Suche löschen"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        )}
-      </div>
 
       {/* Fächer-Filter */}
       <section
