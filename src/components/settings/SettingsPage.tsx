@@ -646,7 +646,7 @@ function NotificationSettings() {
             onCheckedChange={(checked) =>
               setSettings((previous) => ({
                 ...previous,
-                dailyDigestEnabled: checked,
+                dailyDigestEnabled: checked === true,
               }))
             }
           />
