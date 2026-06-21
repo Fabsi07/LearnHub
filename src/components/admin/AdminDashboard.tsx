@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import {
+  BarChart3,
   Code2,
   MessageSquareText,
   Pencil,
@@ -16,7 +17,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AdminAnalytics } from "@/components/admin/AdminAnalytics";
 import { FeedbackManagement } from "@/components/admin/FeedbackManagement";
+import type { AdminAnalyticsPayload } from "@/lib/admin/analytics";
 import type { AdminUserListItem, AdminUsersPayload } from "@/lib/admin/users";
 import type { FeedbackPayload } from "@/lib/feedback/types";
 import { cn } from "@/lib/utils";
@@ -69,6 +72,7 @@ function roleBadgeClass(role: FormState["role"]) {
 }
 
 interface AdminDashboardProps {
+  initialAnalyticsData: AdminAnalyticsPayload | null;
   initialUsersData: AdminUsersPayload | null;
   initialFeedbackData: FeedbackPayload;
   currentUserId: string;
@@ -77,6 +81,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({
+  initialAnalyticsData,
   initialUsersData,
   initialFeedbackData,
   currentUserId,
@@ -84,7 +89,9 @@ export function AdminDashboard({
   fixedAdminEmail,
 }: AdminDashboardProps) {
   const canManageUsers = currentUserRole === "ADMIN";
-  const [activeTab, setActiveTab] = useState<"feedback" | "users">("feedback");
+  const [activeTab, setActiveTab] = useState<"analytics" | "feedback" | "users">(
+    canManageUsers && initialAnalyticsData ? "analytics" : "feedback",
+  );
   const [feedbackBadgeCount, setFeedbackBadgeCount] = useState(initialFeedbackData.newCount);
   const [users, setUsers] = useState<AdminUserListItem[]>(initialUsersData?.users ?? []);
   const [total, setTotal] = useState(initialUsersData?.total ?? 0);
@@ -234,6 +241,22 @@ export function AdminDashboard({
       </div>
 
       <div className="flex flex-wrap gap-2 rounded-lg border border-gray-200 bg-white p-1 shadow-sm">
+        {canManageUsers && initialAnalyticsData && (
+          <button
+            type="button"
+            onClick={() => setActiveTab("analytics")}
+            className={cn(
+              "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-semibold transition-colors",
+              activeTab === "analytics"
+                ? "bg-gray-950 text-white dark:bg-white dark:text-black"
+                : "text-gray-600 hover:bg-gray-100 hover:text-gray-950",
+            )}
+          >
+            <BarChart3 className="h-4 w-4" />
+            Analysen
+          </button>
+        )}
+
         <button
           type="button"
           onClick={() => setActiveTab("feedback")}
@@ -269,6 +292,10 @@ export function AdminDashboard({
           </button>
         )}
       </div>
+
+      {activeTab === "analytics" && initialAnalyticsData && (
+        <AdminAnalytics initialData={initialAnalyticsData} />
+      )}
 
       {activeTab === "feedback" && (
         <FeedbackManagement
