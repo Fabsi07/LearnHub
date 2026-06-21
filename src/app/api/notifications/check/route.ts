@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { checkMissedSessionNotifications } from "@/lib/notifications/missedSessions";
+import { runNotificationChecks } from "@/lib/notifications/automatic";
 
 async function handleCheck() {
   const session = await getSession();
@@ -8,7 +8,7 @@ async function handleCheck() {
     return NextResponse.json({ error: "Nicht angemeldet." }, { status: 401 });
   }
 
-  const result = await checkMissedSessionNotifications(session.userId);
+  const result = await runNotificationChecks(session.userId);
   return NextResponse.json(result);
 }
 

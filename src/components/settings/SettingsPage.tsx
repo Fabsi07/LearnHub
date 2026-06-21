@@ -36,7 +36,12 @@ const settingsCategories: SettingsCategory[] = [
   { id: "calendar", label: "Kalender", icon: CalendarDays },
 ];
 
-const reminderOptions = ["10 Minuten vorher", "1 Stunde vorher", "1 Tag vorher", "3 Tage vorher"];
+const reminderOptions: { label: string; minutes: number }[] = [
+  { label: "10 Minuten vorher", minutes: 10 },
+  { label: "1 Stunde vorher", minutes: 60 },
+  { label: "1 Tag vorher", minutes: 1440 },
+  { label: "3 Tage vorher", minutes: 4320 },
+];
 const digestTimes = ["07:00", "12:00", "18:00", "20:00"];
 
 // S-15 Fix: Wiederverwendbarer Tailwind-String für native <select>-Elemente.
@@ -49,11 +54,23 @@ const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp"];
 interface NotificationSettingsState {
   missedSessionRescheduleEnabled: boolean;
   missedSessionReplanWarningEnabled: boolean;
+  deadlineRemindersEnabled: boolean;
+  deadlineLeadMinutes: number;
+  dailyDigestEnabled: boolean;
+  digestTime: string;
+  sessionRemindersEnabled: boolean;
+  overdueTaskRemindersEnabled: boolean;
 }
 
 const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettingsState = {
   missedSessionRescheduleEnabled: true,
   missedSessionReplanWarningEnabled: true,
+  deadlineRemindersEnabled: true,
+  deadlineLeadMinutes: 1440,
+  dailyDigestEnabled: true,
+  digestTime: "18:00",
+  sessionRemindersEnabled: true,
+  overdueTaskRemindersEnabled: false,
 };
 
 export function SettingsPage({ currentUser }: { currentUser?: CurrentUser }) {
@@ -404,7 +421,11 @@ function ProfileSettings({
                 Sende einen Link zum Zurücksetzen deines Passworts.
               </p>
             </div>
-            <Button type="button" variant="outline">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.push("/forgot-password")}
+            >
               <KeyRound className="h-4 w-4" />
               Passwort zurücksetzen
             </Button>
@@ -579,18 +600,32 @@ function NotificationSettings() {
             id="deadline-reminders"
             name="deadlineReminders"
             label="Deadline-Erinnerungen aktivieren"
-            defaultChecked
+            checked={settings.deadlineRemindersEnabled}
+            disabled={isLoading || isSaving}
+            onCheckedChange={(checked) =>
+              setSettings((previous) => ({
+                ...previous,
+                deadlineRemindersEnabled: checked,
+              }))
+            }
           />
           <Field label="Erinnerungsvorlauf" htmlFor="deadline-lead-time">
             <select
               id="deadline-lead-time"
               name="deadlineLeadTime"
-              defaultValue="1 Tag vorher"
+              value={settings.deadlineLeadMinutes}
+              disabled={isLoading || isSaving || !settings.deadlineRemindersEnabled}
+              onChange={(event) =>
+                setSettings((previous) => ({
+                  ...previous,
+                  deadlineLeadMinutes: Number(event.target.value),
+                }))
+              }
               className={SELECT_CLASSES}
             >
               {reminderOptions.map((option) => (
-                <option key={option} value={option}>
-                  {option}
+                <option key={option.minutes} value={option.minutes}>
+                  {option.label}
                 </option>
               ))}
             </select>
@@ -606,13 +641,27 @@ function NotificationSettings() {
             id="daily-digest"
             name="dailyDigest"
             label="Tägliche Lernübersicht aktivieren"
-            defaultChecked
+            checked={settings.dailyDigestEnabled}
+            disabled={isLoading || isSaving}
+            onCheckedChange={(checked) =>
+              setSettings((previous) => ({
+                ...previous,
+                dailyDigestEnabled: checked,
+              }))
+            }
           />
           <Field label="Uhrzeit" htmlFor="digest-time">
             <select
               id="digest-time"
               name="digestTime"
-              defaultValue="18:00"
+              value={settings.digestTime}
+              disabled={isLoading || isSaving || !settings.dailyDigestEnabled}
+              onChange={(event) =>
+                setSettings((previous) => ({
+                  ...previous,
+                  digestTime: event.target.value,
+                }))
+              }
               className={SELECT_CLASSES}
             >
               {digestTimes.map((time) => (
@@ -633,12 +682,27 @@ function NotificationSettings() {
             id="session-reminders"
             name="sessionReminders"
             label="Erinnerungen für geplante Lernsessions"
-            defaultChecked
+            checked={settings.sessionRemindersEnabled}
+            disabled={isLoading || isSaving}
+            onCheckedChange={(checked) =>
+              setSettings((previous) => ({
+                ...previous,
+                sessionRemindersEnabled: checked,
+              }))
+            }
           />
           <CheckboxField
             id="overdue-tasks"
             name="overdueTasks"
             label="Überfällige Aufgaben zusätzlich hervorheben"
+            checked={settings.overdueTaskRemindersEnabled}
+            disabled={isLoading || isSaving}
+            onCheckedChange={(checked) =>
+              setSettings((previous) => ({
+                ...previous,
+                overdueTaskRemindersEnabled: checked,
+              }))
+            }
           />
         </SettingsBlock>
 

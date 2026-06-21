@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { checkMissedSessionNotifications } from "@/lib/notifications/missedSessions";
+import { runNotificationChecks } from "@/lib/notifications/automatic";
 import {
   isNotificationType,
   serializeNotification,
@@ -18,7 +18,7 @@ export async function GET() {
   }
 
   const now = new Date();
-  await checkMissedSessionNotifications(session.userId, now);
+  await runNotificationChecks(session.userId, now);
 
   const [, notifications] = await prisma.$transaction([
     prisma.notification.deleteMany({
