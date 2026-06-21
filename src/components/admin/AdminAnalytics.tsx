@@ -355,7 +355,14 @@ function BucketList({ buckets, compact = false }: BucketListProps) {
             <span className="font-medium text-gray-700">{bucket.label}</span>
             <span className="font-bold text-gray-950">{formatNumber(bucket.count)}</span>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+          <div
+            className="h-2 overflow-hidden rounded-full bg-gray-100"
+            role="progressbar"
+            aria-label={bucket.label}
+            aria-valuenow={bucket.percentage}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
             <div
               className="h-full rounded-full bg-gray-950"
               style={{ width: `${bucket.percentage}%` }}
