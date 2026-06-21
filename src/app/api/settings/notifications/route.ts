@@ -2,25 +2,9 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
 import {
   getNotificationSettings,
+  parseNotificationSettings,
   updateNotificationSettings,
-  type NotificationSettingsDTO,
 } from "@/lib/notifications/settings";
-
-function parseSettingsInput(body: unknown): NotificationSettingsDTO | null {
-  const input = (body ?? {}) as Record<string, unknown>;
-
-  if (
-    typeof input.missedSessionRescheduleEnabled !== "boolean" ||
-    typeof input.missedSessionReplanWarningEnabled !== "boolean"
-  ) {
-    return null;
-  }
-
-  return {
-    missedSessionRescheduleEnabled: input.missedSessionRescheduleEnabled,
-    missedSessionReplanWarningEnabled: input.missedSessionReplanWarningEnabled,
-  };
-}
 
 /** GET /api/settings/notifications - Benachrichtigungseinstellungen laden. */
 export async function GET() {
@@ -47,7 +31,7 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Ungültiger Anfrage-Body." }, { status: 400 });
   }
 
-  const settings = parseSettingsInput(body);
+  const settings = parseNotificationSettings(body);
   if (!settings) {
     return NextResponse.json({ error: "Ungültige Einstellungen." }, { status: 400 });
   }

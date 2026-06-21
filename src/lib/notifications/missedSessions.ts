@@ -1,5 +1,8 @@
 import type { Prisma } from "@prisma/client";
-import { getNotificationSettings } from "@/lib/notifications/settings";
+import {
+  getNotificationSettings,
+  type NotificationSettingsDTO,
+} from "@/lib/notifications/settings";
 import { prisma } from "@/lib/prisma";
 
 const AUTO_NOTIFICATION_EXPIRES_AT = new Date("2099-12-31T23:59:59.000Z");
@@ -99,8 +102,9 @@ function createReplanNotification(
 export async function checkMissedSessionNotifications(
   ownerId: string,
   now = new Date(),
+  providedSettings?: NotificationSettingsDTO,
 ): Promise<MissedSessionCheckResult> {
-  const settings = await getNotificationSettings(ownerId);
+  const settings = providedSettings ?? (await getNotificationSettings(ownerId));
   const missedSessions = await prisma.calendarEvent.findMany({
     where: {
       ownerId,

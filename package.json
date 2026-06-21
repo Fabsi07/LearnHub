@@ -12,7 +12,8 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",
-    "setup": "node scripts/setup.mjs"
+    "setup": "node scripts/setup.mjs",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
@@ -26,6 +27,7 @@
     "next": "^15.5.15",
     "node-ical": "^0.20.1",
     "postcss": "^8.5.12",
+    "prisma": "^6.19.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "shadcn": "^4.5.0",
@@ -41,7 +43,6 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "^15.5.15",
-    "prisma": "^6.19.3",
     "typescript": "^5"
   }
 }

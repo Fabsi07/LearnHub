@@ -186,6 +186,12 @@ Der Setup-Ablauf erzeugt bewusst **keine neue Migration**. Nur wenn du selbst
 `prisma/schema.prisma` aenderst, verwendest du als Entwickler
 `npm run prisma:migrate`, um eine neue Migration anzulegen.
 
+> **Hinweis:** `prisma generate` laeuft seit Kurzem automatisch als
+> `postinstall`-Skript nach jedem `npm ci` / `npm install`. Der explizite
+> Aufruf hier ist nur noch eine Absicherung. Nach einer **Schema-Aenderung oder
+> einem `prisma:deploy`** solltest du ihn aber weiterhin ausfuehren, damit der
+> generierte Client zu den neuen Tabellen/Spalten passt.
+
 ### Schritt 6: Entwicklungs-Server starten
 
 ```bash
@@ -446,10 +452,10 @@ Das geht etwa 3 Minuten und ist die Variante fuer „irgendwas ist kaputt, ich w
 Stand des MVP (Mai/Juni 2026), wichtig zu wissen:
 
 - **Keine Email-Verifizierung beim Registrieren** — jede E-Mail wird akzeptiert, Hauptsache eindeutig.
-- **Keine Passwort-Wiederherstellung** — wer das Passwort vergisst, muss neu registrieren oder direkt in die DB schreiben.
+- **Keine Passwort-Wiederherstellung** — die Seite „Passwort vergessen?" weist transparent darauf hin, dass das Zurücksetzen erst mit der geplanten DHBW-SSO-Anbindung kommt. Aktuell muss man neu registrieren oder direkt in die DB schreiben.
 - **DHBW-Kalender:** Vorlesungen werden ueber den DHBW-ICS-Feed geladen. Der externe Server ist gelegentlich instabil; bei Fehlern erscheint eine Hinweismeldung, die App bleibt nutzbar.
 - **Avatar-Bilder** werden aktuell direkt als Binaerdaten in PostgreSQL gespeichert. Fuer das lokale MVP ist das ausreichend; fuer einen Produktivbetrieb waere ein Objektspeicher sinnvoller.
-- **Profil- und Benachrichtigungseinstellungen** sind teilweise noch Mock-Oberflaechen. Unter anderem sind Namens-/E-Mail-Aenderung, Passwort-Reset und allgemeine Deadline-Erinnerungen noch nicht vollstaendig angebunden.
+- **Profil- und Benachrichtigungseinstellungen:** Name/Username (inkl. Avatar-Upload) und alle Benachrichtigungseinstellungen (verpasste Sessions, Deadline-Erinnerungen mit Vorlauf, tägliche Lernübersicht, Session-Erinnerungen, überfällige Aufgaben) werden persistiert und ausgewertet. Noch nicht angebunden sind ausschliesslich die **E-Mail-Aenderung** und der **Passwort-Reset** (kommen mit der DHBW-SSO-Anbindung).
 - **Lernplaene, Aufgaben, algorithmische Planung und Kalenderuebernahme** sind implementiert. Die Berechnungsfaktoren sind ein transparenter Projektansatz, aber noch nicht lernwissenschaftlich validiert.
 - **Performance auf Windows** ist durch die WSL-Schicht etwas langsamer als auf macOS oder Linux. Fuer die Entwicklung kein Problem.
 

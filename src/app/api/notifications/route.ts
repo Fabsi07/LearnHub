@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth/session";
-import { checkMissedSessionNotifications } from "@/lib/notifications/missedSessions";
+import { runNotificationChecks } from "@/lib/notifications/automatic";
 import {
   isNotificationType,
   serializeNotification,
@@ -18,20 +18,24 @@ export async function GET() {
   }
 
   const now = new Date();
-  await checkMissedSessionNotifications(session.userId, now);
 
-  const [, notifications] = await prisma.$transaction([
-    prisma.notification.deleteMany({
-      where: { ownerId: session.userId, expiresAt: { lte: now } },
-    }),
-    prisma.notification.findMany({
-      where: {
-        ownerId: session.userId,
-        expiresAt: { gt: now },
-      },
-      orderBy: [{ isArchived: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
-    }),
-  ]);
+  // Abgelaufene Einträge zuerst entfernen, damit ein abgelaufener Eintrag mit
+  // gleichem triggerKey die Neuerstellung in runNotificationChecks
+  // (createMany skipDuplicates) nicht blockiert – z. B. wenn sich ein Zieldatum
+  // ändert und dieselbe Erinnerung erneut fällig wird.
+  await prisma.notification.deleteMany({
+    where: { ownerId: session.userId, expiresAt: { lte: now } },
+  });
+
+  await runNotificationChecks(session.userId, now);
+
+  const notifications = await prisma.notification.findMany({
+    where: {
+      ownerId: session.userId,
+      expiresAt: { gt: now },
+    },
+    orderBy: [{ isArchived: "asc" }, { dueDate: "asc" }, { createdAt: "desc" }],
+  });
 
   return NextResponse.json({
     notifications: notifications.map(serializeNotification),

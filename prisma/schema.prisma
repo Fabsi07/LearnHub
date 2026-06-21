@@ -238,6 +238,15 @@ model NotificationSettings {
   ownerId                           String   @unique
   missedSessionRescheduleEnabled    Boolean  @default(true)
   missedSessionReplanWarningEnabled Boolean  @default(true)
+  // Deadline-Erinnerungen für Lernplan-Zieltermine und Aufgaben-Fälligkeiten.
+  deadlineRemindersEnabled          Boolean  @default(true)
+  deadlineLeadMinutes               Int      @default(1440) // Vorlauf in Minuten (10/60/1440/4320)
+  // Tägliche Lernübersicht: einmal pro Tag ab der gewählten Uhrzeit.
+  dailyDigestEnabled                Boolean  @default(true)
+  digestTime                        String   @default("18:00") // "HH:MM"
+  // Erinnerungen an heute geplante Lernsessions und überfällige Aufgaben.
+  sessionRemindersEnabled           Boolean  @default(true)
+  overdueTaskRemindersEnabled       Boolean  @default(false)
   createdAt                         DateTime @default(now())
   updatedAt                         DateTime @updatedAt
 
