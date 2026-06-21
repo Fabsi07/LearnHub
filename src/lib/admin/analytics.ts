@@ -256,11 +256,15 @@ export async function getAdminAnalyticsPayload(): Promise<AdminAnalyticsPayload>
   const completedByPlan = new Map(
     completedTaskGroups.map((group) => [group.studyPlanId, countAll(group)]),
   );
-  const planProgressValues = taskGroups.map((group) => {
+  const progressForPlansWithTasks = taskGroups.map((group) => {
     const completedForPlan = completedByPlan.get(group.studyPlanId) ?? 0;
     const taskCount = countAll(group);
     return taskCount === 0 ? 0 : completedForPlan / taskCount;
   });
+  const plansWithoutTasks = Math.max(0, studyPlans - progressForPlansWithTasks.length);
+  const planProgressValues = progressForPlansWithTasks.concat(
+    Array.from({ length: plansWithoutTasks }, () => 0),
+  );
 
   return {
     generatedAt: now.toISOString(),
