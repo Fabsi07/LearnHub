@@ -327,7 +327,14 @@ function ProgressRow({ label, value }: ProgressRowProps) {
         <span className="font-medium text-gray-700">{label}</span>
         <span className="font-bold text-gray-950">{value} %</span>
       </div>
-      <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+      <div
+        className="h-2 overflow-hidden rounded-full bg-gray-100"
+        role="progressbar"
+        aria-label={label}
+        aria-valuenow={value}
+        aria-valuemin={0}
+        aria-valuemax={100}
+      >
         <div className="h-full rounded-full bg-gray-950" style={{ width: `${value}%` }} />
       </div>
     </div>
