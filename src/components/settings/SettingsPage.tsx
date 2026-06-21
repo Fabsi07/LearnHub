@@ -605,7 +605,7 @@ function NotificationSettings() {
             onCheckedChange={(checked) =>
               setSettings((previous) => ({
                 ...previous,
-                deadlineRemindersEnabled: checked,
+                deadlineRemindersEnabled: checked === true,
               }))
             }
           />
