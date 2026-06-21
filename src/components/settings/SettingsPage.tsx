@@ -687,7 +687,7 @@ function NotificationSettings() {
             onCheckedChange={(checked) =>
               setSettings((previous) => ({
                 ...previous,
-                sessionRemindersEnabled: checked,
+                sessionRemindersEnabled: checked === true,
               }))
             }
           />
