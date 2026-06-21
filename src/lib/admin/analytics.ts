@@ -236,7 +236,7 @@ export async function getAdminAnalyticsPayload(): Promise<AdminAnalyticsPayload>
     }),
     prisma.feedback.count(),
     prisma.feedback.count({ where: { status: "OPEN" } }),
-    prisma.feedback.count({ where: { priority: "CRITICAL" satisfies FeedbackPriority } }),
+    prisma.feedback.count({ where: { priority: "CRITICAL" } }),
     prisma.feedback.count({ where: { status: "DONE" } }),
     prisma.feedback.groupBy({
       by: ["status"],
