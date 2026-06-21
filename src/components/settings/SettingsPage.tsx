@@ -700,7 +700,7 @@ function NotificationSettings() {
             onCheckedChange={(checked) =>
               setSettings((previous) => ({
                 ...previous,
-                overdueTaskRemindersEnabled: checked,
+                overdueTaskRemindersEnabled: checked === true,
               }))
             }
           />
