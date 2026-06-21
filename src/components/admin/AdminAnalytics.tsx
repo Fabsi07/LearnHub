@@ -6,13 +6,11 @@ import {
   BarChart3,
   CalendarClock,
   CheckCircle2,
-  Clock3,
   ListChecks,
   RefreshCw,
   ShieldCheck,
   Target,
   UserCheck,
-  UserPlus,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
