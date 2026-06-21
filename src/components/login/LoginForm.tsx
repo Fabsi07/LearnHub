@@ -53,8 +53,7 @@ export function LoginForm() {
             ? "/admin"
             : "/dashboard";
 
-      router.push(target);
-      router.refresh();
+      router.replace(target);
     } catch {
       setError("Verbindungsfehler. Bitte versuche es erneut.");
     } finally {

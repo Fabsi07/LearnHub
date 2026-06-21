@@ -311,21 +311,25 @@ export function DashboardContent() {
                   className={cn(
                     "flex items-center gap-3 rounded-xl border px-4 py-2.5 transition-colors",
                     task.overdue
-                      ? "border-red-200 bg-red-50/70 hover:border-red-300"
-                      : "border-gray-200 hover:border-gray-300",
+                      ? "border-red-200 bg-red-50/70 hover:border-red-300 dark:border-red-500/40 dark:bg-red-950/30 dark:hover:border-red-400/70"
+                      : "border-gray-200 hover:border-gray-300 dark:border-white/10 dark:hover:border-white/20",
                   )}
                 >
                   {task.overdue ? (
-                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-600" />
+                    <AlertTriangle className="h-4 w-4 shrink-0 text-red-600 dark:text-red-300" />
                   ) : (
-                    <ClipboardList className="h-4 w-4 shrink-0 text-amber-500" />
+                    <ClipboardList className="h-4 w-4 shrink-0 text-amber-500 dark:text-amber-300" />
                   )}
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-gray-900">{task.title}</p>
+                    <p className="truncate text-sm font-medium text-gray-900 dark:text-white">
+                      {task.title}
+                    </p>
                     <p
                       className={cn(
                         "truncate text-xs",
-                        task.overdue ? "font-medium text-red-700" : "text-gray-500",
+                        task.overdue
+                          ? "font-medium text-red-700 dark:text-red-300"
+                          : "text-gray-500 dark:text-white/60",
                       )}
                     >
                       {task.subject} ·{" "}
@@ -334,7 +338,7 @@ export function DashboardContent() {
                         : formatTaskDueDate(task.dueDate, today, tomorrow)}
                     </p>
                   </div>
-                  <ArrowRight className="h-4 w-4 shrink-0 text-gray-400" />
+                  <ArrowRight className="h-4 w-4 shrink-0 text-gray-400 dark:text-white/45" />
                 </Link>
               ))}
             </div>
