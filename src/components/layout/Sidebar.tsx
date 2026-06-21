@@ -3,8 +3,8 @@
 import {
   LayoutDashboard,
   Calendar,
+  BellRing,
   BookOpen,
-  MessageSquare,
   MessageSquarePlus,
   Settings,
   ShieldCheck,
@@ -30,7 +30,7 @@ function getNavItems(canOpenManagement: boolean) {
     section: "Access",
     items: [
       { label: "Feedback", href: "/feedback", icon: MessageSquarePlus },
-      { label: "Benachrichtigungen", href: "/notifications", icon: MessageSquare },
+      { label: "Benachrichtigungen", href: "/notifications", icon: BellRing },
       { label: "Einstellungen", href: "/settings?tab=profile", icon: Settings },
     ],
   },
