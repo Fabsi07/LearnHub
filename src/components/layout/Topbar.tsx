@@ -15,6 +15,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { useCalendarSearch } from "@/lib/calendar/searchContext";
 import type { NotificationSummary } from "@/lib/notifications/summary";
 import { useTheme } from "@/lib/useTheme";
 
@@ -56,6 +57,7 @@ export function Topbar({
   const router = useRouter();
   const pathname = usePathname() ?? "";
   const { isDark, toggleTheme } = useTheme();
+  const { searchQuery, setSearchQuery } = useCalendarSearch();
   const [logoutError, setLogoutError] = useState<string | null>(null);
   const [notificationPopupDismissed, setNotificationPopupDismissed] =
     useState(false);
@@ -71,10 +73,17 @@ export function Topbar({
   const notificationMessage = notificationSummary
     ? getNotificationMessage(notificationSummary)
     : "";
+  const showCalendarSearch = pathname === "/calendar";
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (!showCalendarSearch && searchQuery) {
+      setSearchQuery("");
+    }
+  }, [searchQuery, setSearchQuery, showCalendarSearch]);
 
   async function handleLogout() {
     try {
@@ -108,10 +117,31 @@ export function Topbar({
             )}
           </button>
 
-          <div className="flex w-[280px] items-center gap-2 rounded-2xl bg-muted px-4 py-2 text-muted-foreground">
-            <Search className="h-4 w-4" />
-            <span className="text-sm">Suchen</span>
-          </div>
+          {showCalendarSearch ? (
+            <div className="relative w-[min(360px,42vw)]">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="search"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="Events suchen"
+                aria-label="Kalender durchsuchen"
+                className="h-10 w-full rounded-2xl border border-transparent bg-muted py-2 pl-10 pr-10 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+              />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Suche löschen"
+                  title="Suche löschen"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+          ) : (
+            <div className="w-[min(360px,42vw)]" aria-hidden="true" />
+          )}
 
           <div className="flex items-center gap-3">
             <button
