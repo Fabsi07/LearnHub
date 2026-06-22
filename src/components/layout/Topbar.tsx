@@ -15,7 +15,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import { useCalendarSearch } from "@/lib/calendar/search-context";
+import { useCalendarSearch } from "@/lib/calendar/searchContext";
 import type { NotificationSummary } from "@/lib/notifications/summary";
 import { useTheme } from "@/lib/useTheme";
 

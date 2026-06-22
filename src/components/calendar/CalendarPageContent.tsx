@@ -5,7 +5,7 @@ import { Calendar } from "./Calendar";
 import { CalendarSidebar } from "./CalendarSidebar";
 import { NewEventModal } from "./NewEventModal";
 import { CalEvent, RepeatRule } from "./events";
-import { useCalendarSearch } from "@/lib/calendar/search-context";
+import { useCalendarSearch } from "@/lib/calendar/searchContext";
 import { useExternalEvents } from "@/lib/calendar/useExternalEvents";
 
 type ModalState = {

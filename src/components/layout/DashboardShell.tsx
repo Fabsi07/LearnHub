@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { CurrentUser } from "@/lib/auth/session";
-import { CalendarSearchProvider } from "@/lib/calendar/search-context";
+import { CalendarSearchProvider } from "@/lib/calendar/searchContext";
 import {
   EMPTY_NOTIFICATION_SUMMARY,
   summarizeNotifications,
