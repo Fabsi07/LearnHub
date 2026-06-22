@@ -139,6 +139,7 @@ export function Topbar({
                   <X className="h-4 w-4" />
                 </button>
               )}
+            </div>
           ) : (
             <div className="w-[min(360px,42vw)]" aria-hidden="true" />
           )}
