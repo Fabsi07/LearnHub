@@ -126,9 +126,19 @@ export function Topbar({
                 onChange={(event) => setSearchQuery(event.target.value)}
                 placeholder="Events suchen"
                 aria-label="Kalender durchsuchen"
-                className="h-10 w-full rounded-2xl border border-transparent bg-muted py-2 pl-10 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
+                className="h-10 w-full rounded-2xl border border-transparent bg-muted py-2 pl-10 pr-10 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-brand-red focus:ring-2 focus:ring-brand-red/20 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
               />
-            </div>
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  aria-label="Suche löschen"
+                  title="Suche löschen"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
           ) : (
             <div className="w-[min(360px,42vw)]" aria-hidden="true" />
           )}
