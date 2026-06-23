@@ -52,6 +52,8 @@ function preserveSpacing(original: string, translated: string) {
   return `${leading}${translated}${trailing}`;
 }
 
+let cachedPhraseEntries: Array<[string, string]> | null = null;
+
 function translateText(text: string, locale: Locale): string {
   if (locale === "de") return text;
 
@@ -68,9 +70,11 @@ function translateText(text: string, locale: Locale): string {
   }
 
   let translated = trimmed;
-  const phrases = Object.entries(phraseTranslations).sort(
-    ([left], [right]) => right.length - left.length,
-  );
+  const phrases =
+    cachedPhraseEntries ??
+    (cachedPhraseEntries = Object.entries(phraseTranslations).sort(
+      ([left], [right]) => right.length - left.length,
+    ));
 
   for (const [source, target] of phrases) {
     translated = translated.split(source).join(target);
