@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { LearnHubBrand } from "@/components/brand/LearnHubBrand";
+import { LanguageSelect } from "@/lib/i18n/LanguageProvider";
 
 interface AuthSplitLayoutProps {
   /** Große Überschrift im linken Marken-Panel. */
@@ -90,7 +91,10 @@ export function AuthSplitLayout({
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center bg-gray-50 p-6 lg:p-12">
+      <div className="relative flex flex-1 items-center justify-center bg-gray-50 p-6 lg:p-12">
+        <div className="absolute right-5 top-5">
+          <LanguageSelect />
+        </div>
         {children}
       </div>
     </div>

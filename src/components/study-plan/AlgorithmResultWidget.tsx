@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AlertTriangle, CheckCircle, Calculator, CalendarPlus, RefreshCw } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import {
   MAX_SESSIONS_PER_SUBJECT_PER_DAY,
@@ -24,6 +25,7 @@ export function AlgorithmResultWidget({
   onReplanned,
   onSchedule,
 }: AlgorithmResultWidgetProps) {
+  const { locale } = useLanguage();
   const [busyAction, setBusyAction] = useState<"calculate" | "replan" | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
 
@@ -163,9 +165,9 @@ export function AlgorithmResultWidget({
 
           {isKritisch && (
             <p className="text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
-              Rechnerisch wären {plan.hoursPerDay} h pro Tag nötig. Automatisch geplant werden
-              maximal zwei 2-Stunden-Einheiten dieses Fachs pro Tag – priorisiere die wichtigsten
-              Inhalte und plane Pausen ein.
+              {locale === "en"
+                ? `Mathematically, ${plan.hoursPerDay} h per day would be required. The automatic schedule limits this subject to two 2-hour units per day. Prioritize the most important content and plan breaks.`
+                : `Rechnerisch wären ${plan.hoursPerDay} h pro Tag nötig. Automatisch geplant werden maximal zwei 2-Stunden-Einheiten dieses Fachs pro Tag – priorisiere die wichtigsten Inhalte und plane Pausen ein.`}
             </p>
           )}
 

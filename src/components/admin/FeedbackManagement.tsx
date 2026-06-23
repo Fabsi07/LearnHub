@@ -32,9 +32,9 @@ type CategoryFilter = FeedbackCategory | "ALL";
 type SortMode = "created-desc" | "created-asc" | "priority-desc" | "priority-asc";
 
 const SELECT_CLASSES =
-  "admin-role-select h-8 w-full rounded-lg border border-input px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+  "admin-role-select h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60";
 
-const OPTION_CLASSES = "admin-role-select-option";
+const OPTION_CLASSES = "admin-role-select-option bg-background text-foreground";
 
 function formatDateTime(value: string) {
   return new Intl.DateTimeFormat("de-DE", {

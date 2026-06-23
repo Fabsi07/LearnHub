@@ -46,7 +46,7 @@ const digestTimes = ["07:00", "12:00", "18:00", "20:00"];
 
 // S-15 Fix: Wiederverwendbarer Tailwind-String für native <select>-Elemente.
 const SELECT_CLASSES =
-  "h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
+  "h-8 w-full rounded-lg border border-input bg-background px-2.5 text-sm text-foreground outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60";
 
 const MAX_AVATAR_BYTES = 5 * 1024 * 1024; // 5 MB
 const ALLOWED_AVATAR_TYPES = ["image/png", "image/jpeg", "image/webp"];

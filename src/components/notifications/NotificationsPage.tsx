@@ -15,22 +15,14 @@ import type {
   NotificationDTO,
   NotificationType,
 } from "@/lib/notifications/types";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 
 const filters = ["Alle", "Offen", "Abgaben", "Klausuren", "Lernsessions", "Archiviert"] as const;
 type Filter = (typeof filters)[number];
 
-const DATE_FORMATTER = new Intl.DateTimeFormat("de-DE", {
-  day: "2-digit",
-  month: "long",
-  year: "numeric",
-});
-
-function formatDate(value: string) {
-  return DATE_FORMATTER.format(new Date(value));
-}
-
 export function NotificationsPage() {
+  const { locale } = useLanguage();
   const [items, setItems] = useState<NotificationDTO[]>([]);
   const [activeFilter, setActiveFilter] = useState<Filter>("Alle");
   const [searchTerm, setSearchTerm] = useState("");
@@ -38,6 +30,19 @@ export function NotificationsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const dateFormatter = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale === "en" ? "en-US" : "de-DE", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+      }),
+    [locale],
+  );
+
+  function formatDate(value: string) {
+    return dateFormatter.format(new Date(value));
+  }
 
   useEffect(() => {
     let cancelled = false;

@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AlertTriangle, CalendarCheck, CalendarPlus, CheckCircle, X } from "lucide-react";
 import type { CalEvent, RepeatRule } from "@/components/calendar/events";
 import { calculateStudyPlan } from "@/lib/calculations/studyPlanAlgorithm";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
+import type { Locale } from "@/lib/i18n/translations";
 import {
   analyzeWorkload,
   scheduleStudyPlan,
@@ -33,6 +35,42 @@ function formatTime(d: Date): string {
 }
 
 const WEEKDAYS = ["So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"];
+const WEEKDAYS_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function translateScheduleWarning(text: string, locale: Locale) {
+  if (locale === "de") return text;
+
+  const sessionFitMatch = text.match(
+    /^Rechnerisch wären (\d+) (?:Lerneinheiten|study units) nötig, bis zur Deadline passen aber höchstens (\d+) \(max\. (\d+) pro Woche\)\. Geplant werden (\d+) Einheiten – priorisiere die wichtigsten Inhalte\.$/u,
+  );
+  if (sessionFitMatch) {
+    const [, needed, possible, weeklyMax, planned] = sessionFitMatch;
+    return `Mathematically, ${needed} study units would be needed, but at most ${possible} fit before the deadline (max. ${weeklyMax} per week). ${planned} units are scheduled - prioritize the most important content.`;
+  }
+
+  if (
+    text ===
+    "Der berechnete Lernaufwand ist höher als die empfohlene maximale Wochenlernzeit."
+  ) {
+    return "The calculated study workload is higher than the recommended maximum weekly study time.";
+  }
+
+  return text;
+}
+
+function translateCriticalNote(text: string, locale: Locale) {
+  if (locale === "de") return text;
+
+  const frequentSubjectMatch = text.match(
+    /^„(.+)“ steht in (\d+) Wochen \(ab (.+)\) bis zu (\d+)-mal pro Woche auf dem Plan\. (?:Abwechslung zwischen Fächern hilft beim Behalten|Variety between subjects helps retention) – tausche einzelne Einheiten, wenn möglich\.$/u,
+  );
+  if (frequentSubjectMatch) {
+    const [, subject, weeks, dates, maxCount] = frequentSubjectMatch;
+    return `"${subject}" is scheduled in ${weeks} weeks (starting ${dates}) up to ${maxCount} times per week. Variety between subjects helps retention - swap individual units if possible.`;
+  }
+
+  return text;
+}
 
 export function SchedulePreviewModal({
   open,
@@ -40,6 +78,7 @@ export function SchedulePreviewModal({
   onClose,
   onScheduled,
 }: SchedulePreviewModalProps) {
+  const { locale, t } = useLanguage();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [schedule, setSchedule] = useState<ScheduleResult | null>(null);
@@ -288,18 +327,21 @@ export function SchedulePreviewModal({
                 <CalendarCheck className="w-7 h-7 text-green-600" />
               </div>
               <p className="text-base font-semibold text-gray-900">
-                {savedCount} Lerneinheiten eingetragen
+                {locale === "en"
+                  ? `${savedCount} study units added`
+                  : `${savedCount} Lerneinheiten eingetragen`}
               </p>
               <p className="text-sm text-gray-500 max-w-sm">
-                Die Termine sind jetzt im Kalender sichtbar und können dort per Drag &amp;
-                Drop verschoben werden. Jede Einheit ist außerdem als abhakbare Aufgabe
-                mit diesem Lernplan verknüpft.
+                {locale === "en"
+                  ? "The events are now visible in the calendar and can be moved there via drag & drop. Each unit is also linked to this study plan as a checkable task."
+                  : "Die Termine sind jetzt im Kalender sichtbar und können dort per Drag & Drop verschoben werden. Jede Einheit ist außerdem als abhakbare Aufgabe mit diesem Lernplan verknüpft."}
               </p>
             </div>
           ) : !canCalculate ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-              Für diesen Lernplan fehlen Algorithmus-Eingaben (Schwierigkeit, Vorwissen,
-              Seiten, ECTS). Bearbeite den Plan und ergänze sie, um Lerneinheiten zu planen.
+              {locale === "en"
+                ? "This study plan is missing algorithm inputs (difficulty, prior knowledge, pages, ECTS). Edit the plan and add them to schedule study units."
+                : "Für diesen Lernplan fehlen Algorithmus-Eingaben (Schwierigkeit, Vorwissen, Seiten, ECTS). Bearbeite den Plan und ergänze sie, um Lerneinheiten zu planen."}
             </div>
           ) : loading ? (
             <div className="flex flex-col gap-2">
@@ -341,8 +383,9 @@ export function SchedulePreviewModal({
                 <div className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
                   <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
                   <span>
-                    Für diesen Lernplan existieren bereits {existingPlanEvents} Termine im
-                    Kalender. Beim Übernehmen kommen die neuen Einheiten dazu.
+                    {locale === "en"
+                      ? `For this study plan, ${existingPlanEvents} event${existingPlanEvents === 1 ? "" : "s"} already exist in the calendar. The new units will be added when you apply the schedule.`
+                      : `Für diesen Lernplan existieren bereits ${existingPlanEvents} Termine im Kalender. Beim Übernehmen kommen die neuen Einheiten dazu.`}
                   </span>
                 </div>
               )}
@@ -354,7 +397,7 @@ export function SchedulePreviewModal({
                   className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
                 >
                   <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-                  <span>{w}</span>
+                  <span>{t(translateScheduleWarning(w, locale))}</span>
                 </div>
               ))}
 
@@ -366,8 +409,10 @@ export function SchedulePreviewModal({
                 >
                   <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
                   <span>
-                    <span className="font-semibold">Kritische Anmerkung: </span>
-                    {note}
+                    <span className="font-semibold">
+                      {locale === "en" ? "Critical note: " : "Kritische Anmerkung: "}
+                    </span>
+                    {translateCriticalNote(t(note), locale)}
                   </span>
                 </div>
               ))}
@@ -382,7 +427,8 @@ export function SchedulePreviewModal({
                   {weeks.map(({ monday, sessions }) => (
                     <div key={monday.toISOString()} className="flex flex-col gap-2">
                       <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                        Woche vom {formatDate(monday.toISOString())}
+                        {locale === "en" ? "Week of" : "Woche vom"}{" "}
+                        {formatDate(monday.toISOString())}
                       </p>
                       <div className="flex flex-col gap-1.5">
                         {sessions.map((s) => (
@@ -392,21 +438,22 @@ export function SchedulePreviewModal({
                           >
                             <div className="flex flex-col items-center w-12 shrink-0">
                               <span className="text-xs text-gray-400">
-                                {WEEKDAYS[s.start.getDay()]}
+                                {(locale === "en" ? WEEKDAYS_EN : WEEKDAYS)[s.start.getDay()]}
                               </span>
                               <span className="text-sm font-bold text-gray-900">
                                 {s.start.getDate()}.{s.start.getMonth() + 1}.
                               </span>
                             </div>
                             <div className="text-sm text-gray-600 w-28 shrink-0">
-                              {formatTime(s.start)}–{formatTime(s.end)} Uhr
+                              {formatTime(s.start)}–{formatTime(s.end)}
+                              {locale === "de" ? " Uhr" : ""}
                             </div>
                             <div className="flex-1 min-w-0">
                               <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
-                                {s.shortPhase}
+                                {t(s.shortPhase)}
                               </span>
                               <p className="text-xs text-gray-500 mt-1 truncate">
-                                {s.tasks.join(" · ")}
+                                {t(s.tasks.join(" · "))}
                               </p>
                             </div>
                           </div>
