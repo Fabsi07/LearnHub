@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { GeistSans } from "geist/font/sans";
+import { LanguageProvider } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 
 const themeInitializationScript = `
@@ -38,7 +39,9 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitializationScript }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <LanguageProvider>{children}</LanguageProvider>
+      </body>
     </html>
   )
 }

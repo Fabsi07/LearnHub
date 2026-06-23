@@ -83,9 +83,12 @@ export function TaskItem({
     <div
       className={cn(
         "group flex items-start gap-3 rounded-xl border px-4 py-3 transition-colors",
-        task.completed && "border-gray-200 bg-gray-50",
-        !task.completed && !overdue && "border-gray-200 bg-white hover:border-gray-300",
-        overdue && "border-red-200 bg-red-50/70 hover:border-red-300",
+        task.completed && "border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-white/5",
+        !task.completed &&
+          !overdue &&
+          "border-gray-200 bg-white hover:border-gray-300 dark:border-white/10 dark:bg-card dark:hover:border-white/20",
+        overdue &&
+          "border-red-300 bg-red-50/70 hover:border-red-400 dark:border-red-400/70 dark:bg-red-950/45 dark:hover:border-red-300",
       )}
     >
       <div className="pt-0.5">
@@ -101,19 +104,35 @@ export function TaskItem({
         <p
           className={cn(
             "text-sm font-medium",
-            task.completed ? "text-gray-400 line-through" : "text-gray-900",
+            task.completed
+              ? "text-gray-400 line-through dark:text-white/35"
+              : overdue
+                ? "text-gray-950 dark:text-white"
+                : "text-gray-900 dark:text-white",
           )}
         >
           {task.title}
         </p>
         {task.description && (
-          <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{task.description}</p>
+          <p
+            className={cn(
+              "mt-0.5 line-clamp-2 text-xs",
+              overdue ? "text-gray-600 dark:text-red-100/80" : "text-gray-500 dark:text-white/60",
+            )}
+          >
+            {task.description}
+          </p>
         )}
-        <div className="flex items-center gap-3 mt-1.5 text-xs text-gray-500 flex-wrap">
+        <div
+          className={cn(
+            "mt-1.5 flex flex-wrap items-center gap-3 text-xs",
+            overdue ? "text-gray-600 dark:text-red-100/75" : "text-gray-500 dark:text-white/60",
+          )}
+        >
           <span
             className={cn(
               "inline-flex items-center gap-1",
-              overdue && "font-medium text-red-700",
+              overdue && "font-medium text-red-700 dark:text-red-200",
             )}
           >
             {overdue ? (
@@ -123,7 +142,7 @@ export function TaskItem({
             )}
             {formatDate(task.dueDate)}
             {overdue && (
-              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[11px] font-semibold text-red-700">
+              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[11px] font-semibold text-red-700 dark:bg-red-500/20 dark:text-red-100 dark:ring-1 dark:ring-red-300/30">
                 Überfällig
               </span>
             )}
@@ -137,7 +156,7 @@ export function TaskItem({
             Schwierigkeit {task.difficulty}/5
           </span>
           {task.calendarEvent ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 font-medium text-green-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 font-medium text-green-700 dark:bg-green-500/15 dark:text-green-100 dark:ring-1 dark:ring-green-300/25">
               <CalendarCheck className="w-3.5 h-3.5" />
               Lernslot {formatSlotRange(task.calendarEvent)}
             </span>
@@ -145,7 +164,7 @@ export function TaskItem({
             <button
               type="button"
               onClick={() => onCreateSlot(task)}
-              className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 font-medium text-gray-600 transition-colors hover:border-brand-red hover:text-brand-red"
+              className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-white px-2 py-0.5 font-medium text-gray-600 transition-colors hover:border-brand-red hover:text-brand-red dark:border-white/15 dark:bg-white/5 dark:text-white/70 dark:hover:border-brand-red dark:hover:text-red-200"
             >
               <CalendarPlus className="w-3.5 h-3.5" />
               Lernslot
@@ -161,7 +180,7 @@ export function TaskItem({
             <button
               type="button"
               onClick={() => setConfirmDelete(false)}
-              className="px-2 py-1 text-xs rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+              className="rounded-lg border border-gray-300 px-2 py-1 text-xs transition-colors hover:bg-gray-50 dark:border-white/15 dark:text-white/80 dark:hover:bg-white/10"
             >
               Abbrechen
             </button>
@@ -179,7 +198,7 @@ export function TaskItem({
             <button
               type="button"
               onClick={() => onEdit(task)}
-              className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-colors"
+              className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-white/45 dark:hover:bg-white/10 dark:hover:text-white"
               aria-label="Aufgabe bearbeiten"
             >
               <Pencil className="w-4 h-4" />
@@ -187,7 +206,7 @@ export function TaskItem({
             <button
               type="button"
               onClick={() => void handleDelete()}
-              className="p-1.5 rounded-lg text-gray-400 hover:bg-red-50 hover:text-red-600 transition-colors"
+              className="rounded-lg p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:text-white/45 dark:hover:bg-red-500/15 dark:hover:text-red-200"
               aria-label="Aufgabe löschen"
             >
               <Trash2 className="w-4 h-4" />

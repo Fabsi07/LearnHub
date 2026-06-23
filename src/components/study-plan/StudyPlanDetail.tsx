@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, CalendarDays, Pencil, RefreshCw } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import { calculateTaskProgress } from "@/lib/study-plan/progress";
 import type { StudyPlanDetailDTO } from "@/lib/study-plan/types";
@@ -17,6 +18,7 @@ interface StudyPlanDetailProps {
 }
 
 export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
+  const { t } = useLanguage();
   const [plan, setPlan] = useState<StudyPlanDetailDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -214,7 +216,7 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
             <span className="text-sm text-gray-500">
               {plan.tasks.length > 0
                 ? `${completedCount} von ${plan.tasks.length} Aufgaben erledigt`
-                : "Noch keine Aufgaben"}
+                : t("Noch keine Aufgaben")}
             </span>
           </div>
           <div className="h-2 w-full rounded-full bg-gray-200">

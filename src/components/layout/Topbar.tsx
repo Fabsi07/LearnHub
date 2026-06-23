@@ -16,6 +16,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useCalendarSearch } from "@/lib/calendar/searchContext";
+import { LanguageSelect } from "@/lib/i18n/LanguageProvider";
 import type { NotificationSummary } from "@/lib/notifications/summary";
 import { useTheme } from "@/lib/useTheme";
 
@@ -161,6 +162,7 @@ export function Topbar({
                 <Moon className="h-5 w-5" />
               )}
             </button>
+            <LanguageSelect />
             <button
               type="button"
               onClick={handleLogout}
