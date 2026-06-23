@@ -597,9 +597,9 @@ export const phraseTranslations: Record<string, string> = {
 
 export const regexTranslations: Array<[RegExp, string]> = [
   [/^(.+)-Vorschläge anzeigen$/u, "Show $1 suggestions"],
-  [/^-Vorschläge anzeigen$/u, "-Show suggestions"],
+  [/^-Vorschläge anzeigen$/u, "Show suggestions"],
   [/^„(.+)“ neu hinzufügen$/u, 'Add "$1" as new'],
-  [/^“ neu hinzufügen$/u, '" as new'],
+  [/^„“ neu hinzufügen$/u, 'Add "" as new'],
   [/^Fällig: (.+)$/u, "Due: $1"],
   [/^Fällig am (.+)$/u, "Due on $1"],
   [/^Überfällig seit (.+)$/u, "Overdue since $1"],
