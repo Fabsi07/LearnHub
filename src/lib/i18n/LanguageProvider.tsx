@@ -225,11 +225,7 @@ function useDomTranslations(locale: Locale) {
 }
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("de");
-
-  useEffect(() => {
-    setLocaleState(getStoredLocale());
-  }, []);
+  const [locale, setLocaleState] = useState<Locale>(() => getStoredLocale());
 
   useDomTranslations(locale);
 
