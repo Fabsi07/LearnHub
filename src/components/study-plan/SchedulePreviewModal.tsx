@@ -397,7 +397,7 @@ export function SchedulePreviewModal({
                   className="flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800"
                 >
                   <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
-                  <span>{translateScheduleWarning(t(w), locale)}</span>
+                  <span>{t(translateScheduleWarning(w, locale))}</span>
                 </div>
               ))}
 
