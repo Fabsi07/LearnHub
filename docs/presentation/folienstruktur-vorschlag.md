@@ -22,7 +22,7 @@
 
 **Titel:** LearnHub - Lernplanung im Studienalltag einfacher machen
 
-**Inhalt auf der Folie:**
+**Inhalt:**
 
 - Anwendungsprojekt im Studiengang Informatik
 - Projektteam:
@@ -34,6 +34,16 @@
 - Sponsor: DHBW Studiengangsleitung Informatik
 - Ziel der Präsentation: Lösungsvorschlag vorstellen und Umsetzungsauftrag einholen
 
+**Auf der Folie:**
+
+- Projektteam:
+  - Lucas Sedelmayr (Projektleitung, Design unterstützend)
+  - Yannik Roeder (Frontend, Backend)
+  - Finn Pfleghaar (Frontend, Backend)
+  - Lennard Wiek (Design, Frontend)
+  - Fabian Winterhalter (Struktur, Backend)
+- Sponsor: DHBW Studiengangsleitung Informatik
+
 **Kernaussage:**
 
 LearnHub unterstützt Studierende dabei, Lernziele, Aufgaben und Termine in einem zentralen System zu planen und im Blick zu behalten.
@@ -44,12 +54,20 @@ LearnHub unterstützt Studierende dabei, Lernziele, Aufgaben und Termine in eine
 
 **Titel:** Das Problem: Lernorganisation ist oft fragmentiert
 
-**Inhalt auf der Folie:**
+**Inhalt:**
 
 - Studierende arbeiten parallel mit Vorlesungsplänen, Abgabefristen, privaten Kalendern, Notizen und To-do-Listen
 - Lernaufwand wird häufig erst spät konkret geplant
 - Aufgaben und Prüfungen konkurrieren mit Vorlesungen, Arbeit, Praxisphasen und privaten Terminen
 - Fortschritt ist schwer nachvollziehbar, wenn Planung und Bearbeitung getrennt stattfinden
+
+**Auf der Folie:**
+
+- paralleles Verwalten von Terminen mit Kalendern, Notizen, To-Do-Listen, ...
+- Lernen wird zu spät geplant / angegangen
+- Fortschritt schwer nachvollziehbar
+  --> falsche Einschätzung des eigenen Lernstands
+- Überblick über alle Fristen & Termine schwierig
 
 **Kernaussage:**
 
@@ -61,12 +79,20 @@ Das Problem liegt nicht im fehlenden Willen zur Organisation, sondern in der feh
 
 **Titel:** Warum ist das für die Studiengangsleitung relevant?
 
-**Inhalt auf der Folie:**
+**Inhalt:**
 
 - Studierbarkeit hängt nicht nur von Inhalten ab, sondern auch von planbarer Arbeitsbelastung
 - Eine bessere Selbstorganisation kann Studierende im anspruchsvollen Studienmodell entlasten
 - Besonders im dualen Studium treffen Theorie, Praxis, Prüfungen und Projektarbeit eng aufeinander
 - Eine digitale Lösung kann perspektivisch helfen, Lern- und Organisationsprozesse strukturierter zu unterstützen
+
+**Auf der Folie:**
+
+- Studierbarkeit ist eng verknüpft mit planbarer Arbeitsbelastung
+- duales Studium: viele verschiedene Bereiche müssen parallel geplant werden (Theorie, Praxis, Prüfungen, Projektarbeiten, ...)
+- bessere Selbstorganisation kann Studierende entlasten
+  --> Bestehensquoten / Notendurchschnitt verbessern sich
+  --> Abbruchquote verringert sich
 
 **Kernaussage:**
 
@@ -78,13 +104,20 @@ Für die Studiengangsleitung ist LearnHub relevant, weil die Lösung Studierende
 
 **Titel:** Unsere Lösung: LearnHub als zentraler Lernbegleiter
 
-**Inhalt auf der Folie:**
+**Inhalt:**
 
 - Lernpläne für konkrete Ziele, Module oder Prüfungen
 - Aufgaben mit Aufwand, Status und Fortschritt
 - Kalenderintegration für Lernzeiten und externe Termine
 - Benachrichtigungen bei verpassten oder offenen Lerneinheiten
 - Dashboard als zentrale Übersicht
+
+**Auf der Folie:**
+
+- Lernpläne für konkrete Module, Prüfungen, Projektarbeiten, ...
+- Aufgaben mit Aufwand, Status und Fortschritt
+- zentraler Kalender für Lerneinheiten / externe Termine
+- Hinweise auf verpasste / offene Lerneinheiten und anstehende Fristen
 
 **Kernaussage:**
 
@@ -96,7 +129,7 @@ LearnHub verbindet Lernplanung, Aufgabenverwaltung und Kalender in einer Anwendu
 
 **Titel:** Was LearnHub leisten soll
 
-**Inhalt auf der Folie:**
+**Inhalt:**
 
 - Realistischere Planung von Lernaufwand
 - Früheres Sichtbarmachen offener Aufgaben
@@ -105,17 +138,23 @@ LearnHub verbindet Lernplanung, Aufgabenverwaltung und Kalender in einer Anwendu
 - Grundlage für spätere Erweiterungen wie Erinnerungen, Auswertungen oder Kursvorlagen
 - Übergang: Diese Verbindung zeigen wir nicht nur konzeptionell, sondern direkt im MVP
 
+**Auf der Folie:**
+
+- realistischere Planung von Lernaufwand
+- bessere Tages- / Wochen- / Monatsübersicht
+  --> weniger verpasste Fristen, rechtzeitiges Lernen
+- weniger Medienbrüche zw. Planung, Kalender und Fortschritt
+- Grundlage für Erweiterungen wie (externe) Erinnerungen, Auswertungen, ...
+
 **Kernaussage:**
 
 Der Nutzen entsteht vor allem durch die Verbindung der Funktionen: Aus Lernzielen werden konkrete, zeitlich eingeordnete Aufgaben.
 
 ---
 
-## Folie 6: MVP-Einstieg
+## MVP-Einstieg
 
-**Titel:** Unser MVP als Beleg der Machbarkeit
-
-**Inhalt auf der Folie:**
+**Inhalt:**
 
 - Funktionsfähige Anwendung statt reinem Klickprototyp
 - Zentrale MVP-Bereiche:
@@ -124,53 +163,35 @@ Der Nutzen entsteht vor allem durch die Verbindung der Funktionen: Aus Lernziele
   - Kalender und DHBW-Termine
   - Benachrichtigungen
   - Einstellungen und Administration
-- Demo-Szenario: Eine Studentin plant Lernaufwand für ein Modul und ordnet ihn in ihren Studienalltag ein
+
+**Auf der Folie:**
+
+Es gibt hier keine Folie, Person 2 wechselt in die App und zeigt das Dashboard.
+Obiger Inhalt ist nur als Übergang gedacht, was man sagen kann, während man von Präsi zu App wechselt.
+Kernaussage kann hier eher vernachlässigt werden.
 
 **Kernaussage:**
 
 Der MVP ist kein reiner Klickprototyp, sondern zeigt zentrale Abläufe bereits als funktionsfähige Anwendung.
 
-**Direkter MVP-Wechsel durch Person 2:**
-
-Person 2 wechselt nach dieser Folie in den Prototyp und zeigt kurz das Dashboard als Einstieg in die Anwendung.
-
 ---
 
-## Folie 7: Demo-Platzhalter
-
-**Titel:** Live-Demo: LearnHub im Studienalltag
-
-**Inhalt auf der Folie:**
-
-- Kurzer Platzhalter für den Wechsel in den Prototyp
-- Keine ausführlichen Inhalte, damit die Aufmerksamkeit auf der Anwendung liegt
-- Optional: ein Satz als Orientierung: "Vom Lernziel zur konkreten Wochenplanung"
-
-**Funktion der Folie:**
-
-Diese Folie dient nur als sauberer Übergang. Die eigentliche Präsentation läuft ab hier im MVP.
-
----
-
-## Demo-Abschnitt A: MVP-Einstieg durch Person 2
-
-**Dauer:** ca. 1 bis 1,5 Minuten innerhalb des Redeanteils von Person 2
-
-**Im Prototyp zeigen:**
-
-- Dashboard als zentrale Übersicht
-- Zusammenfassung von Lernplänen, Aufgaben und anstehenden Elementen
-- Kurzer Hinweis: Die zuvor genannte Lösungsidee ist im MVP bereits als zusammenhängender Ablauf sichtbar
-
-**Demo-Botschaft:**
-
-LearnHub bündelt die wichtigsten Informationen an einem Einstiegspunkt, statt sie über mehrere Werkzeuge zu verteilen.
-
----
-
-## Demo-Abschnitt B: Lernplan und Aufgaben durch Person 3
+## Person 3 macht Lernplan-Algorithmus anschaulich und erklärt
 
 **Dauer:** ca. 3 Minuten
+
+**Inhalt:**
+
+- Lernplan-Algorithmus
+- Beispielrechnung
+- kurze Erklärung zu Edge-Cases
+- Betonung darauf, dass Algorithmus bewusst als erste Idee zur Planung dienen soll und nach Ausrollen angepasst werden kann / soll
+
+---
+
+## Person 4 zeigt Lernplanerstellung / Lernplanübersicht
+
+**Dauer:** ca. 2 Minuten
 
 **Im Prototyp zeigen:**
 
@@ -185,15 +206,11 @@ LearnHub bündelt die wichtigsten Informationen an einem Einstiegspunkt, statt s
 
 LearnHub macht aus einem abstrakten Lernziel einen konkreten, bearbeitbaren Plan.
 
-**Möglicher gesprochener Demo-Fokus:**
-
-Eine Studentin erkennt nicht nur, was noch offen ist, sondern auch, wie weit sie im Plan bereits gekommen ist.
-
 ---
 
-## Demo-Abschnitt C: Kalender und Alltagstauglichkeit durch Person 4
+## Person 4 zeigt Kalenderansicht und Kalenderfunktionen
 
-**Dauer:** ca. 3 Minuten
+**Dauer:** ca. 1 Minute
 
 **Im Prototyp zeigen:**
 
@@ -209,7 +226,7 @@ Lernplanung funktioniert besser, wenn sie im gleichen Kontext wie Vorlesungen, T
 
 ---
 
-## Folie 8: Nutzen für Studierende und Studiengangsleitung
+## (Folie 6: Nutzen für Studierende und Studiengangsleitung)
 
 **Titel:** Mehrwert für beide Perspektiven
 
@@ -228,13 +245,17 @@ Lernplanung funktioniert besser, wenn sie im gleichen Kontext wie Vorlesungen, T
 
 LearnHub adressiert ein reales Organisationsproblem der Studierenden und passt damit zu den Interessen der Studiengangsleitung.
 
+**Strukturell:**
+
+Voraussichtlich lassen wir diese Folie weg, nur ergänzen, falls Person 5 oder Präsi insgesamt zu kurz.
+
 ---
 
-## Folie 9: Erweiterungsmöglichkeiten
+## Folie 7: Erweiterungsmöglichkeiten
 
 **Titel:** Nächste Ausbaustufen
 
-**Inhalt auf der Folie:**
+**Inhalt:**
 
 - Demo-Daten und geführter Onboarding-Prozess
 - Persistente Profileinstellungen und erweiterte Erinnerungskonzepte
@@ -243,17 +264,25 @@ LearnHub adressiert ein reales Organisationsproblem der Studierenden und passt d
 - End-to-End-Tests und Produktivdeployment
 - Datenschutz-, Rollen- und Betriebskonzept für einen echten Einsatz
 
+**Auf der Folie:**
+
+- geführtes Onboarding
+- externe Erinnerungen (bspw. per Mail)
+- Statistiken / Auswertungen
+- Einbindung KI-Funktionen (Aufgaben erstellen, Lernplan einschätzen, Arbeitsblätter zusammenfassen, ...)
+- Anbindung DHBW-Infrastruktur
+
 **Kernaussage:**
 
 Der MVP bildet eine solide Grundlage; für den Einsatz im Studienkontext müssen Funktionsumfang, Qualitätssicherung und Betrieb gezielt erweitert werden.
 
 ---
 
-## Folie 10: Was wir vom Sponsor brauchen
+## Folie 8: Was wir vom Sponsor brauchen
 
 **Titel:** Benötigte Entscheidungen und Unterstützung
 
-**Inhalt auf der Folie:**
+**Inhalt:**
 
 - Priorisierung der nächsten Funktionen
 - Zugriff auf realistische Anforderungen aus dem Studienalltag
@@ -262,22 +291,38 @@ Der MVP bildet eine solide Grundlage; für den Einsatz im Studienkontext müssen
 - Klärung von Datenschutz, Hosting und Schnittstellen
 - Freigabe zur Weiterentwicklung nach der Konzeptionsphase
 
+**Auf der Folie:**
+
+- Priorisierung der nächsten Funktionen
+- Feedback von Studierenden
+- Entscheidung über Zielumfang (studiengangsintern, DHBW Lörrach, DHBW allgemein, ...)
+- Klärung von Datenschutz, Hosting und Schnittstellen
+- Freigabe zur Weiterentwicklung
+
 **Kernaussage:**
 
 Für die Umsetzung brauchen wir nicht nur technische Freigabe, sondern fachliche Priorisierung und realistische Rahmenbedingungen.
 
 ---
 
-## Folie 11: Abschluss
+## Folie 9: Abschluss
 
 **Titel:** Unser Vorschlag
 
-**Inhalt auf der Folie:**
+**Inhalt:**
 
 - LearnHub löst ein konkretes Organisationsproblem im Studienalltag
 - Der MVP zeigt die Machbarkeit zentraler Kernfunktionen
 - Die Lösung ist besonders passend für das duale Studium, weil sie Lernplanung und Kalender zusammenführt
 - Nächster Schritt: Beauftragung der Weiterentwicklung zu einem einsatzfähigen Prototyp
+
+**Auf der Folie:**
+
+- LearnHub löst konkretes Organisationsproblem im Studienalltag
+- Problem und Lösung besonders relevant für duales Studium
+- Prototyp zeigt die Machbarkeit
+  --> Wir sind als Studierende und Entwickler des Prototyps bestens geeignet, weiterzuentwickeln
+- Nächster Schritt: Beauftragung und Weiterentwicklung zu einsatzfähigem Prototyp
 
 **Abschlusssatz:**
 
@@ -292,6 +337,7 @@ Wir empfehlen, LearnHub auf Basis des MVP weiterzuentwickeln und gemeinsam mit d
 - Folie 1: Titel und Einstieg
 - Folie 2: Ausgangssituation im Studienalltag
 - Folie 3: Perspektive des Sponsors
+- Folie 4: Lösungsidee
 
 **Ziel:** Problem verständlich und sponsorbezogen eröffnen.
 
@@ -299,49 +345,38 @@ Wir empfehlen, LearnHub auf Basis des MVP weiterzuentwickeln und gemeinsam mit d
 
 ### Person 2: Lösungsidee und früher MVP-Einstieg
 
-- Folie 4: Lösungsidee
 - Folie 5: Konzeptueller Nutzen
-- Folie 6: MVP-Einstieg
-- Demo-Abschnitt A: Dashboard als Einstieg
+- MVP-Einstieg: Dashboard
 
 **Ziel:** LearnHub als Lösung einführen und bereits am MVP zeigen, dass die Lösung nicht nur theoretisch ist.
 
 **Zeitanteil:** ca. 1,5 Minuten Folien, ca. 1,5 Minuten MVP
 
-### Person 3: Demo Lernplan und Aufgaben
+### Person 3: Lernplan-Algorithmus
 
-- Folie 7: Demo-Platzhalter
-- Demo-Abschnitt B: Lernplan und Aufgaben
+- Lernplan-Algorithmus erklären und an Beispiel verdeutlichen
+- Edge-Cases erwähnen
 
 **Ziel:** Kernfunktion Lernplanung greifbar machen.
 
-**Zeitanteil:** ca. 3 Minuten MVP
+**Zeitanteil:** ca. 3 Minuten
 
-### Person 4: Demo Kalender und Alltagstauglichkeit
+### Person 4: Lernplanerstellung /-übersicht + Kalenderansicht
 
-- Demo-Abschnitt C: Kalender und Alltagstauglichkeit
-- (Folie 8: Nutzen für Studierende und Studiengangsleitung) --> nur falls nicht genug zu zeigen, sonst Folie 8 streichen
+- Lernplanerstellung + -übersicht zeigen
+- Kalenderansicht + Kernfunktionen des Kalenders zeigen
 
-**Ziel:** Alltagstauglichkeit und Mehrwert zeigen.
+**Ziel:** Kernfunktionen in MVP zeigen
 
-**Zeitanteil:** ca. 2,5 Minuten MVP, ca. 0,5 Minuten Folie
+**Zeitanteil:** 3 Minuten MVP
 
 ### Person 5: Ausblick und Auftrag
 
-- Folie 9: Erweiterungsmöglichkeiten
-- Folie 10: Was wir vom Sponsor brauchen
-- Folie 11: Abschluss
+- (Folie 6: Nutzen für Studierende und Studiengangsleitung) --> nur falls nicht genug zu zeigen, sonst Folie 8 streichen
+- Folie 7: Erweiterungsmöglichkeiten
+- Folie 8: Was wir vom Sponsor brauchen
+- Folie 9: Abschluss
 
 **Ziel:** Von MVP und Konzept zu konkreten nächsten Schritten und Sponsorentscheidung führen.
 
 **Zeitanteil:** ca. 3 Minuten Folien
-
-## Verhältnis Folien zu MVP
-
-- Person 1: 3 Minuten Folien
-- Person 2: ca. 1,5 Minuten Folien, ca. 1,5 Minuten MVP
-- Person 3: ca. 3 Minuten MVP
-- Person 4: ca. 2,5 Minuten MVP, ca. 0,5 Minuten Folie
-- Person 5: 3 Minuten Folien
-
-**Gesamt grob:** ca. 7,5 Minuten Folien und ca. 7,5 Minuten MVP.
