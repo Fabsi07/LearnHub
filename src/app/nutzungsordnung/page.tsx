@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LegalPageLayout } from "@/components/legal/LegalPageLayout";
 
 export const metadata: Metadata = {
@@ -87,7 +88,7 @@ export default function NutzungsordnungPage() {
         <h2>6. Datenschutz</h2>
         <p>
           Einzelheiten zur Verarbeitung personenbezogener Daten finden sich in der{" "}
-          <a href="/datenschutz">Datenschutzerklärung</a>.
+          <Link href="/datenschutz">Datenschutzerklärung</Link>.
         </p>
       </section>
     </LegalPageLayout>

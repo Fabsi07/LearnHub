@@ -51,8 +51,12 @@ Lernplanberechnung als Kern. Fachlicher Umfang: [docs/prd.md](./prd.md).
   (eigene Schemaänderungen).
 - **Umgebungsvariablen:** siehe `.env.example` (u. a. `DATABASE_URL`,
   `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `ADMIN_DISPLAY_NAME`).
-- **Admin-Account:** wird beim ersten Login automatisch angelegt (Defaults im
-  README).
+- **Admin-Account:** Es gibt keinen separaten Anlege-Schritt. Meldet man sich
+  im Login mit der konfigurierten `ADMIN_EMAIL` **und** `ADMIN_PASSWORD` an
+  (Defaults `0000@learnhub.admin` / `0000admin`, überschreibbar via `.env`),
+  legt `ensureFixedAdminAccount()` das Konto beim ersten Mal mit Rolle `ADMIN`
+  an. Bei späteren Logins wird ein bestehendes Konto nicht verändert.
+  (Code: `src/lib/auth/admin.ts`, aufgerufen in `src/app/api/auth/login/route.ts`.)
 
 ---
 
@@ -60,9 +64,15 @@ Lernplanberechnung als Kern. Fachlicher Umfang: [docs/prd.md](./prd.md).
 
 - `npm run build`, `npm run typecheck`, `npm run lint`, `npm test` vor jedem
   Commit (siehe CLAUDE.md §11).
+- **Automatisierte Unit-Tests** (`npm test`, Node-Test-Runner) unter
+  [tests/study-plan/](../tests/study-plan/): Lernplanberechnung
+  (`learningPlan`), Umplanung, Fortschrittsberechnung (`progress`),
+  Fälligkeiten (`dueDates`) und Aufgabenvalidierung (`taskValidation`).
 - Manueller Abnahmetest UC1–UC6:
   [docs/testing/manual-acceptance-test.md](./testing/manual-acceptance-test.md).
+- Statische Prüfung: `npm run typecheck` (TS strict) und `npm run lint`.
 - Aufgabensteuerung/Issues: GitHub Projects.
+- Noch offen: automatisierte API-/E2E-Tests.
 
 ---
 

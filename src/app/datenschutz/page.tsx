@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LegalPageLayout } from "@/components/legal/LegalPageLayout";
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export default function DatenschutzPage() {
         <p>
           Verantwortlich für die Datenverarbeitung ist das Projektteam LearnHub
           (Anwendungsprojekt Informatik, DHBW). Kontaktangaben finden sich im{" "}
-          <a href="/impressum">Impressum</a>.
+          <Link href="/impressum">Impressum</Link>.
         </p>
       </section>
 
