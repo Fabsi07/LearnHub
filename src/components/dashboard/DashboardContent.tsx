@@ -136,15 +136,15 @@ export function DashboardContent() {
           ? ((await externalEventRes.json()) as { events?: ApiEvent[] })
           : { events: [] };
         const sourceData = sourceRes.ok
-          ? ((await sourceRes.json()) as { source?: unknown | null })
-          : { source: null };
+          ? ((await sourceRes.json().catch(() => ({}))) as { source?: unknown | null })
+          : null;
         if (cancelled) return;
         setPlans(planData.studyPlans ?? []);
         setEvents([
           ...deserialize(eventData.events ?? []),
           ...deserialize(externalEventData.events ?? []),
         ]);
-        setCalendarSourceConfigured(Boolean(sourceData.source));
+        setCalendarSourceConfigured(sourceData === null ? null : Boolean(sourceData.source));
       } catch {
         // DB oder externer Kalender nicht erreichbar -> leeres Dashboard statt Crash.
       } finally {
