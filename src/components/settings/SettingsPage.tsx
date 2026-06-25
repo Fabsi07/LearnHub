@@ -11,6 +11,7 @@ import {
   Mail,
   Save,
   User,
+  X,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -729,6 +730,7 @@ function NotificationSettings() {
 
 function CalendarSettings() {
   const [courseCode, setCourseCode] = useState("");
+  const [hasSavedCourseCode, setHasSavedCourseCode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; message: string } | null>(null);
@@ -738,6 +740,7 @@ function CalendarSettings() {
     fetch("/api/calendar/sources")
       .then((r) => r.json())
       .then((data) => {
+        setHasSavedCourseCode(Boolean(data.source));
         if (data.source?.name) {
           const match = data.source.name.match(/\((.+)\)$/);
           if (match) setCourseCode(match[1].trim());
@@ -749,22 +752,40 @@ function CalendarSettings() {
 
   async function handleScheduleImport(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (isSaving || !courseCode.trim()) return;
+    const trimmedCourseCode = courseCode.trim();
+    if (isSaving || (!trimmedCourseCode && !hasSavedCourseCode)) return;
 
     setIsSaving(true);
     setFeedback(null);
 
     try {
+      if (!trimmedCourseCode) {
+        const res = await fetch("/api/calendar/sources", { method: "DELETE" });
+
+        if (!res.ok) {
+          const data = (await res.json().catch(() => ({}))) as { error?: string };
+          setFeedback({ type: "error", message: data.error ?? "Kurskürzel konnte nicht ausgetragen werden." });
+          return;
+        }
+
+        setCourseCode("");
+        setHasSavedCourseCode(false);
+        setFeedback({ type: "success", message: "Kurskürzel wurde ausgetragen." });
+        return;
+      }
+
       const res = await fetch("/api/calendar/sources", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseCode }),
+        body: JSON.stringify({ courseCode: trimmedCourseCode }),
       });
 
       if (res.ok) {
-        setFeedback({ type: "success", message: `Stundenplan für ${courseCode.toUpperCase()} gespeichert.` });
+        setCourseCode(trimmedCourseCode.toUpperCase());
+        setHasSavedCourseCode(true);
+        setFeedback({ type: "success", message: `Stundenplan für ${trimmedCourseCode.toUpperCase()} gespeichert.` });
       } else {
-        const data = await res.json();
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
         setFeedback({ type: "error", message: data.error ?? "Fehler beim Speichern." });
       }
     } catch {
@@ -785,21 +806,41 @@ function CalendarSettings() {
 
       <form className="mt-5 grid max-w-xl gap-5" onSubmit={handleScheduleImport}>
         <Field label="Kurskennung" htmlFor="schedule-group">
-          <Input
-            id="schedule-group"
-            name="scheduleGroup"
-            placeholder="Kurskürzel eingeben, z.B. TIF25A"
-            value={isLoading ? "" : courseCode}
-            disabled={isLoading}
-            onChange={(e) => setCourseCode(e.target.value)}
-          />
+          <div className="relative">
+            <Input
+              id="schedule-group"
+              name="scheduleGroup"
+              placeholder="Kurskürzel eingeben, z.B. TIF25A"
+              value={isLoading ? "" : courseCode}
+              disabled={isLoading || isSaving}
+              onChange={(e) => setCourseCode(e.target.value)}
+              className="pr-10"
+            />
+            {courseCode && !isLoading && !isSaving && (
+              <button
+                type="button"
+                onClick={() => {
+                  setCourseCode("");
+                  setFeedback(null);
+                }}
+                className="absolute right-2 top-1/2 inline-flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-700"
+                aria-label="Kurskürzel löschen"
+                title="Kurskürzel löschen"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
           <p className="text-xs text-gray-400">
-            Der Link wird automatisch zusammengestellt: stash.dhbw-loerrach.de/calendar/<strong>{courseCode ? courseCode.trim().toLowerCase() : "kurskuerzel"}</strong>@dhbw-loerrach.de.ics
+            Der Link wird automatisch zusammengestellt: stash.dhbw-loerrach.de/calendar/kal-<strong>{courseCode ? courseCode.trim().toLowerCase() : "kurskuerzel"}</strong>@dhbw-loerrach.de.ics
           </p>
         </Field>
 
         {feedback && (
-          <p className={`text-sm font-medium ${feedback.type === "success" ? "text-green-600" : "text-red-600"}`}>
+          <p
+            role={feedback.type === "error" ? "alert" : "status"}
+            className={`text-sm font-medium ${feedback.type === "success" ? "text-green-600" : "text-red-600"}`}
+          >
             {feedback.message}
           </p>
         )}
@@ -820,9 +861,9 @@ function CalendarSettings() {
               </div>
             </div>
           ) : (
-            <Button type="submit" disabled={!courseCode.trim()}>
+            <Button type="submit" disabled={isLoading || (!courseCode.trim() && !hasSavedCourseCode)}>
               <CalendarDays className="h-4 w-4" />
-              Stundenplan speichern
+              {courseCode.trim() ? "Stundenplan speichern" : "Kürzel austragen"}
             </Button>
           )}
         </div>

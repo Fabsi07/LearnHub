@@ -113,16 +113,18 @@ function isActivePlan(plan: StudyPlanSummaryDTO, today: Date): boolean {
 export function DashboardContent() {
   const [plans, setPlans] = useState<StudyPlanSummaryDTO[]>([]);
   const [events, setEvents] = useState<CalEvent[]>([]);
+  const [calendarSourceConfigured, setCalendarSourceConfigured] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const [planRes, eventRes, externalEventRes] = await Promise.all([
+        const [planRes, eventRes, externalEventRes, sourceRes] = await Promise.all([
           fetch("/api/study-plan"),
           fetch("/api/calendar/events"),
           fetch("/api/calendar/external"),
+          fetch("/api/calendar/sources"),
         ]);
         const planData = planRes.ok
           ? ((await planRes.json()) as { studyPlans?: StudyPlanSummaryDTO[] })
@@ -133,12 +135,16 @@ export function DashboardContent() {
         const externalEventData = externalEventRes.ok
           ? ((await externalEventRes.json()) as { events?: ApiEvent[] })
           : { events: [] };
+        const sourceData = sourceRes.ok
+          ? ((await sourceRes.json().catch(() => ({}))) as { source?: unknown | null })
+          : null;
         if (cancelled) return;
         setPlans(planData.studyPlans ?? []);
         setEvents([
           ...deserialize(eventData.events ?? []),
           ...deserialize(externalEventData.events ?? []),
         ]);
+        setCalendarSourceConfigured(sourceData === null ? null : Boolean(sourceData.source));
       } catch {
         // DB oder externer Kalender nicht erreichbar -> leeres Dashboard statt Crash.
       } finally {
@@ -265,6 +271,32 @@ export function DashboardContent() {
   return (
     <div className="flex h-full flex-col gap-5 overflow-auto p-6">
       <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+
+      {calendarSourceConfigured === false && (
+        <section className="flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-5 shadow-sm dark:border-amber-500/30 dark:bg-amber-950/20 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex gap-3">
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-amber-600 shadow-sm dark:bg-white/10 dark:text-amber-400">
+              <CalendarDays className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-base font-bold text-gray-950 dark:text-white">
+                Kurskürzel für den Kalender eintragen
+              </h2>
+              <p className="mt-1 max-w-2xl text-sm leading-6 text-gray-700 dark:text-white/60">
+                Damit dein DHBW-Stundenplan im Kalender erscheint, trage bitte einmal dein
+                Kurskürzel in den Einstellungen ein.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/settings?tab=calendar"
+            className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-brand-red px-4 text-sm font-bold text-white shadow-sm transition-opacity hover:opacity-90"
+          >
+            Kürzel eintragen
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {stats.map(({ label, value, icon: Icon, iconClass }) => (
