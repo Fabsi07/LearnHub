@@ -175,7 +175,7 @@ export function Sidebar({ currentUser, notificationSummary }: SidebarProps) {
           Datenschutz
         </Link>
         <Link href="/nutzungsordnung" className="hover:text-white hover:underline">
-          Nutzung
+          Nutzungsordnung
         </Link>
       </div>
     </div>
