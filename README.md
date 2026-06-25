@@ -70,6 +70,17 @@ Der feste Admin-Account wird beim ersten Login automatisch angelegt. Die Default
 
 ---
 
+## Daten und Seed
+
+Das lokale MVP bringt **bewusst keinen automatischen Seed** mit — es gibt keinen
+`prisma db seed`-Schritt. Nach dem Setup ist die Datenbank leer, lediglich der
+Admin-Account wird beim ersten Login erzeugt. Eigene Daten entstehen durch
+Registrierung und Nutzung der App; DHBW-Vorlesungen werden live aus dem ICS-Feed
+geladen. Reproduzierbare Demonstrationsdaten sind als spaeteres Feature geplant.
+Details in [SETUP.md → Gibt es einen Seed-Befehl?](./SETUP.md#gibt-es-einen-seed-befehl).
+
+---
+
 ## Projekt-Dokumentation
 
 - [Setup-Anleitung](./SETUP.md) — ausfuehrlicher lokaler Setup- und Troubleshooting-Guide

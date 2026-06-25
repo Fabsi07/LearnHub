@@ -4,6 +4,11 @@ Komplette Schritt-fuer-Schritt-Anleitung, um LearnHub auf einem frischen Rechner
 
 > **Ziel der Datei:** Alles, was du brauchst, an einer Stelle. Keine Verweise auf andere Dokumente noetig, um anzufangen.
 
+> **Verifiziert (Juni 2026):** Die Schritte wurden auf einem frischen Checkout
+> durchlaufen: `npm ci`, `npm run prisma:generate`, `npm run typecheck`,
+> `npm run lint` und `npm test` (alle Tests gruen). Der Datenbank-Start per
+> `docker compose up -d` setzt ein laufendes Docker Desktop voraus.
+
 ---
 
 ## Inhaltsverzeichnis
@@ -214,6 +219,25 @@ Das Fenster bleibt offen, solange du arbeitest. Beenden mit `Ctrl + C` (auf alle
 2. Du landest auf der Login-Seite — das ist Absicht: ohne Account siehst du nichts.
 3. Auf „Jetzt registrieren" klicken, ein Konto anlegen (irgendeine E-Mail + Passwort, alles laeuft lokal).
 4. Nach dem Registrieren landest du im Dashboard. Setup geschafft.
+
+### Gibt es einen Seed-Befehl?
+
+Nein. Das lokale MVP bringt **bewusst keinen automatischen Seed** mit — nach dem
+Setup ist die Datenbank leer (abgesehen vom Admin-Account, siehe unten). Es gibt
+deshalb auch keinen `prisma db seed`-Schritt in dieser Anleitung.
+
+Daten entstehen so:
+
+- **Eigenes Konto:** ueber „Jetzt registrieren" anlegen. Lernplaene, Aufgaben und
+  Kalendertermine legst du danach direkt in der App an.
+- **Admin-Account:** wird beim ersten Login automatisch erzeugt. Die Defaults
+  stehen in `.env.example` (`ADMIN_EMAIL` / `ADMIN_PASSWORD`) und lassen sich lokal
+  ueberschreiben.
+- **DHBW-Vorlesungen** werden nicht geseedet, sondern beim Oeffnen des Kalenders
+  live aus dem DHBW-ICS-Feed geladen.
+
+Reproduzierbare Demonstrationsdaten zum Befuellen der App sind als spaeteres
+Feature vorgesehen, aber nicht Teil dieses Stands.
 
 ---
 
@@ -457,6 +481,10 @@ Stand des MVP (Mai/Juni 2026), wichtig zu wissen:
 - **Avatar-Bilder** werden aktuell direkt als Binaerdaten in PostgreSQL gespeichert. Fuer das lokale MVP ist das ausreichend; fuer einen Produktivbetrieb waere ein Objektspeicher sinnvoller.
 - **Profil- und Benachrichtigungseinstellungen:** Name/Username (inkl. Avatar-Upload) und alle Benachrichtigungseinstellungen (verpasste Sessions, Deadline-Erinnerungen mit Vorlauf, tägliche Lernübersicht, Session-Erinnerungen, überfällige Aufgaben) werden persistiert und ausgewertet. Noch nicht angebunden sind ausschliesslich die **E-Mail-Aenderung** und der **Passwort-Reset** (kommen mit der DHBW-SSO-Anbindung).
 - **Lernplaene, Aufgaben, algorithmische Planung und Kalenderuebernahme** sind implementiert. Die Berechnungsfaktoren sind ein transparenter Projektansatz, aber noch nicht lernwissenschaftlich validiert.
+- **Kein automatischer Seed / keine Demodaten** — nach dem Setup ist die Datenbank
+  leer (nur der Admin-Account wird beim ersten Login angelegt). Daten entstehen durch
+  Registrierung und Nutzung; reproduzierbare Demonstrationsdaten sind als spaeteres
+  Feature geplant. Details siehe [Gibt es einen Seed-Befehl?](#gibt-es-einen-seed-befehl).
 - **Performance auf Windows** ist durch die WSL-Schicht etwas langsamer als auf macOS oder Linux. Fuer die Entwicklung kein Problem.
 
 ---
