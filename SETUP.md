@@ -7,7 +7,7 @@ Komplette Schritt-fuer-Schritt-Anleitung, um LearnHub auf einem frischen Rechner
 > **Verifiziert (Juni 2026):** Die Schritte wurden auf einem frischen Checkout
 > durchlaufen: `npm ci`, `npm run prisma:generate`, `npm run typecheck`,
 > `npm run lint` und `npm test` (alle Tests gruen). Der Datenbank-Start per
-> `docker compose up -d` setzt ein laufendes Docker Desktop voraus.
+> `docker compose up -d` setzt einen laufenden Docker Desktop voraus.
 
 ---
 
