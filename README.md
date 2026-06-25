@@ -73,8 +73,11 @@ Der feste Admin-Account wird beim ersten Login automatisch angelegt. Die Default
 ## Projekt-Dokumentation
 
 - [Setup-Anleitung](./SETUP.md) — ausfuehrlicher lokaler Setup- und Troubleshooting-Guide
-- [Product Requirements Document](./docs/prd.md) — fachlicher Funktionsumfang
+- [Product Requirements Document](./docs/prd.md) — fachlicher Funktionsumfang inkl. Feature-Status (§17)
+- [Architekturueberblick](./docs/architecture.md) — Schichten, Datenmodell und API-Oberflaeche
 - [Tech-Stack](./docs/tech-stack.md) — eingesetzte Technologien und Begruendung
 - [Auth-Konzept](./docs/auth-concept.md) — Login, Sessions, Schutzlogik
 - [Manueller Abnahmetest](./docs/testing/manual-acceptance-test.md) — Test-Checkliste fuer UC1–UC6
 - [Algorithmus-Konzept](./docs/Algorithmus/) — Formel, Phasen und Ausgabeformat der Lernplanung
+- [Mockups & offene Punkte](./docs/mockups.md) — was echt funktioniert und was Vorschau ist
+- [Uebergabedokumentation](./docs/handover.md) — Einstieg fuer Weiterbetrieb und -entwicklung (in Vorbereitung)

@@ -292,7 +292,7 @@ Der genaue Zeitplan wird laufend in GitHub Projects gepflegt. Die Meilensteine a
 | **M3 — Datenmodell und API**             | Datenbankschema, persistente Speicherung, Anbindung des bestehenden Frontends an reale Daten, Authentifizierung | abgeschlossen |
 | **M4 — Planungslogik**                   | Algorithmische Lernplan-Erstellung und Umplanung im Lernplan- und Kalenderfluss verfügbar                       | abgeschlossen |
 | **M5 — Optionale KI-Prüfung**            | Falls zeitlich möglich: KI-gestützte Prüfung oder Verbesserungsvorschläge für bestehende Lernpläne              | offen         |
-| **M6 — Stabilisierung und Präsentation** | Fehlerbehebung, manuelle Abnahmetests, Demonstrationsdaten, Setup-Dokumentation, finale Präsentation            | offen         |
+| **M6 — Stabilisierung und Präsentation** | Fehlerbehebung, manuelle Abnahmetests, Demonstrationsdaten, Setup-Dokumentation, finale Präsentation            | in Arbeit     |
 
 ---
 
@@ -350,105 +350,118 @@ Diese Punkte sind ausdrücklich **nicht** Teil des aktuellen verbindlichen Proje
 
 ## 17. Feature-Checkliste
 
-Gesamtübersicht aller geplanten Features nach Bereich.
+Gesamtübersicht aller Features nach Bereich mit Ist-Stand zu Meilenstein 3 (Stand: 25.06.2026).
+
+**Legende:** `[x]` = implementiert und nutzbar · `[~]` = teilweise / mit Einschränkung · `[ ]` = bewusst zurückgestellt bzw. offen.
 
 ---
 
 ### Authentifizierung & Nutzerkonten
 
-- [ ] Registrierung mit E-Mail und Passwort
-- [ ] Login / Logout
-- [ ] Session via HTTP-Only-Cookie
-- [ ] Passwort-Hashing (bcrypt)
-- [ ] „Eingeloggt bleiben"-Option
-- [ ] Schutz aller Routen (Middleware / Auth-Guard)
+- [x] Registrierung mit E-Mail und Passwort
+- [x] Login / Logout
+- [x] Session via HTTP-Only-Cookie
+- [x] Passwort-Hashing (bcrypt)
+- [x] „Eingeloggt bleiben"-Option
+- [x] Schutz aller Routen (Middleware / Auth-Guard)
 
 ---
 
 ### Dashboard
 
-- [ ] Dashboard-Shell (Layout)
-- [ ] Anstehende Aufgaben über alle Lernpläne hinweg
-- [ ] Heutige & morgige Kalendertermine
-- [ ] Schnellzugriff auf aktive Lernpläne
-- [ ] Visuelle Hervorhebung überfälliger Aufgaben
-- [ ] Demonstrationsdaten zum Befüllen
+- [x] Dashboard-Shell (Layout)
+- [x] Anstehende Aufgaben über alle Lernpläne hinweg
+- [x] Heutige & morgige Kalendertermine
+- [x] Schnellzugriff auf aktive Lernpläne
+- [x] Visuelle Hervorhebung überfälliger Aufgaben
+- [ ] Demonstrationsdaten zum Befüllen — Should-Have S4, noch nicht umgesetzt
 
 ---
 
 ### Kalender
 
-- [ ] Wochenansicht
-- [ ] Tagesansicht
-- [ ] Monatsansicht
-- [ ] Listenansicht
-- [ ] DHBW-Kalender-Integration via ICS-Feed
-- [ ] Termine manuell anlegen (per Drag oder Button)
-- [ ] Drag-to-Create (Maus ziehen)
-- [ ] Termin-Typen farblich unterscheidbar
-- [ ] Termine bearbeiten
-- [ ] Termine löschen
-- [ ] Termine verschieben (Drag & Drop)
-- [ ] Filter nach Termintyp
-- [ ] Verknüpfung Aufgabe ↔ Kalendereintrag
+- [x] Wochenansicht
+- [x] Tagesansicht
+- [x] Monatsansicht
+- [x] Listenansicht
+- [x] DHBW-Kalender-Integration via ICS-Feed
+- [x] Termine manuell anlegen (per Drag oder Button)
+- [x] Drag-to-Create (Maus ziehen)
+- [x] Termin-Typen farblich unterscheidbar
+- [x] Termine bearbeiten
+- [x] Termine löschen
+- [x] Termine verschieben (Drag & Drop)
+- [~] Filter im Kalender — Fächer-Filter vorhanden; reiner Termintyp-Filter (S2) noch offen
+- [x] Verknüpfung Aufgabe ↔ Kalendereintrag (Should-Have S1)
 
 ---
 
 ### Lernpläne
 
-- [ ] Lernplan anlegen (Titel, Fach, Beschreibung, Zieltyp, Zieldatum)
-- [ ] Lernplan bearbeiten
-- [ ] Lernplan löschen (inkl. zugehöriger Aufgaben)
-- [ ] Übersicht aller Lernpläne
+- [x] Lernplan anlegen (Titel, Fach, Beschreibung, Zieltyp, Zieldatum)
+- [x] Lernplan bearbeiten
+- [x] Lernplan löschen (inkl. zugehöriger Aufgaben)
+- [x] Übersicht aller Lernpläne
 
 ---
 
 ### Aufgaben (innerhalb von Lernplänen)
 
-- [ ] Aufgabe anlegen (Titel, Aufwand, Schwierigkeit, Fälligkeitsdatum)
-- [ ] Aufgabe bearbeiten
-- [ ] Aufgabe abhaken / als erledigt markieren
-- [ ] Aufgabe löschen
-- [ ] Aufgaben in Kalender sichtbar machen
+- [x] Aufgabe anlegen (Titel, Aufwand, Schwierigkeit, Fälligkeitsdatum)
+- [x] Aufgabe bearbeiten
+- [x] Aufgabe abhaken / als erledigt markieren
+- [x] Aufgabe löschen
+- [x] Aufgaben in Kalender sichtbar machen
 
 ---
 
 ### Algorithmische Lernplanung
 
-- [ ] Automatische Lernplan-Berechnung aus Eingaben (Tage bis Deadline, Seitenvolumen, Schwierigkeit, Vorwissen, ECTS)
-- [ ] Deterministische Planungslogik (reproduzierbare Ergebnisse)
-- [ ] Manuelle Nachbearbeitung des berechneten Plans
-- [ ] Umplanung (Reschedule) offener Aufgaben
-- [ ] Transparenzanzeige: Warum liegt eine Aufgabe an diesem Tag?
+- [x] Automatische Lernplan-Berechnung aus Eingaben (Tage bis Deadline, Seitenvolumen, Schwierigkeit, Vorwissen, ECTS)
+- [x] Deterministische Planungslogik (reproduzierbare Ergebnisse) — durch Unit-Tests in `tests/study-plan/` abgesichert
+- [x] Manuelle Nachbearbeitung des berechneten Plans
+- [x] Umplanung (Reschedule) offener Aufgaben
+- [ ] Transparenzanzeige: Warum liegt eine Aufgabe an diesem Tag? — Should-Have S5, noch nicht umgesetzt
 
 ---
 
 ### KI-Integration (optional)
 
-- [ ] KI-Check eines bestehenden Lernplans mit Verbesserungsvorschlägen
-- [ ] KI-gestützte alternative Planvarianten
-- [ ] KI-gestützte Aufgabenextraktion aus Lernmaterialien
+- [ ] KI-Check eines bestehenden Lernplans mit Verbesserungsvorschlägen — Could-Have, bewusst zurückgestellt
+- [ ] KI-gestützte alternative Planvarianten — Could-Have, bewusst zurückgestellt
+- [ ] KI-gestützte Aufgabenextraktion aus Lernmaterialien — Could-Have, bewusst zurückgestellt
 
 ---
 
 ### Backend & Datenbank
 
-- [ ] PostgreSQL via Docker (lokal)
-- [ ] Prisma-Schema mit allen Domain-Modellen
-- [ ] Datenbankmigrationen
-- [ ] Prisma Client eingebunden
-- [ ] API: Lernpläne (CRUD)
-- [ ] API: Aufgaben (CRUD)
-- [ ] API: Kalendertermine (CRUD)
-- [ ] API: Algorithmische Planberechnung
+- [x] PostgreSQL via Docker (lokal)
+- [x] Prisma-Schema mit allen Domain-Modellen
+- [x] Datenbankmigrationen
+- [x] Prisma Client eingebunden
+- [x] API: Lernpläne (CRUD)
+- [x] API: Aufgaben (CRUD)
+- [x] API: Kalendertermine (CRUD)
+- [x] API: Algorithmische Planberechnung
 
 ---
 
 ### Einstellungen & Sonstiges
 
-- [ ] Einstellungsseite
-- [ ] Benachrichtigungsseite
-- [ ] Profil bearbeiten (Anzeigename)
+- [x] Einstellungsseite
+- [x] Benachrichtigungsseite (persistente Präferenzen)
+- [x] Profil bearbeiten (Anzeigename, Benutzername, Profilbild)
+- [~] E-Mail-Änderung / Passwort-Reset — bewusst als Mockup, künftig über DHBW-SSO (`/forgot-password`)
+
+---
+
+### Rechtliches & Betrieb
+
+- [x] Impressum (`/impressum`)
+- [x] Datenschutzerklärung (`/datenschutz`)
+- [x] Nutzungsordnung (`/nutzungsordnung`)
+- [ ] Produktivbetrieb / Hosting — Nicht-Ziel des MVP (PRD §9)
+- [ ] Single-Sign-On (DHBW) — Could-Have / Ausblick (PRD §16)
 
 ---
 
