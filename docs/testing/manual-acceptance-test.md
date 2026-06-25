@@ -9,6 +9,15 @@
 
 ---
 
+> ⚠️ **Nur manuelle Ausführung — keine KI-Einträge.**
+> Dieser Abnahmetest wird ausschließlich von Teammitgliedern manuell ausgeführt
+> und eingetragen. KI-/Agenten-Tools dürfen hier **keine** Durchläufe abhaken
+> oder Ergebnisse eintragen. Der Eintrag vom 25.06.2026 („Claude, API-Durchlauf")
+> ist ein einmaliger, dokumentierter Vorab-Check und bleibt als Historie erhalten;
+> künftige Durchläufe erfolgen ausschließlich manuell durch das Team.
+
+---
+
 ## 1. Wie diese Datei zu benutzen ist
 
 1. Vor jedem Durchlauf eine neue Zeile in der Durchlauf-Tabelle (§2) anlegen — mit Datum, Tester, Commit-Hash und Build-Status.
