@@ -50,10 +50,11 @@ erläutert:
 
 - **S2 — Termintyp-Filter im Kalender:** Ein Fächer-Filter ist vorhanden; ein
   reiner Filter nach Termintyp ist noch nicht umgesetzt.
-- **S4 — Demonstrationsdaten/Seed:** Es gibt noch kein Skript zum reproduzierbaren
-  Befüllen für die Präsentation.
 - **S5 — Transparenzanzeige der Planungslogik:** Eine UI-Begründung „warum liegt
   diese Aufgabe an diesem Tag" ist noch nicht umgesetzt.
+
+> Hinweis: S4 (Demonstrationsdaten) ist inzwischen umgesetzt — `npm run seed`
+> befüllt die Datenbank reproduzierbar (siehe README).
 
 ---
 

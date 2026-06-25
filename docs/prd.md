@@ -374,7 +374,7 @@ Gesamtübersicht aller Features nach Bereich mit Ist-Stand zu Meilenstein 3 (Sta
 - [x] Heutige & morgige Kalendertermine
 - [x] Schnellzugriff auf aktive Lernpläne
 - [x] Visuelle Hervorhebung überfälliger Aufgaben
-- [ ] Demonstrationsdaten zum Befüllen — Should-Have S4, noch nicht umgesetzt
+- [x] Demonstrationsdaten zum Befüllen — Should-Have S4, via `npm run seed` (idempotent)
 
 ---
 

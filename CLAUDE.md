@@ -394,7 +394,7 @@ Vor jeder größeren Änderung:
 * Anzeigename, Benutzername und Profilbild sind in den Einstellungen angebunden und persistent (`PUT /api/profile`, `POST /api/profile/avatar`)
 * Die Benachrichtigungs-Einstellungen sind persistent angebunden (`NotificationSettings` + `/api/settings/notifications`)
 * E-Mail-Änderung ist bewusst nicht editierbar; Passwort-Reset ist bewusst ein Mockup (`/forgot-password`) und soll künftig über das DHBW-SSO laufen
-* Reproduzierbare Demo-Daten/Seed fehlen noch (Should-Have S4)
+* Reproduzierbare Demo-Daten via `npm run seed` vorhanden (Should-Have S4); idempotent, nur Demo-Account
 * Eine UI-Transparenzanzeige „warum liegt diese Aufgabe an diesem Tag" (Should-Have S5) ist noch nicht umgesetzt
 * Automatisierte Tests decken bisher vor allem Lernplanlogik ab (`tests/study-plan/`); API-/E2E-Tests fehlen
 * Der DHBW-ICS-Server ist extern und kann instabil sein; Retry, Timeout und Cache beibehalten

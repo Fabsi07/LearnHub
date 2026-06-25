@@ -47,6 +47,7 @@ Eine ausfuehrliche Schritt-fuer-Schritt-Anleitung inklusive Windows-Hinweisen, D
 | Linter | `npm run lint` |
 | TypeScript pruefen | `npm run typecheck` |
 | Unit-Tests | `npm test` |
+| Demo-Daten laden | `npm run seed` |
 
 Nach einem `git pull` mit neuen Dateien unter `prisma/migrations/`:
 
@@ -67,6 +68,20 @@ Der feste Admin-Account wird beim ersten Login automatisch angelegt. Die Default
 | --- | --- |
 | E-Mail | `0000@learnhub.admin` |
 | Passwort | `0000admin` |
+
+---
+
+## Demo-Daten
+
+`npm run seed` befuellt die lokale Datenbank mit reproduzierbaren Beispieldaten
+fuer die Praesentation (drei Lernplaene, Aufgaben inkl. erledigter und
+ueberfaelliger, Kalendertermine). Das Skript ist idempotent und ruehrt nur den
+Demo-Account an.
+
+| Feld | Wert |
+| --- | --- |
+| E-Mail | `demo@learnhub.test` |
+| Passwort | `demo12345` |
 
 ---
 

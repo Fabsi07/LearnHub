@@ -74,7 +74,7 @@ nicht implementierte Bereiche: [docs/mockups.md](./mockups.md).
 
 Kurzfassung:
 
-- Demo-Daten/Seed (S4) fehlen noch.
+- Demo-Daten/Seed (S4) vorhanden: `npm run seed` (idempotent, Login `demo@learnhub.test` / `demo12345`).
 - Transparenzanzeige der Planungslogik (S5) offen.
 - API-/E2E-Tests fehlen; Unit-Tests bisher nur für die Planungslogik.
 - E-Mail-Änderung/Passwort-Reset bewusst als Mockup (künftig DHBW-SSO).
@@ -84,10 +84,9 @@ Kurzfassung:
 
 ## 7. Empfohlene nächste Schritte (für Weiterentwicklung)
 
-1. Seed-/Demo-Daten für reproduzierbare Vorführung.
-2. API- und E2E-Tests ergänzen.
-3. SSO-Anbindung (DHBW) inkl. Passwort-Reset.
-4. Produktiv-/Hosting-Konzept inkl. externem Datei-Storage für Profilbilder.
+1. API- und E2E-Tests ergänzen.
+2. SSO-Anbindung (DHBW) inkl. Passwort-Reset.
+3. Produktiv-/Hosting-Konzept inkl. externem Datei-Storage für Profilbilder.
 
 ---
 

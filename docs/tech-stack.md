@@ -192,7 +192,6 @@ PostgreSQL-Host-Port kann lokal ueber `POSTGRES_PORT` angepasst werden.
 
 ## Offene technische Punkte
 
-- Reproduzierbare Demo-Daten beziehungsweise Seed fuer die Praesentation (Should-Have S4)
 - Automatisierte API- und End-to-End-Tests (Unit-Tests bisher nur fuer die Lernplanlogik unter `tests/study-plan/`)
 - UI-Transparenzanzeige zur Planungslogik (Should-Have S5)
 - E-Mail-Aenderung und Passwort-Reset ueber das zentrale DHBW-SSO (aktuell Mockup unter `/forgot-password`)
