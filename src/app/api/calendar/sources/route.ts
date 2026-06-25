@@ -75,6 +75,12 @@ export async function POST(request: Request) {
   const url = buildDhbwUrl(courseCode);
 
   const isValidSource = await validateDhbwUrl(url);
+  if (isValidSource === null) {
+    return NextResponse.json(
+      { error: "Netzwerkfehler. Bitte erneut versuchen." },
+      { status: 502 },
+    );
+  }
   if (!isValidSource) {
     return NextResponse.json({ error: INVALID_COURSE_MESSAGE }, { status: 400 });
   }
