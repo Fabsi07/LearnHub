@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { LearnHubBrand } from "@/components/brand/LearnHubBrand";
 import { LanguageSelect } from "@/lib/i18n/LanguageProvider";
 
@@ -91,11 +92,22 @@ export function AuthSplitLayout({
         </div>
       </div>
 
-      <div className="relative flex flex-1 items-center justify-center bg-gray-50 p-6 lg:p-12">
+      <div className="relative flex flex-1 flex-col items-center justify-center bg-gray-50 p-6 lg:p-12">
         <div className="absolute right-5 top-5">
           <LanguageSelect />
         </div>
-        {children}
+        <div className="flex w-full flex-1 items-center justify-center">{children}</div>
+        <footer className="flex flex-wrap justify-center gap-x-5 gap-y-1 pt-6 text-xs text-gray-400">
+          <Link href="/impressum" className="hover:text-brand-red hover:underline">
+            Impressum
+          </Link>
+          <Link href="/datenschutz" className="hover:text-brand-red hover:underline">
+            Datenschutz
+          </Link>
+          <Link href="/nutzungsordnung" className="hover:text-brand-red hover:underline">
+            Nutzungsordnung
+          </Link>
+        </footer>
       </div>
     </div>
   );

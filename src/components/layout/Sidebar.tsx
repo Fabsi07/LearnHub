@@ -165,6 +165,19 @@ export function Sidebar({ currentUser, notificationSummary }: SidebarProps) {
           </span>
         </div>
       </Link>
+
+      {/* Rechtliches */}
+      <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1 px-2 text-[11px] text-sidebar-foreground/50">
+        <Link href="/impressum" className="hover:text-white hover:underline">
+          Impressum
+        </Link>
+        <Link href="/datenschutz" className="hover:text-white hover:underline">
+          Datenschutz
+        </Link>
+        <Link href="/nutzungsordnung" className="hover:text-white hover:underline">
+          Nutzung
+        </Link>
+      </div>
     </div>
   );
 }
