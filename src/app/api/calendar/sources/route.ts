@@ -12,7 +12,7 @@ function buildDhbwUrl(courseCode: string): string {
   return `${DHBW_ICS_BASE}/kal-${normalized}@dhbw-loerrach.de.ics`;
 }
 
-async function validateDhbwUrl(url: string): Promise<boolean> {
+async function validateDhbwUrl(url: string): Promise<boolean | null> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), DHBW_ICS_TIMEOUT_MS);
 
@@ -31,7 +31,8 @@ async function validateDhbwUrl(url: string): Promise<boolean> {
     const body = await response.text();
     return body.includes("BEGIN:VCALENDAR");
   } catch {
-    return false;
+    // Network errors/timeouts -> service unreachable (not an invalid course code)
+    return null;
   } finally {
     clearTimeout(timer);
   }
