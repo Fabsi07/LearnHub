@@ -18,7 +18,15 @@ const AUTH_ENABLED = true;
 const ADMIN_ROLE = "ADMIN";
 const DEV_ROLE = "DEV";
 
-const PUBLIC_PATHS = ["/login", "/register", "/forgot-password", "/api/auth"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/impressum",
+  "/datenschutz",
+  "/nutzungsordnung",
+  "/api/auth",
+];
 
 function isPublicPath(pathname: string) {
   return PUBLIC_PATHS.some(

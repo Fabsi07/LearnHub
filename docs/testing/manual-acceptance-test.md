@@ -9,6 +9,15 @@
 
 ---
 
+> ⚠️ **Nur manuelle Ausführung — keine KI-Einträge.**
+> Dieser Abnahmetest wird ausschließlich von Teammitgliedern manuell ausgeführt
+> und eingetragen. KI-/Agenten-Tools dürfen hier **keine** Durchläufe abhaken
+> oder Ergebnisse eintragen. Der Eintrag vom 25.06.2026 („Claude, API-Durchlauf")
+> ist ein einmaliger, dokumentierter Vorab-Check und bleibt als Historie erhalten;
+> künftige Durchläufe erfolgen ausschließlich manuell durch das Team.
+
+---
+
 ## 1. Wie diese Datei zu benutzen ist
 
 1. Vor jedem Durchlauf eine neue Zeile in der Durchlauf-Tabelle (§2) anlegen — mit Datum, Tester, Commit-Hash und Build-Status.
@@ -28,6 +37,7 @@ Eine Zeile pro Durchlauf. Älteste oben, neueste unten anhängen.
 | Datum      | Tester | Commit / Build                | Ergebnis                            | Notizen / Issues                                 |
 | ---------- | ------ | ----------------------------- | ----------------------------------- | ------------------------------------------------ |
 | 18.06.2026 | Finn   | `<hash>` / `npm run build` ok | `pass` / `pass with notes` / `fail` | Auffälligkeiten, Issue-Nummern, Demo-Daten-Stand |
+| 25.06.2026 | Claude | `f0e035c` / `npm run dev`     | `pass with notes`                   | UC4–UC6 auf API-Ebene verifiziert; UC5-Drag zusätzlich manuell in der UI bestätigt. Termintyp-Namen in Checkliste weichen von UI ab (z. B. „Pause" = SONSTIGES). |
 
 ---
 
@@ -199,7 +209,12 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 
-- ***
+- -- Testdurchlauf 2 (Claude, API-Durchlauf) 25.06. --
+- [x] Offene Aufgaben über den verbleibenden Zeitraum neu verteilt (3 Aufgaben von 27.06. → 18.07./10.08./02.09.; `updatedTaskCount=3`).
+- [x] Bereits erledigte Aufgaben unverändert (28.06., weiterhin `completed=true`).
+- [x] Verteilung berücksichtigt verbleibende Tage/Aufwand/Schwierigkeit (gleichmäßige Spreizung bis Zieldatum).
+- [x] Verknüpfter Lernslot mitverschoben (27.06. 12:00 → 18.07. 12:00, Uhrzeit erhalten).
+- _Hinweis: Verifiziert auf API-Ebene (`POST /api/study-plan/[id]/replan` + GET-Abgleich), nicht über die UI._
 
 ### UC5 — Termin manuell pflegen
 
@@ -233,7 +248,13 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 
-- ***
+- -- Testdurchlauf 2 (Claude, API-Durchlauf) 25.06. --
+- [x] Termin angelegt (`POST /api/calendar/events`, Typ SONSTIGES, eigene Farbe `bg-cyan-500`).
+- [x] Verschieben aktualisiert die Uhrzeit und ist nach erneutem GET persistent (14:00 → 16:00).
+- [x] Bearbeiten (Titel) und Löschen funktionieren ohne Fehlerabbruch (`ok=true`, danach nicht mehr in der Liste).
+- [x] Abgeleiteter/read-only Zieltermin nicht editierbar: `PATCH plan-deadline-…` → HTTP 404; `DELETE` auf unbekannte ID → HTTP 404.
+- [x] **Drag-Verschieben in der UI manuell bestätigt** (Wochenansicht): Termin per Maus gezogen, neue Zeit nach F5-Reload persistent; Klick öffnet Dialog; Bearbeiten/Löschen ohne Fehler; read-only-Termine nicht ziehbar.
+- _Hinweis: API-Ebene + manueller UI-Test (Drag/Reload) am 25.06. Der UI-Termintyp heißt „Pause" (= SONSTIGES), nicht „Sonstiges" wie in der Checkliste._
 
 ### UC6 — Abschluss einer Aufgabe
 
@@ -259,7 +280,11 @@ Die folgenden sechs Abschnitte spiegeln UC1–UC6 aus dem PRD §7. Jeder Abschni
 
 **Tatsächliches Ergebnis** _(pro Durchlauf füllen)_
 
-- ***
+- -- Testdurchlauf 2 (Claude, API-Durchlauf) 25.06. --
+- [x] Aufgabe als erledigt markiert, Erledigungszeitpunkt gespeichert (`completed=true`, `completedAt` gesetzt).
+- [x] Lernplanfortschritt aktualisiert (`completedTaskCount` 2 → 3 bei 5 Aufgaben).
+- [x] Verknüpfter Kalender-Lernslot zeigt die Erledigung (`taskCompleted=true`).
+- _Hinweis: Verifiziert auf API-Ebene (`PATCH …/tasks/[taskId]` + GET-Abgleich)._
 
 ## 5. Querschnitt — pro Durchlauf zusätzlich prüfen
 

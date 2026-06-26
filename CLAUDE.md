@@ -391,10 +391,12 @@ Vor jeder größeren Änderung:
 
 # 13. Bekannte Baustellen
 
-* Profilname, E-Mail und Passwort-Reset sind in den Einstellungen noch nicht angebunden
-* Allgemeine Deadline-Erinnerungen und tägliche Übersichten sind teilweise UI-Stubs
-* Reproduzierbare Demo-Daten/Seed fehlen noch
-* Automatisierte Tests decken bisher vor allem Lernplanlogik ab; API-/E2E-Tests fehlen
+* Anzeigename, Benutzername und Profilbild sind in den Einstellungen angebunden und persistent (`PUT /api/profile`, `POST /api/profile/avatar`)
+* Die Benachrichtigungs-Einstellungen sind persistent angebunden (`NotificationSettings` + `/api/settings/notifications`)
+* E-Mail-Änderung ist bewusst nicht editierbar; Passwort-Reset ist bewusst ein Mockup (`/forgot-password`) und soll künftig über das DHBW-SSO laufen
+* Reproduzierbare Demo-Daten via `npm run seed` vorhanden (Should-Have S4); idempotent, nur Demo-Account
+* Eine UI-Transparenzanzeige „warum liegt diese Aufgabe an diesem Tag" (Should-Have S5) ist noch nicht umgesetzt
+* Automatisierte Tests decken bisher vor allem Lernplanlogik ab (`tests/study-plan/`); API-/E2E-Tests fehlen
 * Der DHBW-ICS-Server ist extern und kann instabil sein; Retry, Timeout und Cache beibehalten
 * KI-Funktionen wurden bewusst nicht in den MVP aufgenommen
-* Produktivbetrieb, Rate Limiting, Passwort-Recovery und externes Datei-Storage sind nicht Teil des lokalen MVP
+* Produktivbetrieb, Rate Limiting, SSO/Passwort-Recovery und externes Datei-Storage sind nicht Teil des lokalen MVP
