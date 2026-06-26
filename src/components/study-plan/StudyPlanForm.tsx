@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calculator, X } from "lucide-react";
+import { Calculator, CalendarDays, X } from "lucide-react";
 import { EditableCombobox } from "@/components/calendar/EditableCombobox";
+import { DateTimePicker } from "@/components/calendar/DateTimePicker";
 import { GOAL_TYPE_META, fromDateInputValue, toDateInputValue } from "./planMeta";
 import type { StudyPlanDTO } from "@/lib/study-plan/types";
 import { GOAL_TYPES } from "@/lib/study-plan/types";
@@ -21,12 +22,20 @@ const inputClass =
 const selectClass =
   "h-9 w-full rounded-lg border border-gray-300 bg-white px-3 text-sm outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20";
 
+function toDatetimeLocal(d: Date): string {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormProps) {
   const [title, setTitle] = useState("");
   const [subject, setSubject] = useState("");
   const [description, setDescription] = useState("");
   const [goalType, setGoalType] = useState<string>("KLAUSUR");
-  const [targetDate, setTargetDate] = useState("");
+  const [isAllDay, setIsAllDay] = useState(true);
+  const [examStart, setExamStart] = useState(""); // datetime-local
+  const [examEnd, setExamEnd] = useState("");     // datetime-local
+  const [activePicker, setActivePicker] = useState<"start" | "end" | null>(null);
   const [difficulty, setDifficulty] = useState("3");
   const [priorKnowledge, setPriorKnowledge] = useState("3");
   const [pages, setPages] = useState("");
@@ -35,8 +44,7 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
   const [saving, setSaving] = useState(false);
   const [subjectOptions, setSubjectOptions] = useState<string[]>([]);
 
-  // Fächer-Vorschläge aus dem Kalender laden (eigene Fächer + DHBW-Veranstaltungen).
-  // Freitext bleibt weiterhin möglich – die Liste ist nur eine Auswahlhilfe.
+  // Fächer-Vorschläge aus dem Kalender laden
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
@@ -62,12 +70,10 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
         }
         setSubjectOptions([...subjects].sort((a, b) => a.localeCompare(b, "de")));
       } catch {
-        // Kalender nicht erreichbar → keine Vorschläge, Freitext bleibt möglich.
+        // Kalender nicht erreichbar → keine Vorschläge
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [open]);
 
   // Felder beim Öffnen befüllen (Bearbeiten) bzw. zurücksetzen (Anlegen)
@@ -77,13 +83,25 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
     setSubject(plan?.subject ?? "");
     setDescription(plan?.description ?? "");
     setGoalType(plan?.goalType ?? "KLAUSUR");
-    setTargetDate(plan ? toDateInputValue(plan.targetDate) : "");
     setDifficulty(plan?.difficulty ? String(plan.difficulty) : "3");
     setPriorKnowledge(plan?.priorKnowledge ? String(plan.priorKnowledge) : "3");
     setPages(plan?.pages ? String(plan.pages) : "");
     setCredits(plan?.credits ? String(plan.credits) : "");
     setError(null);
     setSaving(false);
+    setActivePicker(null);
+
+    if (plan?.targetDateEnd) {
+      // Bestehender Plan mit Uhrzeit
+      setIsAllDay(false);
+      setExamStart(toDatetimeLocal(new Date(plan.targetDate)));
+      setExamEnd(toDatetimeLocal(new Date(plan.targetDateEnd)));
+    } else {
+      // Ganztägig (neu oder bestehend ohne Endzeit)
+      setIsAllDay(true);
+      setExamStart(plan ? toDateInputValue(plan.targetDate) + "T12:00" : "");
+      setExamEnd("");
+    }
   }, [open, plan]);
 
   // ESC schließt Modal
@@ -98,19 +116,61 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
 
   if (!open) return null;
 
+  function handleAllDayChange(nextAllDay: boolean) {
+    setIsAllDay(nextAllDay);
+    setActivePicker(null);
+    const dateStr = examStart.slice(0, 10) || toDateInputValue(new Date(Date.now() + 86_400_000).toISOString());
+    if (nextAllDay) {
+      setExamStart(dateStr + "T12:00");
+      setExamEnd("");
+    } else {
+      setExamStart(dateStr + "T09:00");
+      setExamEnd(dateStr + "T11:00");
+    }
+  }
+
+  function handleStartChange(nextStart: string) {
+    setExamStart(nextStart);
+    const startDate = new Date(nextStart);
+    const endDate = new Date(examEnd);
+    if (isNaN(endDate.getTime()) || endDate.getTime() <= startDate.getTime()) {
+      setExamEnd(toDatetimeLocal(new Date(startDate.getTime() + 2 * 60 * 60 * 1000)));
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
 
-    if (!title.trim() || !subject.trim() || !targetDate) {
+    const dateStr = examStart.slice(0, 10);
+    if (!title.trim() || !subject.trim() || !dateStr) {
       setError("Bitte Titel, Fach und Zieldatum ausfüllen.");
       return;
     }
 
-    const target = fromDateInputValue(targetDate);
-    if (!plan && target.getTime() < new Date().setHours(0, 0, 0, 0)) {
-      setError("Das Zieldatum muss in der Zukunft liegen.");
-      return;
+    let targetDateISO: string;
+    let targetDateEndISO: string | null = null;
+
+    if (isAllDay) {
+      const target = fromDateInputValue(dateStr);
+      if (!plan && target.getTime() < new Date().setHours(0, 0, 0, 0)) {
+        setError("Das Zieldatum muss in der Zukunft liegen.");
+        return;
+      }
+      targetDateISO = target.toISOString();
+    } else {
+      const start = new Date(examStart);
+      const end = new Date(examEnd);
+      if (isNaN(start.getTime()) || isNaN(end.getTime()) || !examEnd) {
+        setError("Bitte gültige Start- und Endzeit wählen.");
+        return;
+      }
+      if (end.getTime() <= start.getTime()) {
+        setError("Die Endzeit muss nach der Startzeit liegen.");
+        return;
+      }
+      targetDateISO = start.toISOString();
+      targetDateEndISO = end.toISOString();
     }
 
     const body = {
@@ -118,7 +178,8 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
       subject: subject.trim(),
       description: description.trim() || null,
       goalType,
-      targetDate: target.toISOString(),
+      targetDate: targetDateISO,
+      targetDateEnd: targetDateEndISO,
       difficulty: Number(difficulty),
       priorKnowledge: Number(priorKnowledge),
       pages: pages.trim() ? Number(pages) : null,
@@ -221,18 +282,67 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="sp-target-date" className="text-xs font-semibold text-gray-700">
-              Zieldatum
-            </label>
-            <input
-              id="sp-target-date"
-              type="date"
-              required
-              value={targetDate}
-              onChange={(e) => setTargetDate(e.target.value)}
-              className={inputClass}
-            />
+          {/* Zieldatum: Ganztägig-Toggle + Picker */}
+          <div className="flex flex-col gap-2">
+            <p className="text-xs font-semibold text-gray-700">Zieldatum</p>
+
+            <button
+              type="button"
+              role="switch"
+              aria-checked={isAllDay}
+              onClick={() => handleAllDayChange(!isAllDay)}
+              className={`flex items-center justify-between rounded-xl border px-3 py-2.5 text-left transition-colors ${
+                isAllDay
+                  ? "border-brand-red bg-red-50 text-brand-red"
+                  : "border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100"
+              }`}
+            >
+              <span className="flex items-center gap-2 text-sm font-semibold">
+                <CalendarDays className="h-4 w-4" />
+                Ganztägig
+              </span>
+              <span
+                className={`relative h-5 w-9 rounded-full transition-colors ${
+                  isAllDay ? "bg-brand-red" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`absolute top-0.5 h-4 w-4 rounded-full bg-white shadow-sm transition-transform ${
+                    isAllDay ? "translate-x-[18px]" : "translate-x-0.5"
+                  }`}
+                />
+              </span>
+            </button>
+
+            <div className={isAllDay ? "" : "grid grid-cols-2 gap-3"}>
+              <DateTimePicker
+                id="sp-exam-start"
+                label={isAllDay ? "Datum" : "Beginn"}
+                value={examStart}
+                open={activePicker === "start"}
+                dateOnly={isAllDay}
+                stage={isAllDay ? undefined : "start"}
+                onOpenChange={(o) => setActivePicker(o ? "start" : null)}
+                onChange={isAllDay
+                  ? (v) => setExamStart(v.slice(0, 10) + "T12:00")
+                  : handleStartChange
+                }
+                onComplete={isAllDay ? undefined : () => setActivePicker("end")}
+              />
+              {!isAllDay && (
+                <DateTimePicker
+                  id="sp-exam-end"
+                  label="Ende"
+                  value={examEnd}
+                  open={activePicker === "end"}
+                  align="right"
+                  allowMidnight
+                  stage="end"
+                  onOpenChange={(o) => setActivePicker(o ? "end" : null)}
+                  onChange={setExamEnd}
+                />
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-1">

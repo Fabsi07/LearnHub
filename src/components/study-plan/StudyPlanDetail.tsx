@@ -181,6 +181,14 @@ export function StudyPlanDetail({ planId }: StudyPlanDetailProps) {
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <CalendarDays className="w-4 h-4 text-gray-400" />
           <span>{formatDate(plan.targetDate)}</span>
+          {plan.targetDateEnd && (
+            <span className="text-gray-400">
+              {new Date(plan.targetDate).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+              {" – "}
+              {new Date(plan.targetDateEnd).toLocaleTimeString("de-DE", { hour: "2-digit", minute: "2-digit" })}
+              {" Uhr"}
+            </span>
+          )}
           <span className={cn("text-xs font-medium", remaining.className)}>
             {remaining.text}
           </span>

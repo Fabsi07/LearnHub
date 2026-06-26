@@ -38,7 +38,8 @@ export interface StudyPlanDTO {
   subject: string;
   description: string | null;
   goalType: GoalType;
-  targetDate: string; // ISO
+  targetDate: string; // ISO – Startzeit (oder Mitternacht wenn ganztägig)
+  targetDateEnd: string | null; // ISO – Endzeit; null = ganztägig
   // Algorithmus-Eingaben
   difficulty: number | null;
   priorKnowledge: number | null;
@@ -100,6 +101,7 @@ export function serializeStudyPlan(p: StudyPlan): StudyPlanDTO {
     description: p.description,
     goalType: p.goalType,
     targetDate: p.targetDate.toISOString(),
+    targetDateEnd: p.targetDateEnd ? p.targetDateEnd.toISOString() : null,
     difficulty: p.difficulty,
     priorKnowledge: p.priorKnowledge,
     pages: p.pages,

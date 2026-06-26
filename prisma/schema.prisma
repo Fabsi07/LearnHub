@@ -75,9 +75,10 @@ model StudyPlan {
   title       String
   subject     String   // Veranstaltung / Fach
   description String?
-  goalType    GoalType
-  targetDate  DateTime
-  ownerId     String
+  goalType      GoalType
+  targetDate    DateTime
+  targetDateEnd DateTime? // null = ganztägig; gesetzt = Endzeit der Klausur
+  ownerId       String
 
   // Algorithmus-Eingaben (optional, nur gesetzt wenn ein Plan berechnet wurde).
   // Siehe docs/Algorithmus/Algorithmus_neue_Formel.md.

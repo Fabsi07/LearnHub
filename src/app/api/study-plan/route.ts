@@ -74,6 +74,7 @@ export async function POST(req: Request) {
     description,
     goalType,
     targetDate,
+    targetDateEnd,
     difficulty,
     priorKnowledge,
     pages,
@@ -94,9 +95,18 @@ export async function POST(req: Request) {
     );
   }
 
-  const target = new Date(targetDate);
+  const target = new Date(targetDate as string);
   if (Number.isNaN(target.getTime())) {
     return NextResponse.json({ error: "Ungültiges Zieldatum." }, { status: 400 });
+  }
+
+  let targetEnd: Date | null = null;
+  if (typeof targetDateEnd === "string" && targetDateEnd) {
+    const te = new Date(targetDateEnd);
+    if (Number.isNaN(te.getTime()) || te.getTime() <= target.getTime()) {
+      return NextResponse.json({ error: "Ungültige Endzeit." }, { status: 400 });
+    }
+    targetEnd = te;
   }
 
   // Algorithmus-Eingaben (optional). Nur wenn alle vier vorhanden sind, wird gerechnet.
@@ -132,14 +142,15 @@ export async function POST(req: Request) {
 
   const plan = await prisma.studyPlan.create({
     data: {
-      title: title.trim(),
-      subject: subject.trim(),
+      title: (title as string).trim(),
+      subject: (subject as string).trim(),
       description:
         typeof description === "string" && description.trim()
           ? description.trim()
           : null,
-      goalType,
+      goalType: goalType as import("@prisma/client").GoalType,
       targetDate: target,
+      targetDateEnd: targetEnd,
       ownerId: session.userId,
       difficulty: diff,
       priorKnowledge: know,

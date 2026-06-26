@@ -99,6 +99,18 @@ export async function PATCH(
     target = t;
   }
 
+  if ("targetDateEnd" in b) {
+    if (b.targetDateEnd === null) {
+      data.targetDateEnd = null;
+    } else if (typeof b.targetDateEnd === "string" && b.targetDateEnd) {
+      const te = new Date(b.targetDateEnd);
+      if (Number.isNaN(te.getTime()) || te.getTime() <= target.getTime()) {
+        return NextResponse.json({ error: "Ungültige Endzeit." }, { status: 400 });
+      }
+      data.targetDateEnd = te;
+    }
+  }
+
   // Algorithmus-Eingaben mergen: aus Body wenn vorhanden, sonst Bestand.
   const diff = "difficulty" in b ? toIntInRange(b.difficulty, 1, 5) : existing.difficulty;
   const know = "priorKnowledge" in b ? toIntInRange(b.priorKnowledge, 1, 5) : existing.priorKnowledge;
