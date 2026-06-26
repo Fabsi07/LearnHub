@@ -195,6 +195,7 @@ export const exactTranslations: Record<string, string> = {
   "1 Tag vorher": "1 day before",
   "3 Tage vorher": "3 days before",
   "Datum": "Date",
+  "Datum wählen": "Choose date",
   "Bearbeiten": "Edit",
   "Beginn": "Start",
   "Benutzer": "Users",

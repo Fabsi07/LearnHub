@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Calculator, X } from "lucide-react";
 import { EditableCombobox } from "@/components/calendar/EditableCombobox";
+import { DateTimePicker } from "@/components/calendar/DateTimePicker";
 import { GOAL_TYPE_META, fromDateInputValue, toDateInputValue } from "./planMeta";
 import type { StudyPlanDTO } from "@/lib/study-plan/types";
 import { GOAL_TYPES } from "@/lib/study-plan/types";
@@ -33,6 +34,7 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
   const [credits, setCredits] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [subjectOptions, setSubjectOptions] = useState<string[]>([]);
 
   // Fächer-Vorschläge aus dem Kalender laden (eigene Fächer + DHBW-Veranstaltungen).
@@ -221,19 +223,17 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
             </div>
           </div>
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="sp-target-date" className="text-xs font-semibold text-gray-700">
-              Zieldatum
-            </label>
-            <input
-              id="sp-target-date"
-              type="date"
-              required
-              value={targetDate}
-              onChange={(e) => setTargetDate(e.target.value)}
-              className={inputClass}
-            />
-          </div>
+          <DateTimePicker
+            id="sp-target-date"
+            label="Zieldatum"
+            value={targetDate ? `${targetDate}T12:00` : ""}
+            open={datePickerOpen}
+            dateOnly
+            placeholder="Datum wählen"
+            triggerClassName="flex w-full items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-left text-sm text-gray-900 transition-colors hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-brand-red/30 focus:border-brand-red dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 dark:hover:bg-gray-700"
+            onOpenChange={setDatePickerOpen}
+            onChange={(value) => setTargetDate(value.slice(0, 10))}
+          />
 
           <div className="flex flex-col gap-1">
             <label htmlFor="sp-description" className="text-xs font-semibold text-gray-700">

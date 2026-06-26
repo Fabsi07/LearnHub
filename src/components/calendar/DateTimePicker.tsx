@@ -19,6 +19,10 @@ interface DateTimePickerProps {
   dateOnly?: boolean;
   allowMidnight?: boolean;
   stage?: "start" | "end";
+  /** Ersetzt den Standard-Trigger-Button-Style (dunkles Theme). */
+  triggerClassName?: string;
+  /** Platzhaltertext wenn kein Datum gewählt (value leer). */
+  placeholder?: string;
   onOpenChange: (open: boolean) => void;
   onChange: (value: string) => void;
   onComplete?: () => void;
@@ -135,6 +139,8 @@ export function DateTimePicker({
   dateOnly = false,
   allowMidnight = false,
   stage,
+  triggerClassName,
+  placeholder,
   onOpenChange,
   onChange,
   onComplete,
@@ -210,11 +216,16 @@ export function DateTimePicker({
         id={id}
         type="button"
         onClick={() => onOpenChange(!open)}
-        className="flex w-full items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-left text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-red/40"
+        className={
+          triggerClassName ??
+          "flex w-full items-center gap-2 rounded-xl border border-slate-700 bg-slate-800 px-3 py-2.5 text-left text-sm font-medium text-white shadow-sm transition-colors hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-red/40"
+        }
         aria-expanded={open}
       >
         <CalendarDays className="h-4 w-4 shrink-0 text-red-400" />
-        <span className="truncate">{formatValue(value, dateOnly)}</span>
+        <span className={`truncate ${!value && placeholder ? "text-gray-400" : ""}`}>
+          {!value && placeholder ? placeholder : formatValue(value, dateOnly)}
+        </span>
       </button>
 
       {open && (
