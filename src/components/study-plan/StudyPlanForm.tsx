@@ -37,6 +37,10 @@ export function StudyPlanForm({ open, plan, onClose, onSaved }: StudyPlanFormPro
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [subjectOptions, setSubjectOptions] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (!open) setDatePickerOpen(false);
+  }, [open]);
+
   // Fächer-Vorschläge aus dem Kalender laden (eigene Fächer + DHBW-Veranstaltungen).
   // Freitext bleibt weiterhin möglich – die Liste ist nur eine Auswahlhilfe.
   useEffect(() => {
