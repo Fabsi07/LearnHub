@@ -315,8 +315,9 @@ function formatEventBlockTitle(event: CalEvent): string {
 }
 
 function isLernsessionTitle(event: CalEvent): boolean {
+  const title = event.title.trim();
   return (
-    /^Lernsession\s*:/i.test(event.title) ||
+    /^Lernsession\s*:/i.test(title) ||
     event.type?.trim().toLocaleLowerCase("de-DE") === "lernsession"
   );
 }
