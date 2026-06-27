@@ -59,7 +59,7 @@ export function AllDayBar({ days, events, onEventClick }: AllDayBarProps) {
 function isStudyPlanDeadline(event: CalEvent): boolean {
   return (
     event.id.startsWith("plan-deadline-") ||
-    (event.readOnly === true && event.type?.trim().toLowerCase() === "deadline")
+    (event.readOnly === true && event.type?.trim().toLocaleLowerCase("de-DE") === "deadline")
   );
 }
 
