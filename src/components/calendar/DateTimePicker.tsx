@@ -223,7 +223,13 @@ export function DateTimePicker({
         aria-expanded={open}
       >
         <CalendarDays className="h-4 w-4 shrink-0 text-red-400" />
-        <span className={`truncate ${!value && placeholder ? "text-gray-400" : ""}`}>
+        <span
+          className={`truncate ${
+            !value && placeholder
+              ? "text-gray-400 dark:text-white/55"
+              : "text-current dark:text-white"
+          }`}
+        >
           {!value && placeholder ? placeholder : formatValue(value, dateOnly)}
         </span>
       </button>

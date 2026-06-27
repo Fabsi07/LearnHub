@@ -235,6 +235,7 @@ export function EventBlock({
   const renderHeight = preview?.height ?? baseHeight;
   const renderTranslateX = preview?.translateX ?? 0;
   const isReadOnly = !!event.readOnly;
+  const displayTitle = formatEventBlockTitle(event);
 
   return (
     <div
@@ -266,15 +267,15 @@ export function EventBlock({
           isReadOnly ? "cursor-pointer" : "cursor-grab active:cursor-grabbing"
         }`}
       >
-        <div className="flex items-center gap-1 font-semibold leading-tight">
+        <div className="flex min-w-0 items-center gap-1 font-semibold leading-tight">
           {event.important && (
             <Star className="h-3 w-3 shrink-0" fill="currentColor" />
           )}
           {event.taskCompleted && (
             <CircleCheckBig className="h-3 w-3 shrink-0" />
           )}
-          <span className={`truncate ${event.taskCompleted ? "line-through" : ""}`}>
-            {event.title}
+          <span className={`min-w-0 truncate ${event.taskCompleted ? "line-through" : ""}`}>
+            {displayTitle}
           </span>
         </div>
         <div className="opacity-90 leading-tight truncate">
@@ -302,5 +303,21 @@ export function EventBlock({
         </>
       )}
     </div>
+  );
+}
+
+function formatEventBlockTitle(event: CalEvent): string {
+  const title = event.title.trim();
+  if (!isLernsessionTitle(event)) return title;
+
+  const topic = title.replace(/^Lernsession\s*:\s*/i, "").trim();
+  return topic ? `LS: ${topic}` : "LS";
+}
+
+function isLernsessionTitle(event: CalEvent): boolean {
+  const title = event.title.trim();
+  return (
+    /^Lernsession\s*:/i.test(title) ||
+    event.type?.trim().toLocaleLowerCase("de-DE") === "lernsession"
   );
 }

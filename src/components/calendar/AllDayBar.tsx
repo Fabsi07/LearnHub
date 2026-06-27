@@ -2,7 +2,7 @@
 
 import { Star } from "lucide-react";
 import type { CalEvent } from "./events";
-import { eventOverlapsDay } from "./events";
+import { eventOnDay, eventOverlapsDay } from "./events";
 
 interface AllDayBarProps {
   days: Date[];
@@ -25,31 +25,48 @@ export function AllDayBar({ days, events, onEventClick }: AllDayBarProps) {
         Ganztägig
       </div>
       {days.map((day, i) => {
-        const dayEvents = allDay.filter((e) => eventOverlapsDay(e, day));
+        const dayEvents = allDay.filter((e) => eventVisibleOnDay(e, day));
         return (
           <div
             key={i}
-            className="border-r border-gray-200 last:border-r-0 px-1 py-1 min-h-[28px] space-y-0.5"
+            className="min-w-0 border-r border-gray-200 px-1 py-1 last:border-r-0 min-h-[28px] space-y-0.5"
           >
-            {dayEvents.map((ev) => (
-              <button
-                key={ev.id}
-                type="button"
-                title={ev.title}
-                onClick={() => onEventClick?.(ev)}
-                className={`${ev.color} flex w-full items-center gap-1 truncate rounded px-1.5 py-0.5 text-left text-[11px] leading-tight text-white opacity-90 transition-opacity hover:opacity-75 ${
-                  ev.important ? "ring-1 ring-amber-300" : ""
-                }`}
-              >
-                {ev.important && (
-                  <Star className="h-3 w-3 shrink-0" fill="currentColor" />
-                )}
-                <span className="truncate">{ev.title}</span>
-              </button>
-            ))}
+            {dayEvents.map((ev) => {
+              return (
+                <button
+                  key={ev.id}
+                  type="button"
+                  title={ev.title}
+                  onClick={() => onEventClick?.(ev)}
+                  className={`${ev.color} flex w-full min-w-0 items-center gap-1 overflow-hidden rounded px-1.5 py-0.5 text-left text-[11px] leading-tight text-white opacity-90 transition-opacity hover:opacity-75 ${
+                    ev.important ? "ring-1 ring-amber-300" : ""
+                  }`}
+                >
+                  {ev.important && (
+                    <Star className="h-3 w-3 shrink-0" fill="currentColor" />
+                  )}
+                  <span className="min-w-0 truncate">{ev.title}</span>
+                </button>
+              );
+            })}
           </div>
         );
       })}
     </div>
   );
+}
+
+function isStudyPlanDeadline(event: CalEvent): boolean {
+  return (
+    event.id.startsWith("plan-deadline-") ||
+    (event.readOnly === true && event.type?.trim().toLocaleLowerCase("de-DE") === "deadline")
+  );
+}
+
+function eventVisibleOnDay(event: CalEvent, day: Date): boolean {
+  if (isStudyPlanDeadline(event)) {
+    return eventOnDay(event, day);
+  }
+
+  return eventOverlapsDay(event, day);
 }
